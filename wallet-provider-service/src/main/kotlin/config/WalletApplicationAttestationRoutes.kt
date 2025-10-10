@@ -74,19 +74,19 @@ private fun Logger.warn(failure: WalletApplicationAttestationIssuanceFailure) {
     val (error, cause) =
         when (failure) {
             is WalletApplicationAttestationIssuanceFailure.InvalidChallenge ->
-                "WalletApplicationAttestationIssuanceRequest verification failed, " +
+                "WalletApplicationAttestationIssuanceRequest validation failed, " +
                     "Challenge is not valid: ${failure.error}" to
                     failure.cause
 
             is WalletApplicationAttestationIssuanceFailure.InvalidKeyAttestation -> {
                 when (val keyAttestationFailure = failure.error) {
                     is KeyAttestationValidationFailure.InvalidKeyAttestation ->
-                        "WalletApplicationAttestationIssuanceRequest verification failed, " +
+                        "WalletApplicationAttestationIssuanceRequest validation failed, " +
                             "Key Attestation is not valid: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
 
                     is KeyAttestationValidationFailure.UnsupportedAttestedKey ->
-                        "WalletApplicationAttestationIssuanceRequest verification failed, " +
+                        "WalletApplicationAttestationIssuanceRequest validation failed, " +
                             "Key Attestation contains an unsupported PublicKey: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
                 }

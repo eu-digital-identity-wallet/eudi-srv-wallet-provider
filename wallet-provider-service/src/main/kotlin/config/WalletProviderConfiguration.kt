@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.seconds
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
     val signingKey: SigningKeyConfiguration = SigningKeyConfiguration.GenerateRandom,
-    val keyAttestationVerification: KeyAttestationVerificationConfiguration = KeyAttestationVerificationConfiguration.Disabled,
+    val keyAttestationValidation: KeyAttestationValidationConfiguration = KeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val walletApplicationAttestation: WalletApplicationAttestationConfiguration,
 )
@@ -114,14 +114,14 @@ class SignatureAlgorithmDecoder : Decoder<SignatureAlgorithm> {
         }
 }
 
-sealed interface KeyAttestationVerificationConfiguration {
-    data object Disabled : KeyAttestationVerificationConfiguration
+sealed interface KeyAttestationValidationConfiguration {
+    data object Disabled : KeyAttestationValidationConfiguration
 
     data class Enabled(
         val android: AndroidKeyAttestationConfiguration = AndroidKeyAttestationConfiguration(),
         val ios: IosKeyAttestationConfiguration = IosKeyAttestationConfiguration(),
         val verificationTimeSkew: Duration = 0.seconds,
-    ) : KeyAttestationVerificationConfiguration
+    ) : KeyAttestationValidationConfiguration
 }
 
 data class AndroidKeyAttestationConfiguration(

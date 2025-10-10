@@ -48,7 +48,7 @@ import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
-import io.ktor.server.response.respondRedirect
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.toDeprecatedClock
 import kotlinx.serialization.json.Json
@@ -86,13 +86,13 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
         )
 
     val validateChallenge =
-        when (config.keyAttestationVerification) {
-            KeyAttestationVerificationConfiguration.Disabled -> {
-                logger.warn("Challenge Verification is currently disabled")
+        when (config.keyAttestationValidation) {
+            KeyAttestationValidationConfiguration.Disabled -> {
+                logger.warn("Challenge Validation is currently disabled")
                 ValidateChallengeNoop
             }
 
-            is KeyAttestationVerificationConfiguration.Enabled -> ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
+            is KeyAttestationValidationConfiguration.Enabled -> ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
         }
 
     val wardenAttestationService = createWardenAttestationService(config, clock)
@@ -218,15 +218,15 @@ private fun createWardenAttestationService(
     config: WalletProviderConfiguration,
     clock: Clock,
 ): AttestationService =
-    when (config.keyAttestationVerification) {
-        KeyAttestationVerificationConfiguration.Disabled -> {
-            logger.warn("Attestation Verification is currently disabled")
+    when (config.keyAttestationValidation) {
+        KeyAttestationValidationConfiguration.Disabled -> {
+            logger.warn("Key Attestation Validation is currently disabled")
             NoopAttestationService
         }
 
-        is KeyAttestationVerificationConfiguration.Enabled -> {
+        is KeyAttestationValidationConfiguration.Enabled -> {
             val androidAttestation: AndroidAttestationConfiguration =
-                with(config.keyAttestationVerification.android) {
+                with(config.keyAttestationValidation.android) {
                     AndroidAttestationConfiguration(
                         applications =
                             applications.map { application ->
@@ -252,7 +252,7 @@ private fun createWardenAttestationService(
                 }
 
             val iosAttestation: IOSAttestationConfiguration =
-                with(config.keyAttestationVerification.ios) {
+                with(config.keyAttestationValidation.ios) {
                     IOSAttestationConfiguration(
                         applications =
                             applications.map { application ->
@@ -270,7 +270,7 @@ private fun createWardenAttestationService(
                 androidAttestationConfiguration = androidAttestation,
                 iosAttestationConfiguration = iosAttestation,
                 clock = clock.toKotlinClock().toDeprecatedClock(),
-                verificationTimeOffset = config.keyAttestationVerification.verificationTimeSkew,
+                verificationTimeOffset = config.keyAttestationValidation.verificationTimeSkew,
             )
         }
     }

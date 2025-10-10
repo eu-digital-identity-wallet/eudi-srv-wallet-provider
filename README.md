@@ -170,49 +170,49 @@ By default, Wallet Provider performs no validation of Key Attestations.
 
 To enable Key Attestation validation, use the following environment variables:
 
-> [!NOTE]
+> [!NOTE]  
 > Due to limitations of the [Warden Server-Side Mobile Client Attestation Library](https://github.com/a-sit-plus/warden), when enabling Key Attestation
-validation, you must configure both Android and iOS Key Attestation verification.
+validation, you must configure both Android and iOS Key Attestation validation.
 
 #### Android Key Attestations
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_APPLICATIONS_XX_PACKAGENAME`   
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_APPLICATIONS_XX_PACKAGENAME`   
 Description: Android Package of the Wallet.  
 Default value: N/A  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_APPLICATIONS_XX_SIGNINGCERTIFICATEDIGESTS_XX`   
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_APPLICATIONS_XX_SIGNINGCERTIFICATEDIGESTS_XX`   
 Description: Base64 Url-Safe encoded DER encoding of the X509 Certificate used to sign the Wallet.  
 Default value: N/A  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_STRONGBOXREQUIRED`   
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_STRONGBOXREQUIRED`   
 Description: Whether StrongBox security leve is required.  
 Default value: `false`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_UNLOCKEDBOOTLOADERALLOWED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_UNLOCKEDBOOTLOADERALLOWED`  
 Description: Whether devices with unlocked bootloaders are allowed.  
 Default value: `false`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_ROLLBACKRESISTANCEREQUIRED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_ROLLBACKRESISTANCEREQUIRED`  
 Description: Whether rollback resistance is required.  
 Default value: `false`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_LEAFCERTIFICATEVALIDITYIGNORED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_LEAFCERTIFICATEVALIDITYIGNORED`  
 Description: Whether the validity of the leaf certificate is ignored.  
 Default value: `false`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_VERIFICATIONSKEW`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_VERIFICATIONSKEW`  
 Description: Tolerance added to the verification date.  
 Default value: `0 seconds`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_HARDWAREATTESTATIONENABLED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_HARDWAREATTESTATIONENABLED`  
 Description: Whether **hardware** Key Attestations are accepted.  
 Default value: `true`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_NOUGATATTESTATIONENABLED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_NOUGATATTESTATIONENABLED`  
 Description: Whether Key Attestations generated on Devices with **Android Nougat** are accepted.  
 Default value: `false`  
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_SOFTWAREATTESTATIONENABLED`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_SOFTWAREATTESTATIONENABLED`  
 Description: Whether **software** Key Attestations are accepted.  
 Default value: `false`  
 
@@ -221,30 +221,30 @@ Default value: `false`
 By default, Wallet Provider validates the creation time of the Key Attestation using a default skew of `5 minutes`. You can modify the `skew` using
 the following environment variable:
 
-Variable: `KEYATTESTATIONVERIFICATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
+Variable: `KEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
 Description: How far in the past, the creation date of a Key Attestation can be.  
 Default value: `5 minutes`  
 
-To disable this check, set the environment variable `KEYATTESTATIONVERIFICATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY` to `Disabled`.
+To disable this check, set the environment variable `KEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY` to `Disabled`.
 
 ##### iOS Key Attestations
 
-Variable: `KEYATTESTATIONVERIFICATION_IOS_APPLICATIONS_XX_TEAMIDENTIFIER`   
+Variable: `KEYATTESTATIONVALIDATION_IOS_APPLICATIONS_XX_TEAMIDENTIFIER`   
 Description: The Team Identifier of the Wallet.  
 Default value: `N/A`  
 
-Variable: `KEYATTESTATIONVERIFICATION_IOS_APPLICATIONS_XX_BUNDLEIDENTIFIER`   
+Variable: `KEYATTESTATIONVALIDATION_IOS_APPLICATIONS_XX_BUNDLEIDENTIFIER`   
 Description: The Bundle Identifier of the Wallet.  
 Default value: `N/A`  
 
-Variable: `KEYATTESTATIONVERIFICATION_IOS_APPLICATIONS_XX_ENVIRONMENT`    
+Variable: `KEYATTESTATIONVALIDATION_IOS_APPLICATIONS_XX_ENVIRONMENT`    
 Description: Environment in which the Wallet is running.  
 Default value: `Production`   
 Allowed values:
 * `Production`
 * `Sandbox`
 
-Variable: `KEYATTESTATIONVERIFICATION_IOS_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
+Variable: `KEYATTESTATIONVALIDATION_IOS_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
 Description: How far in the past, the creation date of a Key Attestation can be.  
 Default value: `5 minutes`  
 
