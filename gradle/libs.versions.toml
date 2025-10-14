@@ -46,8 +46,6 @@ bouncycastle-bom = { module = "org.bouncycastle:bcbom" }
 warden = { module = "at.asitplus:warden", version.ref = "warden" }
 hoplite-bom = { module = "com.sksamuel.hoplite:hoplite-bom" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
-hoplite-arrow = { module = "com.sksamuel.hoplite:hoplite-arrow", version.ref = "hoplite" }
-hoplite-datetime = { module = "com.sksamuel.hoplite:hoplite-datetime", version.ref = "hoplite" }
 indispensable-bom = { module = "at.asitplus.signum:indispensable-bom" }
 indispensable-josef = { module = "at.asitplus.signum:indispensable-josef", version.ref = "indispensable" }
 supreme = { module = "at.asitplus.signum:supreme", version.ref = "supreme" }

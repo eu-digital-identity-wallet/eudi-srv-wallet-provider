@@ -15,6 +15,7 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
+import arrow.core.toNonEmptyListOrNull
 import at.asitplus.attestation.AttestationService
 import at.asitplus.attestation.IOSAttestationConfiguration
 import at.asitplus.attestation.NoopAttestationService
@@ -32,12 +33,14 @@ import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.WardenValidateKey
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
+import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.IssueWalletApplicationAttestationLive
+import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
 import io.ktor.http.CacheControl.*
@@ -100,34 +103,58 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
 
     val issueWalletApplicationAttestation =
         IssueWalletApplicationAttestationLive(
-            clock = clock,
-            validateChallenge = validateChallenge,
-            validateKeyAttestation = validateKeyAttestation,
-            validity = config.walletApplicationAttestation.validity,
-            issuer = config.walletApplicationAttestation.issuer,
-            walletName = config.walletApplicationAttestation.walletName,
-            walletLink = config.walletApplicationAttestation.walletLink,
-            walletInformation =
-                WalletInformation(
-                    generalInformation =
-                        GeneralInformation(
-                            provider = config.walletApplicationAttestation.walletInformation.provider,
-                            id = config.walletApplicationAttestation.walletInformation.id,
-                            version = config.walletApplicationAttestation.walletInformation.version,
-                            certification = config.walletApplicationAttestation.walletInformation.certification,
-                        ),
-                ),
-            signJwt =
-                SignumSignJwt(
-                    signer,
-                    certificateChain,
-                    JwtType(AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE),
-                    json,
-                ),
+            clock,
+            validateChallenge,
+            validateKeyAttestation,
+            config.walletApplicationAttestation.validity,
+            config.issuer,
+            config.walletApplicationAttestation.walletName,
+            config.walletApplicationAttestation.walletLink,
+            GeneralInformation(
+                provider = config.walletInformation.generalInformation.provider,
+                id = config.walletInformation.generalInformation.id,
+                version = config.walletInformation.generalInformation.version,
+                certification = config.walletInformation.generalInformation.certification,
+            ),
+            SignumSignJwt(
+                signer,
+                certificateChain,
+                JwtType(AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE),
+                json,
+            ),
+        )
+
+    val issueWalletUnitAttestation =
+        IssueWalletUnitAttestationLive(
+            clock,
+            validateChallenge,
+            validateKeyAttestation,
+            config.walletUnitAttestation.validity,
+            config.issuer,
+            keyStorage = config.walletUnitAttestation.keyStorage?.toNonEmptyListOrNull(),
+            userAuthentication = config.walletUnitAttestation.userAuthentication?.toNonEmptyListOrNull(),
+            config.walletUnitAttestation.certification,
+            GeneralInformation(
+                provider = config.walletInformation.generalInformation.provider,
+                id = config.walletInformation.generalInformation.id,
+                version = config.walletInformation.generalInformation.version,
+                certification = config.walletInformation.generalInformation.certification,
+            ),
+            WalletSecureCryptographicDeviceInformation(
+                config.walletInformation.walletSecureCryptographicDeviceInformation.type,
+                config.walletInformation.walletSecureCryptographicDeviceInformation.certification,
+            ),
+            SignumSignJwt(
+                signer,
+                certificateChain,
+                JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
+                json,
+            ),
         )
 
     configureChallengeRoutes(generateChallenge)
     configureWalletApplicationAttestationRoutes(issueWalletApplicationAttestation)
+    configureWalletUnitAttestationRoutes(issueWalletUnitAttestation)
 }
 
 private fun Application.configureServerPlugins(json: Json) {

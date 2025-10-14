@@ -19,7 +19,7 @@ import at.asitplus.signum.indispensable.josef.ConfirmationClaim
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -35,8 +35,13 @@ data class WalletApplicationAttestationClaims(
     @SerialName(OpenId4VCISpec.WALLET_NAME) val walletName: WalletName? = null,
     @SerialName(OpenId4VCISpec.WALLET_LINK) val walletLink: WalletLink? = null,
     @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
-    @Required @SerialName(ARF.EUDI_WALLET_INFO) val walletInformation: WalletInformation,
-)
+    @Required @SerialName(ARF.EUDI_WALLET_INFORMATION) val walletInformation: WalletInformation,
+) {
+    @Serializable
+    data class WalletInformation(
+        @Required @SerialName(ARF.GENERAL_INFORMATION) val generalInformation: GeneralInformation,
+    )
+}
 
 typealias WalletName = NonBlankString
 typealias WalletLink = StringUrl

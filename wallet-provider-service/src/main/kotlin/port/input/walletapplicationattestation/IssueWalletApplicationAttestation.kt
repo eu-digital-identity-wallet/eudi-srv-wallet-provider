@@ -28,7 +28,7 @@ import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.Wall
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletApplicationAttestationClaims
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
@@ -98,7 +98,7 @@ class IssueWalletApplicationAttestationLive(
     private val issuer: Issuer,
     private val walletName: WalletName?,
     private val walletLink: WalletLink?,
-    private val walletInformation: WalletInformation,
+    private val generalInformation: GeneralInformation,
     private val signJwt: SignJwt<WalletApplicationAttestationClaims>,
 ) : IssueWalletApplicationAttestation {
     override suspend fun invoke(
@@ -118,7 +118,7 @@ class IssueWalletApplicationAttestationLive(
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity.value
-            val clientAttestation =
+            val walletApplicationAttestation =
                 WalletApplicationAttestationClaims(
                     issuer,
                     request.clientId,
@@ -126,11 +126,12 @@ class IssueWalletApplicationAttestationLive(
                     ConfirmationClaim(jsonWebKey = attestedKey.toJsonWebKey()),
                     issuedAt = issuedAt,
                     notBefore = issuedAt,
-                    walletName = walletName,
-                    walletLink = walletLink,
-                    walletInformation = walletInformation,
+                    walletName,
+                    walletLink,
+                    null,
+                    WalletApplicationAttestationClaims.WalletInformation(generalInformation),
                 )
 
-            signJwt(clientAttestation)
+            signJwt(walletApplicationAttestation)
         }
 }

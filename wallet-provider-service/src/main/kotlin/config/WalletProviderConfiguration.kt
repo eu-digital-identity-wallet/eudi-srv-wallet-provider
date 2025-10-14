@@ -24,15 +24,15 @@ import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
 import eu.europa.ec.eudi.walletprovider.domain.Issuer
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.StringUrl
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.ProviderName
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.SolutionId
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.SolutionVersion
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
+import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.WalletApplicationAttestationValidity
+import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
 import kotlin.io.encoding.Base64
@@ -47,7 +47,10 @@ data class WalletProviderConfiguration(
     val signingKey: SigningKeyConfiguration = SigningKeyConfiguration.GenerateRandom,
     val keyAttestationValidation: KeyAttestationValidationConfiguration = KeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
-    val walletApplicationAttestation: WalletApplicationAttestationConfiguration,
+    val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
+    val walletInformation: WalletInformationConfiguration,
+    val walletApplicationAttestation: WalletApplicationAttestationConfiguration = WalletApplicationAttestationConfiguration(),
+    val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
 )
 
 data class ServerConfiguration(
@@ -200,16 +203,13 @@ class Base64UrlSafeByteArrayDecoder : Decoder<Base64UrlSafeByteArray> {
         }
 }
 
-data class WalletApplicationAttestationConfiguration(
-    val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
-    val validity: WalletApplicationAttestationValidity = WalletApplicationAttestationValidity.ArfMax,
-    val walletName: WalletName? = null,
-    val walletLink: WalletLink? = null,
-    val walletInformation: WalletInformationConfiguration,
+data class WalletInformationConfiguration(
+    val generalInformation: GeneralInformationConfiguration,
+    val walletSecureCryptographicDeviceInformation: WalletSecureCryptographicDeviceInformationConfiguration,
 )
 
-data class WalletInformationConfiguration(
-    val provider: ProviderName,
+data class GeneralInformationConfiguration(
+    val provider: WalletProviderName,
     val id: SolutionId,
     val version: SolutionVersion,
     val certification: CertificationInformation,
@@ -234,3 +234,21 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
             else -> ConfigFailure.DecodeError(node, type).invalid()
         }
 }
+
+data class WalletSecureCryptographicDeviceInformationConfiguration(
+    val type: WalletSecureCryptographicDeviceType? = null,
+    val certification: CertificationInformation,
+)
+
+data class WalletApplicationAttestationConfiguration(
+    val validity: WalletApplicationAttestationValidity = WalletApplicationAttestationValidity.ArfMax,
+    val walletName: WalletName? = null,
+    val walletLink: WalletLink? = null,
+)
+
+data class WalletUnitAttestationConfiguration(
+    val validity: WalletUnitAttestationValidity = WalletUnitAttestationValidity.ArfMin,
+    val keyStorage: List<AttackPotentialResistance>? = null,
+    val userAuthentication: List<AttackPotentialResistance>? = null,
+    val certification: StringUrl? = null,
+)

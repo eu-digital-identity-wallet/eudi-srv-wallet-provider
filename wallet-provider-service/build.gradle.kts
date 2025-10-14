@@ -64,8 +64,6 @@ dependencies {
     implementation(libs.supreme)
 
     implementation(libs.hoplite.core)
-    runtimeOnly(libs.hoplite.arrow)
-    runtimeOnly(libs.hoplite.datetime)
 }
 
 abstract class VirtualPlatformAlignmentRule

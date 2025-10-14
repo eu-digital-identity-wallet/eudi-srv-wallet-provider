@@ -258,11 +258,45 @@ Variable: `CHALLENGE_VALIDITY`
 Description: Duration a Challenge is valid for.  
 Default value: `5 minutes`  
 
-### Wallet Application Attestation Configuration
+### Issuer Configuration
 
 Variable: `WALLETAPPLICATIONATTESTATION_ISSUER`  
-Description: Issuer of the Wallet Application Attestations.  
-Default value: `eudi-srv-wallet-provider`  
+Description: Issuer of the Attestations.  
+Default value: `eudi-srv-wallet-provider`
+
+### Wallet Information Configuration
+
+Variable: `WALLETINFORMATION_GENERALINFORMATION_PROVIDER`  
+Description: Name of Wallet Provider, as listed on the Trusted List of Wallet Providers.  
+Default value: N/A
+
+Variable: `WALLETINFORMATION_GENERALINFORMATION_ID`  
+Description: Identifier of the Wallet Solution, as listed on the Trusted List of Wallet Providers.  
+Default value: N/A
+
+Variable: `WALLETINFORMATION_GENERALINFORMATION_VERSION`  
+Description: Version of the Wallet Solution.  
+Default value: N/A
+
+Variable: `WALLETINFORMATION_GENERALINFORMATION_CERTIFICATION`  
+Description: Which conformity assessment body certified the Wallet Solution, the applicable certification number, etc.  
+Default value: N/A  
+
+Variable: `WALLETINFORMATION_WALLETSECURECRYPTOGRAPHICDEVICEINFORMATION_TYPE`  
+Description: Technical implementation of the WSCD.  
+Default value: N/A  
+Examples:
+* `REMOTE`
+* `LOCAL_EXTERNAL`
+* `LOCAL_INTERNAL`
+* `LOCAL_NATIVE`
+* `HYBRID`
+
+Variable: `WALLETINFORMATION_WALLETSECURECRYPTOGRAPHICDEVICEINFORMATION_CERTIFICATION`  
+Description: Information about the certification achieved by the WSCD.  
+Default value: N/A
+
+### Wallet Application Attestation Configuration
 
 Variable: `WALLETAPPLICATIONATTESTATION_VALIDITY`  
 Description: Duration a Wallet Application Attestations is valid for.  
@@ -277,21 +311,34 @@ Variable: `WALLETAPPLICATIONATTESTATION_WALLETLINK`
 Description: Wallet Link that will be included in the Wallet Application Attestations.  
 Default value: N/A  
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETINFORMATION_PROVIDER`  
-Description: Name of the Solution Provider that will be included in the Wallet Application Attestations.  
-Default value: N/A  
+### Wallet Unit Attestation Configuration
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETINFORMATION_ID`  
-Description: Solution Id that will be included in the Wallet Application Attestations.  
-Default value: N/A  
+Variable: `WALLETAUNITATTESTATION_VALIDITY`  
+Description: Duration a Wallet Unit Attestations is valid for.    
+Default value: `31 days`  
+Minimum value: `31 days`  
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETINFORMATION_VERSION`  
-Description: Solution Version that will be included in the Wallet Application Attestations.  
+Variable: `WALLETUNITATTESTATION_KEYSTORAGE_XX`  
+Description: Case sensitive strings that assert the attack potential resistance of the key storage component and its keys attested.  
 Default value: N/A  
+Examples:
+* `iso_18045_high`
+* `iso_18045_moderate`
+* `iso_18045_enhanced-basic`
+* `iso_18045_basic`  
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETINFORMATION_CERTIFICATION`  
-Description: Solution Certification Information that will be included in the Wallet Application Attestations.  
+Variable: `WALLETUNITATTESTATION_USERAUTHENTICATION_XX`  
+Description: Case sensitive strings that assert the attack potential resistance of the user authentication methods allowed to access the private keys from the attested_keys.  
 Default value: N/A  
+Examples:
+* `iso_18045_high`
+* `iso_18045_moderate`
+* `iso_18045_enhanced-basic`
+* `iso_18045_basic`
+
+Variable: `WALLETUNITATTESTATION_CERTIFICATION`  
+Description: URL that links to the certification of the key storage component.  
+Default value: N/A
 
 ### Duration formats
 

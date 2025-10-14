@@ -25,19 +25,14 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
-data class WalletInformation(
-    @Required @SerialName(ARF.GENERAL_INFO) val generalInformation: GeneralInformation,
-)
-
-@Serializable
 data class GeneralInformation(
-    @Required @SerialName(ARF.WALLET_PROVIDER_NAME) val provider: ProviderName,
+    @Required @SerialName(ARF.WALLET_PROVIDER_NAME) val provider: WalletProviderName,
     @Required @SerialName(ARF.WALLET_SOLUTION_ID) val id: SolutionId,
     @Required @SerialName(ARF.WALLET_SOLUTION_VERSION) val version: SolutionVersion,
     @Required @SerialName(ARF.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
 )
 
-typealias ProviderName = NonBlankString
+typealias WalletProviderName = NonBlankString
 typealias SolutionId = NonBlankString
 typealias SolutionVersion = NonBlankString
 
@@ -51,4 +46,35 @@ value class CertificationInformation(
     }
 
     override fun toString(): String = value.toString()
+}
+
+@Serializable
+data class WalletSecureCryptographicDeviceInformation(
+    @SerialName(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE) val type: WalletSecureCryptographicDeviceType? = null,
+    @Required @SerialName(ARF.WALLET_SECURE_CRYPTOGRAPHIC_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
+)
+
+@JvmInline
+@Serializable
+value class WalletSecureCryptographicDeviceType(
+    val value: String,
+) {
+    init {
+        require(value.isNotBlank()) { "value must not be blank" }
+    }
+
+    override fun toString(): String = value
+
+    companion object {
+        val Remote: WalletSecureCryptographicDeviceType =
+            WalletSecureCryptographicDeviceType(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_REMOTE)
+        val LocalExternal: WalletSecureCryptographicDeviceType =
+            WalletSecureCryptographicDeviceType(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_EXTERNAL)
+        val LocalInternal: WalletSecureCryptographicDeviceType =
+            WalletSecureCryptographicDeviceType(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_INTERNAL)
+        val LocalNative: WalletSecureCryptographicDeviceType =
+            WalletSecureCryptographicDeviceType(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_NATIVE)
+        val Hybrid: WalletSecureCryptographicDeviceType =
+            WalletSecureCryptographicDeviceType(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_HYBRID)
+    }
 }
