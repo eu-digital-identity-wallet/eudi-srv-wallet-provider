@@ -34,8 +34,8 @@ import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticat
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletInformation
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.IssueWalletApplicationAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive

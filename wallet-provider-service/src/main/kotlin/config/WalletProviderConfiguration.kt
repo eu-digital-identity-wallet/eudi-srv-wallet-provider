@@ -24,8 +24,12 @@ import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
 import eu.europa.ec.eudi.walletprovider.domain.Issuer
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.StringUrl
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.*
+import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
+import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.ProviderName
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.SolutionId
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.SolutionVersion
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.WalletApplicationAttestationValidity
@@ -200,7 +204,7 @@ data class WalletApplicationAttestationConfiguration(
     val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
     val validity: WalletApplicationAttestationValidity = WalletApplicationAttestationValidity.ArfMax,
     val walletName: WalletName? = null,
-    val walletLink: StringUrl? = null,
+    val walletLink: WalletLink? = null,
     val walletInformation: WalletInformationConfiguration,
 )
 

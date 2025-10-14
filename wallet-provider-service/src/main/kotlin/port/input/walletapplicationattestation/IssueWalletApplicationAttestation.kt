@@ -26,8 +26,9 @@ import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletApplicationAttestation
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletApplicationAttestationClaims
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletInformation
+import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletInformation
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
@@ -96,7 +97,7 @@ class IssueWalletApplicationAttestationLive(
     private val validity: WalletApplicationAttestationValidity,
     private val issuer: Issuer,
     private val walletName: WalletName?,
-    private val walletLink: StringUrl?,
+    private val walletLink: WalletLink?,
     private val walletInformation: WalletInformation,
     private val signJwt: SignJwt<WalletApplicationAttestationClaims>,
 ) : IssueWalletApplicationAttestation {
