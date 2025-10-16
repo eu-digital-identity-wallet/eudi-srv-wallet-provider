@@ -42,10 +42,11 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("ktlint:standard:max-line-length")
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
     val signingKey: SigningKeyConfiguration = SigningKeyConfiguration.GenerateRandom,
-    val keyAttestationValidation: KeyAttestationValidationConfiguration = KeyAttestationValidationConfiguration.Disabled,
+    val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
     val walletInformation: WalletInformationConfiguration,
@@ -121,14 +122,14 @@ class SignatureAlgorithmDecoder : Decoder<SignatureAlgorithm> {
         }
 }
 
-sealed interface KeyAttestationValidationConfiguration {
-    data object Disabled : KeyAttestationValidationConfiguration
+sealed interface PlatformKeyAttestationValidationConfiguration {
+    data object Disabled : PlatformKeyAttestationValidationConfiguration
 
     data class Enabled(
         val android: AndroidKeyAttestationConfiguration = AndroidKeyAttestationConfiguration(),
         val ios: IosKeyAttestationConfiguration = IosKeyAttestationConfiguration(),
         val verificationTimeSkew: Duration = 0.seconds,
-    ) : KeyAttestationValidationConfiguration
+    ) : PlatformKeyAttestationValidationConfiguration
 }
 
 data class AndroidKeyAttestationConfiguration(

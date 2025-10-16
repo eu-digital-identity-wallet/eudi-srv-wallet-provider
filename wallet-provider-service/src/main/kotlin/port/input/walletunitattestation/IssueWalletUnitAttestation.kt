@@ -83,7 +83,11 @@ sealed interface WalletUnitAttestationIssuanceRequest {
         @Required override val clientId: ClientId,
         override val nonce: Nonce? = null,
         val jwkSet: JsonWebKeySet,
-    ) : WalletUnitAttestationIssuanceRequest
+    ) : WalletUnitAttestationIssuanceRequest {
+        init {
+            require(jwkSet.keys.isNotEmpty()) { "jwkSet must not be empty" }
+        }
+    }
 }
 
 sealed interface WalletUnitAttestationIssuanceFailure {
