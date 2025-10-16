@@ -40,7 +40,7 @@ private val logger = LoggerFactory.getLogger("WalletApplicationUnitRoutes")
 fun Application.configureWalletUnitAttestationRoutes(issueWalletUnitAttestation: IssueWalletUnitAttestation) {
     routing {
         route("/wallet-unit-attestation") {
-            suspend fun <T : WalletUnitAttestationIssuanceRequest<*>> RoutingContext.issueWalletUnitAttestation(requestType: KClass<T>) {
+            suspend fun <T : WalletUnitAttestationIssuanceRequest> RoutingContext.issueWalletUnitAttestation(requestType: KClass<T>) {
                 val request = call.receive(requestType)
                 logger.info("Received WalletUnitAttestationIssuanceRequest: {}", request)
 
@@ -57,14 +57,19 @@ fun Application.configureWalletUnitAttestationRoutes(issueWalletUnitAttestation:
                     )
             }
 
-            route("/android") {
+            route("/platform-key-attestation/android") {
                 post {
-                    issueWalletUnitAttestation(WalletUnitAttestationIssuanceRequest.Android::class)
+                    issueWalletUnitAttestation(WalletUnitAttestationIssuanceRequest.PlatformKeyAttestation.Android::class)
                 }
             }
-            route("/ios") {
+            route("/platform-key-attestation/ios") {
                 post {
-                    issueWalletUnitAttestation(WalletUnitAttestationIssuanceRequest.Ios::class)
+                    issueWalletUnitAttestation(WalletUnitAttestationIssuanceRequest.PlatformKeyAttestation.Ios::class)
+                }
+            }
+            route("/jwk-set") {
+                post {
+                    issueWalletUnitAttestation(WalletUnitAttestationIssuanceRequest.JwkSet::class)
                 }
             }
         }
@@ -97,6 +102,9 @@ private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
             }
         }
 
+        WalletUnitAttestationIssuanceFailure.NoAttestedKeys ->
+            warn("WalletApplicationAttestationIssuanceRequest validation failed, contains no Attested Keys")
+
         WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys ->
             warn("WalletApplicationAttestationIssuanceRequest validation failed, contains non-unique Attested Keys")
     }
@@ -122,6 +130,9 @@ private enum class WalletUnitAttestationError {
     @SerialName("unsupported_attested_key")
     UnsupportedAttestedKey,
 
+    @SerialName("no_attested_keys")
+    NoAttestedKeys,
+
     @SerialName("non_unique_attested_keys")
     NonUniqueAttestedKeys,
 }
@@ -142,5 +153,6 @@ private fun WalletUnitAttestationIssuanceFailure.toWalletUnitAttestationErrorRes
                         is KeyAttestationValidationFailure.UnsupportedAttestedKey -> WalletUnitAttestationError.UnsupportedAttestedKey
                     }
                 }.distinct()
+        WalletUnitAttestationIssuanceFailure.NoAttestedKeys -> nonEmptyListOf(WalletUnitAttestationError.NoAttestedKeys)
         WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys -> nonEmptyListOf(WalletUnitAttestationError.NonUniqueAttestedKeys)
     }.let { WalletUnitAttestationErrorResponse(it) }

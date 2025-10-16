@@ -19,6 +19,7 @@ import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import arrow.core.serialization.NonEmptyListSerializer
 import arrow.core.toNonEmptyListOrNull
 import arrow.fx.coroutines.parMapOrAccumulate
@@ -46,33 +47,43 @@ import kotlin.time.Duration
 
 fun interface IssueWalletUnitAttestation {
     suspend operator fun invoke(
-        request: WalletUnitAttestationIssuanceRequest<*>,
+        request: WalletUnitAttestationIssuanceRequest,
     ): Either<WalletUnitAttestationIssuanceFailure, WalletUnitAttestation>
 }
 
-sealed interface WalletUnitAttestationIssuanceRequest<out KeyAttestation : Attestation> {
-    val keyAttestations: NonEmptyList<KeyAttestation>
-    val challenge: Challenge
+sealed interface WalletUnitAttestationIssuanceRequest {
     val clientId: ClientId
     val nonce: Nonce?
 
-    @Serializable
-    data class Android(
-        @Required @Serializable(with = NonEmptyListSerializer::class)
-        override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
-        @Required override val challenge: Challenge,
-        @Required override val clientId: ClientId,
-        override val nonce: Nonce? = null,
-    ) : WalletUnitAttestationIssuanceRequest<AndroidKeystoreAttestation>
+    sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
+        val keyAttestations: NonEmptyList<KeyAttestation>
+        val challenge: Challenge
+
+        @Serializable
+        data class Android(
+            @Required override val clientId: ClientId,
+            override val nonce: Nonce? = null,
+            @Required @Serializable(with = NonEmptyListSerializer::class)
+            override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
+            @Required override val challenge: Challenge,
+        ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
+
+        @Serializable
+        data class Ios(
+            @Required override val clientId: ClientId,
+            override val nonce: Nonce? = null,
+            @Required @Serializable(with = NonEmptyListSerializer::class)
+            override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
+            @Required override val challenge: Challenge,
+        ) : PlatformKeyAttestation<IosHomebrewAttestation>
+    }
 
     @Serializable
-    data class Ios(
-        @Required @Serializable(with = NonEmptyListSerializer::class)
-        override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
-        @Required override val challenge: Challenge,
+    data class JwkSet(
         @Required override val clientId: ClientId,
         override val nonce: Nonce? = null,
-    ) : WalletUnitAttestationIssuanceRequest<IosHomebrewAttestation>
+        val jwkSet: JsonWebKeySet,
+    ) : WalletUnitAttestationIssuanceRequest
 }
 
 sealed interface WalletUnitAttestationIssuanceFailure {
@@ -84,6 +95,8 @@ sealed interface WalletUnitAttestationIssuanceFailure {
     class InvalidKeyAttestations(
         val errors: NonEmptyList<KeyAttestationValidationFailure>,
     ) : WalletUnitAttestationIssuanceFailure
+
+    data object NoAttestedKeys : WalletUnitAttestationIssuanceFailure
 
     data object NonUniqueAttestedKeys : WalletUnitAttestationIssuanceFailure
 }
@@ -118,23 +131,28 @@ class IssueWalletUnitAttestationLive(
     private val signJwt: SignJwt<WalletUnitAttestationClaims>,
 ) : IssueWalletUnitAttestation {
     override suspend fun invoke(
-        request: WalletUnitAttestationIssuanceRequest<*>,
+        request: WalletUnitAttestationIssuanceRequest,
     ): Either<WalletUnitAttestationIssuanceFailure, WalletUnitAttestation> =
         either {
-            val now = clock.now()
-            validateChallenge(request.challenge, now)
-                .mapLeft { WalletUnitAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
-                .bind()
+            val attestedKeys =
+                when (request) {
+                    is WalletUnitAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+                        validateChallenge(request.challenge, clock.now())
+                            .mapLeft { WalletUnitAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
+                            .bind()
 
-            val validKeyAttestations =
-                request.keyAttestations
-                    .parMapOrAccumulate(Dispatchers.Default, 4) { validateKeyAttestation(it, request.challenge).bind() }
-                    .mapLeft { errors -> WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations(errors) }
-                    .bind()
-                    .let {
-                        checkNotNull(it.toNonEmptyListOrNull())
+                        request.keyAttestations
+                            .parMapOrAccumulate(Dispatchers.Default, 4) { validateKeyAttestation(it, request.challenge).bind() }
+                            .mapLeft { errors -> WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations(errors) }
+                            .bind()
+                            .map { it.publicKey.toJsonWebKey() }
+                            .toNonEmptyListOrNull()
                     }
-            val attestedKeys = validKeyAttestations.map { it.publicKey }
+
+                    is WalletUnitAttestationIssuanceRequest.JwkSet -> request.jwkSet.keys.toNonEmptyListOrNull()
+                }
+
+            ensureNotNull(attestedKeys) { WalletUnitAttestationIssuanceFailure.NoAttestedKeys }
             ensure(attestedKeys.distinct().size == attestedKeys.size) { WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys }
 
             val issuedAt = clock.now()
@@ -145,7 +163,7 @@ class IssueWalletUnitAttestationLive(
                     request.clientId,
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
-                    JsonWebKeySet(attestedKeys.map { it.toJsonWebKey() }),
+                    JsonWebKeySet(attestedKeys),
                     keyStorage = keyStorage,
                     userAuthentication = userAuthentication,
                     certification,
