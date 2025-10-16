@@ -21,6 +21,7 @@ import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.ConfirmationClaim
+import at.asitplus.signum.indispensable.josef.JsonWebKey
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -39,28 +40,37 @@ import kotlin.time.Duration
 
 fun interface IssueWalletApplicationAttestation {
     suspend operator fun invoke(
-        request: WalletApplicationAttestationIssuanceRequest<*>,
+        request: WalletApplicationAttestationIssuanceRequest,
     ): Either<WalletApplicationAttestationIssuanceFailure, WalletApplicationAttestation>
 }
 
-sealed interface WalletApplicationAttestationIssuanceRequest<out KeyAttestation : Attestation> {
-    val keyAttestation: KeyAttestation
-    val challenge: Challenge
+sealed interface WalletApplicationAttestationIssuanceRequest {
     val clientId: ClientId
 
-    @Serializable
-    data class Android(
-        @Required override val keyAttestation: AndroidKeystoreAttestation,
-        @Required override val challenge: Challenge,
-        @Required override val clientId: ClientId,
-    ) : WalletApplicationAttestationIssuanceRequest<AndroidKeystoreAttestation>
+    sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletApplicationAttestationIssuanceRequest {
+        val keyAttestation: KeyAttestation
+        val challenge: Challenge
+
+        @Serializable
+        data class Android(
+            @Required override val clientId: ClientId,
+            @Required override val keyAttestation: AndroidKeystoreAttestation,
+            @Required override val challenge: Challenge,
+        ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
+
+        @Serializable
+        data class Ios(
+            @Required override val clientId: ClientId,
+            @Required override val keyAttestation: IosHomebrewAttestation,
+            @Required override val challenge: Challenge,
+        ) : PlatformKeyAttestation<IosHomebrewAttestation>
+    }
 
     @Serializable
-    data class Ios(
-        @Required override val keyAttestation: IosHomebrewAttestation,
-        @Required override val challenge: Challenge,
-        @Required override val clientId: ClientId,
-    ) : WalletApplicationAttestationIssuanceRequest<IosHomebrewAttestation>
+    data class Jwk(
+        override val clientId: ClientId,
+        val jwk: JsonWebKey,
+    ) : WalletApplicationAttestationIssuanceRequest
 }
 
 sealed interface WalletApplicationAttestationIssuanceFailure {
@@ -102,19 +112,25 @@ class IssueWalletApplicationAttestationLive(
     private val signJwt: SignJwt<WalletApplicationAttestationClaims>,
 ) : IssueWalletApplicationAttestation {
     override suspend fun invoke(
-        request: WalletApplicationAttestationIssuanceRequest<*>,
+        request: WalletApplicationAttestationIssuanceRequest,
     ): Either<WalletApplicationAttestationIssuanceFailure, WalletApplicationAttestation> =
         either {
-            val now = clock.now()
-            validateChallenge(request.challenge, now)
-                .mapLeft { WalletApplicationAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
-                .bind()
-
             val attestedKey =
-                validateKeyAttestation(request.keyAttestation, request.challenge)
-                    .mapLeft { WalletApplicationAttestationIssuanceFailure.InvalidKeyAttestation(it) }
-                    .bind()
-                    .publicKey
+                when (request) {
+                    is WalletApplicationAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+                        validateChallenge(request.challenge, clock.now())
+                            .mapLeft { WalletApplicationAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
+                            .bind()
+
+                        validateKeyAttestation(request.keyAttestation, request.challenge)
+                            .mapLeft { WalletApplicationAttestationIssuanceFailure.InvalidKeyAttestation(it) }
+                            .bind()
+                            .publicKey
+                            .toJsonWebKey()
+                    }
+
+                    is WalletApplicationAttestationIssuanceRequest.Jwk -> request.jwk
+                }
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity.value
@@ -123,7 +139,7 @@ class IssueWalletApplicationAttestationLive(
                     issuer,
                     request.clientId,
                     expiresAt = expiresAt,
-                    ConfirmationClaim(jsonWebKey = attestedKey.toJsonWebKey()),
+                    ConfirmationClaim(jsonWebKey = attestedKey),
                     issuedAt = issuedAt,
                     notBefore = issuedAt,
                     walletName,

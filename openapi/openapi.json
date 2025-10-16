@@ -29,17 +29,17 @@
         }
       }
     },
-    "/wallet-application-attestation/android": {
+    "/wallet-application-attestation/platform-key-attestation/android": {
       "post": {
         "tags": [
           "wallet-application-attestation"
         ],
-        "operationId": "issueAndroidWalletApplicationAttestation",
+        "operationId": "issueAndroidPlatformKeyAttestationWalletApplicationAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AndroidWalletApplicationAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/AndroidPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest"
               }
             }
           },
@@ -72,17 +72,60 @@
         }
       }
     },
-    "/wallet-application-attestation/ios": {
+    "/wallet-application-attestation/platform-key-attestation/ios": {
       "post": {
         "tags": [
           "wallet-application-attestation"
         ],
-        "operationId": "issueIosWalletApplicationAttestation",
+        "operationId": "issueIosPlatformKeyAttestationWalletApplicationAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IosWalletApplicationAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/IosPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletApplicationAttestationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletApplicationAttestationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/wallet-application-attestation/jwk": {
+      "post": {
+        "tags": [
+          "wallet-application-attestation"
+        ],
+        "operationId": "issueJwkWalletApplicationAttestation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JwkWalletApplicationAttestationIssuanceRequest"
               }
             }
           },
@@ -247,23 +290,23 @@
       "ClientId": {
         "type": "string"
       },
-      "AndroidWalletApplicationAttestationIssuanceRequest": {
+      "AndroidPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
+          "clientId": {
+            "$ref": "#/components/schemas/ClientId"
+          },
           "keyAttestation": {
             "$ref": "#/components/schemas/AndroidKeystoreAttestation"
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
-          },
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
           }
         },
         "required": [
+          "clientId",
           "keyAttestation",
-          "challenge",
-          "clientId"
+          "challenge"
         ],
         "additionalProperties": false
       },
@@ -285,23 +328,43 @@
         ],
         "additionalProperties": false
       },
-      "IosWalletApplicationAttestationIssuanceRequest": {
+      "IosPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
+          "clientId": {
+            "$ref": "#/components/schemas/ClientId"
+          },
           "keyAttestation": {
             "$ref": "#/components/schemas/IosHomebrewAttestation"
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
-          },
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
           }
         },
         "required": [
+          "clientId",
           "keyAttestation",
-          "challenge",
-          "clientId"
+          "challenge"
+        ],
+        "additionalProperties": false
+      },
+      "Jwk": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "JwkWalletApplicationAttestationIssuanceRequest": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "$ref": "#/components/schemas/ClientId"
+          },
+          "jwk": {
+            "$ref": "#/components/schemas/Jwk"
+          }
+        },
+        "required": [
+          "clientId",
+          "jwk"
         ],
         "additionalProperties": false
       },

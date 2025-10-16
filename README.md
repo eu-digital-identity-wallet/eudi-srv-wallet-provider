@@ -21,8 +21,8 @@ and [EUDI Wallet Standards and Technical Specifications](https://github.com/eu-d
 
 > [!IMPORTANT]  
 > Wallet Provider is created strictly for testing and development purposes.   
-> By default, Wallet Provider acts as a **_MOCK_** Wallet Provider service, performing **_NO_** validations of Key Attestations provided by Wallets, 
-> issuing Attestations with **_NO_** further checks.    
+> By default, Wallet Provider acts as a **_MOCK_** Wallet Provider service, performing **_NO_** validations of platform Key Attestations 
+> provided by Wallets, issuing Attestations with **_NO_** further checks.    
 > Wallet Provider can be **_OPTIONALLY_** configured to perform validations of Key Attestations provided by Wallets, using the 
 > [Warden Server-Side Mobile Client Attestation Library](https://github.com/a-sit-plus/warden).
 
@@ -68,12 +68,12 @@ The following deviations apply:
 To issue a Wallet Application Attestation:
 
 1. The Wallet requests a single-use Challenge from the Wallet Provider
-2. The Wallet generates a new Key-Pair and Key Attestation which contains the single-use Challenge provided by the Wallet Provider
+2. The Wallet generates a new Key-Pair and platform Key Attestation which contains the single-use Challenge provided by the Wallet Provider
 3. The Wallet requests a key-bound Wallet Application Attestation from the Wallet Provider
 4. The Wallet Provider:
    1. Validates the single-use Challenge
-   2. Validates the Key Attestation
-   3. Verifies the Key Attestation contains the single-use Challenge
+   2. Validates the platform Key Attestation
+   3. Verifies the platform Key Attestation contains the single-use Challenge
    4. Issues a key-bound Wallet Application Attestation
 
 ```mermaid
@@ -86,14 +86,37 @@ sequenceDiagram
     WP->>+WP: Generate single-use Challenge
     WP->>+W: Provide single-use Challenge
     
-    W->>+W: Generate new Key-Pair and Key Attestation (with single-use Challenge)
+    W->>+W: Generate new Key-Pair and platform Key Attestation (with single-use Challenge)
     
     W->>+WP: Request Wallet Application Attestation Issuance
     
     WP->>+WP: Validate Challenge
-    WP->>+WP: Validate Key Attestation
+    WP->>+WP: Validate platform Key Attestation
     WP->>+WP: Issue Wallet Application Attestation
     
+    WP->>+W: Provide issued Wallet Application Attestation
+```
+
+#### Issuance using Json Web Key
+
+> [!CAUTION]  
+> When using a Json Web Key, Wallet Provider performs **NO** validations and simply issues a key-bound Wallet Application Attestation 
+> using the provided Json Web Key.  
+
+To issue a Wallet Application Attestation:
+
+1. The Wallet generates a new Key-Pair
+2. The Wallet requests a key-bound Wallet Application Attestation from the Wallet Provider
+3. The Wallet Provider issues a key-bound Wallet Application Attestation
+
+```mermaid
+sequenceDiagram    
+    participant W as Wallet
+    participant WP as Wallet Provider
+    
+    W->>+W: Generate new Key-Pair
+    W->>+WP: Request Wallet Application Attestation Issuance
+    WP->>+WP: Issue Wallet Application Attestation
     WP->>+W: Provide issued Wallet Application Attestation
 ```
 

@@ -37,7 +37,7 @@ private val logger = LoggerFactory.getLogger("WalletApplicationAttestationRoutes
 fun Application.configureWalletApplicationAttestationRoutes(issueWalletApplicationAttestation: IssueWalletApplicationAttestation) {
     routing {
         route("/wallet-application-attestation") {
-            suspend fun <T : WalletApplicationAttestationIssuanceRequest<*>> RoutingContext.issueWalletApplicationAttestation(
+            suspend fun <T : WalletApplicationAttestationIssuanceRequest> RoutingContext.issueWalletApplicationAttestation(
                 requestType: KClass<T>,
             ) {
                 val request = call.receive(requestType)
@@ -56,14 +56,19 @@ fun Application.configureWalletApplicationAttestationRoutes(issueWalletApplicati
                     )
             }
 
-            route("/android") {
+            route("/platform-key-attestation/android") {
                 post {
-                    issueWalletApplicationAttestation(WalletApplicationAttestationIssuanceRequest.Android::class)
+                    issueWalletApplicationAttestation(WalletApplicationAttestationIssuanceRequest.PlatformKeyAttestation.Android::class)
                 }
             }
-            route("/ios") {
+            route("/platform-key-attestation/ios") {
                 post {
-                    issueWalletApplicationAttestation(WalletApplicationAttestationIssuanceRequest.Ios::class)
+                    issueWalletApplicationAttestation(WalletApplicationAttestationIssuanceRequest.PlatformKeyAttestation.Ios::class)
+                }
+            }
+            route("/jwk") {
+                post {
+                    issueWalletApplicationAttestation(WalletApplicationAttestationIssuanceRequest.Jwk::class)
                 }
             }
         }
