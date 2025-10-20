@@ -17,7 +17,7 @@ package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.toNonEmptyListOrNull
 import at.asitplus.attestation.AttestationService
-import at.asitplus.attestation.IOSAttestationConfiguration
+import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -53,7 +53,6 @@ import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.datetime.toDeprecatedClock
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -280,10 +279,10 @@ private fun createWardenAttestationService(
 
             val iosAttestation =
                 with(config.platformKeyAttestationValidation.ios) {
-                    IOSAttestationConfiguration(
+                    IosAttestationConfiguration(
                         applications =
                             applications.map { application ->
-                                IOSAttestationConfiguration.AppData(
+                                IosAttestationConfiguration.AppData(
                                     teamIdentifier = application.team.value,
                                     bundleIdentifier = application.bundle.value,
                                     sandbox = IosEnvironment.Sandbox == application.environment,
@@ -296,7 +295,7 @@ private fun createWardenAttestationService(
             Warden(
                 androidAttestationConfiguration = androidAttestation,
                 iosAttestationConfiguration = iosAttestation,
-                clock = clock.toKotlinClock().toDeprecatedClock(),
+                clock = clock.toKotlinClock(),
                 verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew,
             )
         }
