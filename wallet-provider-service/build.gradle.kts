@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.arrow.suspendapp)
     implementation(libs.arrow.suspendapp.ktor)
 
-    implementation(libs.warden)
+    implementation(libs.warden.makoto)
     implementation(libs.indispensable.josef)
     implementation(libs.supreme)
 

@@ -8,7 +8,7 @@ ktor = "3.3.1"
 slf4j = "2.0.17"
 logback-classic = "1.5.19"
 arrow = "2.1.2"
-warden = "0.9.0"
+warden-makoto = "0.9.0"
 hoplite = "3.0.0.RC1"
 spotless = "8.0.0"
 ktlint = "1.7.1"
@@ -43,7 +43,7 @@ arrow-core-serialization = { module = "io.arrow-kt:arrow-core-serialization" }
 arrow-suspendapp = { module = "io.arrow-kt:suspendapp" }
 arrow-suspendapp-ktor = { module = "io.arrow-kt:suspendapp-ktor" }
 bouncycastle-bom = { module = "org.bouncycastle:bcbom" }
-warden = { module = "at.asitplus.warden:makoto", version.ref = "warden" }
+warden-makoto = { module = "at.asitplus.warden:makoto", version.ref = "warden-makoto" }
 hoplite-bom = { module = "com.sksamuel.hoplite:hoplite-bom" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 indispensable-bom = { module = "at.asitplus.signum:indispensable-bom" }
