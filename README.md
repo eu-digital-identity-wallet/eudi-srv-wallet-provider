@@ -181,9 +181,9 @@ sequenceDiagram
 
 ## Technical Details
 
-Wallet Provider uses the [Warden Server-Side Mobile Client Attestation Library](https://github.com/a-sit-plus/warden) for validating platform Key Attestations.
+Wallet Provider uses the [Warden Supreme Attestation Library](https://github.com/a-sit-plus/warden-supreme) for validating platform Key Attestations.
 Android Wallets must use the [Certification Chain provided by the Android Keystore](https://developer.android.com/privacy-and-security/security-key-attestation).
-iOS Wallets must use the [Supreme Attestation Format](https://github.com/a-sit-plus/warden?tab=readme-ov-file#ios) which is based on [Apple's App Attest Service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity).
+iOS Wallets must use the [Supreme Attestation Format](https://a-sit-plus.github.io/warden-supreme/technical/ios/) which is based on [Apple's App Attest Service](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity).
 
 ## Endpoints
 
@@ -263,7 +263,7 @@ By default, Wallet Provider performs no validation of platform Key Attestations.
 To enable platform Key Attestation validation, use the following environment variables:
 
 > [!NOTE]  
-> Due to limitations of the [Warden Server-Side Mobile Client Attestation Library](https://github.com/a-sit-plus/warden), when enabling Key Attestation
+> Due to limitations of the [Warden Supreme Attestation Library](https://github.com/a-sit-plus/warden-supreme), when enabling Key Attestation
 validation, you must configure both Android and iOS Key Attestation validation.
 
 #### Android Key Attestations
