@@ -24,7 +24,7 @@ and [EUDI Wallet Standards and Technical Specifications](https://github.com/eu-d
 > By default, Wallet Provider acts as a **_MOCK_** Wallet Provider service, performing **_NO_** validations of platform Key Attestations 
 > provided by Wallets, issuing Attestations with **_NO_** further checks.    
 > Wallet Provider can be **_OPTIONALLY_** configured to perform validations of platform Key Attestations provided by Wallets, using the 
-> [Warden Server-Side Mobile Client Attestation Library](https://github.com/a-sit-plus/warden).
+> [Warden Supreme Attestation Library](https://github.com/a-sit-plus/warden-supreme).
 
 ## Disclaimer
 
