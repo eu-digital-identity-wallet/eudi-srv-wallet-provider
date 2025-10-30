@@ -45,22 +45,18 @@ fun interface IssueWalletApplicationAttestation {
 }
 
 sealed interface WalletApplicationAttestationIssuanceRequest {
-    val clientId: ClientId
-
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletApplicationAttestationIssuanceRequest {
         val keyAttestation: KeyAttestation
         val challenge: Challenge
 
         @Serializable
         data class Android(
-            @Required override val clientId: ClientId,
             @Required override val keyAttestation: AndroidKeystoreAttestation,
             @Required override val challenge: Challenge,
         ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
 
         @Serializable
         data class Ios(
-            @Required override val clientId: ClientId,
             @Required override val keyAttestation: IosHomebrewAttestation,
             @Required override val challenge: Challenge,
         ) : PlatformKeyAttestation<IosHomebrewAttestation>
@@ -68,7 +64,6 @@ sealed interface WalletApplicationAttestationIssuanceRequest {
 
     @Serializable
     data class Jwk(
-        override val clientId: ClientId,
         val jwk: JsonWebKey,
     ) : WalletApplicationAttestationIssuanceRequest
 }
@@ -106,6 +101,7 @@ class IssueWalletApplicationAttestationLive(
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletApplicationAttestationValidity,
     private val issuer: Issuer,
+    private val clientId: ClientId,
     private val walletName: WalletName?,
     private val walletLink: WalletLink?,
     private val generalInformation: GeneralInformation,
@@ -137,7 +133,7 @@ class IssueWalletApplicationAttestationLive(
             val walletApplicationAttestation =
                 WalletApplicationAttestationClaims(
                     issuer,
-                    request.clientId,
+                    clientId,
                     expiresAt = expiresAt,
                     ConfirmationClaim(jsonWebKey = attestedKey),
                     issuedAt = issuedAt,

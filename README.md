@@ -354,7 +354,13 @@ Default value: `5 minutes`
 
 Variable: `ISSUER`  
 Description: Issuer of the Attestations.  
-Default value: `eudi-srv-wallet-provider`
+Default value: `eudi-srv-wallet-provider`  
+
+### Client (i.e. Wallet) Configuration
+
+Variable: `CLIENTID`  
+Description: The Id of the OAuth2.0 Client the Wallet is using.   
+Default value: `wallet-dev`  
 
 ### Wallet Information Configuration
 

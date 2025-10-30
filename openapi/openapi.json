@@ -330,15 +330,9 @@
         ],
         "additionalProperties": false
       },
-      "ClientId": {
-        "type": "string"
-      },
       "AndroidPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "keyAttestation": {
             "$ref": "#/components/schemas/AndroidKeystoreAttestation"
           },
@@ -347,7 +341,6 @@
           }
         },
         "required": [
-          "clientId",
           "keyAttestation",
           "challenge"
         ],
@@ -374,9 +367,6 @@
       "IosPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "keyAttestation": {
             "$ref": "#/components/schemas/IosHomebrewAttestation"
           },
@@ -385,7 +375,6 @@
           }
         },
         "required": [
-          "clientId",
           "keyAttestation",
           "challenge"
         ],
@@ -398,15 +387,11 @@
       "JwkWalletApplicationAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "jwk": {
             "$ref": "#/components/schemas/Jwk"
           }
         },
         "required": [
-          "clientId",
           "jwk"
         ],
         "additionalProperties": false
@@ -449,9 +434,6 @@
       "AndroidPlatformKeyAttestationWalletUnitAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "nonce": {
             "$ref": "#/components/schemas/Nonce"
           },
@@ -468,7 +450,6 @@
           }
         },
         "required": [
-          "clientId",
           "keyAttestations",
           "challenge"
         ],
@@ -516,9 +497,6 @@
       "IosPlatformKeyAttestationWalletUnitAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "nonce": {
             "$ref": "#/components/schemas/Nonce"
           },
@@ -535,7 +513,6 @@
           }
         },
         "required": [
-          "clientId",
           "keyAttestations",
           "challenge"
         ],
@@ -561,9 +538,6 @@
       "JwkSetWalletUnitAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "clientId": {
-            "$ref": "#/components/schemas/ClientId"
-          },
           "nonce": {
             "$ref": "#/components/schemas/Nonce"
           },
@@ -572,7 +546,6 @@
           }
         },
         "required": [
-          "clientId",
           "jwkSet"
         ],
         "additionalProperties": false

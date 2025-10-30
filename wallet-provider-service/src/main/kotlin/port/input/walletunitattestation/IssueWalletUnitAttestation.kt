@@ -52,7 +52,6 @@ fun interface IssueWalletUnitAttestation {
 }
 
 sealed interface WalletUnitAttestationIssuanceRequest {
-    val clientId: ClientId
     val nonce: Nonce?
 
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
@@ -61,7 +60,6 @@ sealed interface WalletUnitAttestationIssuanceRequest {
 
         @Serializable
         data class Android(
-            @Required override val clientId: ClientId,
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
@@ -70,7 +68,6 @@ sealed interface WalletUnitAttestationIssuanceRequest {
 
         @Serializable
         data class Ios(
-            @Required override val clientId: ClientId,
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
@@ -80,7 +77,6 @@ sealed interface WalletUnitAttestationIssuanceRequest {
 
     @Serializable
     data class JwkSet(
-        @Required override val clientId: ClientId,
         override val nonce: Nonce? = null,
         val jwkSet: JsonWebKeySet,
     ) : WalletUnitAttestationIssuanceRequest {
@@ -127,6 +123,7 @@ class IssueWalletUnitAttestationLive(
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
     private val issuer: Issuer,
+    private val clientId: ClientId,
     private val keyStorage: NonEmptyList<AttackPotentialResistance>?,
     private val userAuthentication: NonEmptyList<AttackPotentialResistance>?,
     private val certification: StringUrl?,
@@ -164,7 +161,7 @@ class IssueWalletUnitAttestationLive(
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
                     issuer,
-                    request.clientId,
+                    clientId,
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
                     JsonWebKeySet(attestedKeys),

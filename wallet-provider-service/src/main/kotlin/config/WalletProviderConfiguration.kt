@@ -22,6 +22,7 @@ import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
+import eu.europa.ec.eudi.walletprovider.domain.ClientId
 import eu.europa.ec.eudi.walletprovider.domain.Issuer
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.StringUrl
@@ -49,6 +50,7 @@ data class WalletProviderConfiguration(
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
+    val clientId: ClientId = ClientId("wallet-dev"),
     val walletInformation: WalletInformationConfiguration,
     val walletApplicationAttestation: WalletApplicationAttestationConfiguration = WalletApplicationAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
