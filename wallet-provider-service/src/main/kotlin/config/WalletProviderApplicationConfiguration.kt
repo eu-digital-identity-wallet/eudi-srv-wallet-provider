@@ -39,7 +39,7 @@ import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
-import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.IssueWalletApplicationAttestationLive
+import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
@@ -100,16 +100,16 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
     val wardenAttestationService = createWardenAttestationService(config, clock)
     val validateKeyAttestation = WardenValidateKeyAttestation(wardenAttestationService)
 
-    val issueWalletApplicationAttestation =
-        IssueWalletApplicationAttestationLive(
+    val issueWalletInstanceAttestation =
+        IssueWalletInstanceAttestationLive(
             clock,
             validateChallenge,
             validateKeyAttestation,
-            config.walletApplicationAttestation.validity,
+            config.walletInstanceAttestation.validity,
             issuer = config.issuer,
             clientId = config.clientId,
-            config.walletApplicationAttestation.walletName,
-            config.walletApplicationAttestation.walletLink,
+            config.walletInstanceAttestation.walletName,
+            config.walletInstanceAttestation.walletLink,
             GeneralInformation(
                 provider = config.walletInformation.generalInformation.provider,
                 id = config.walletInformation.generalInformation.id,
@@ -154,7 +154,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
         )
 
     configureChallengeRoutes(generateChallenge)
-    configureWalletApplicationAttestationRoutes(issueWalletApplicationAttestation)
+    configureWalletInstanceAttestationRoutes(issueWalletInstanceAttestation)
     configureWalletUnitAttestationRoutes(issueWalletUnitAttestation)
 }
 

@@ -29,17 +29,17 @@
         }
       }
     },
-    "/wallet-application-attestation/platform-key-attestation/android": {
+    "/wallet-instance-attestation/platform-key-attestation/android": {
       "post": {
         "tags": [
-          "wallet-application-attestation"
+          "wallet-instance-attestation"
         ],
-        "operationId": "issueAndroidPlatformKeyAttestationWalletApplicationAttestation",
+        "operationId": "issueAndroidPlatformKeyAttestationWalletInstanceAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AndroidPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/AndroidPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest"
               }
             }
           },
@@ -51,7 +51,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationResponse"
                 }
               }
             }
@@ -61,7 +61,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationErrorResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationErrorResponse"
                 }
               }
             }
@@ -72,17 +72,17 @@
         }
       }
     },
-    "/wallet-application-attestation/platform-key-attestation/ios": {
+    "/wallet-instance-attestation/platform-key-attestation/ios": {
       "post": {
         "tags": [
-          "wallet-application-attestation"
+          "wallet-instance-attestation"
         ],
-        "operationId": "issueIosPlatformKeyAttestationWalletApplicationAttestation",
+        "operationId": "issueIosPlatformKeyAttestationWalletInstanceAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IosPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/IosPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest"
               }
             }
           },
@@ -94,7 +94,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationResponse"
                 }
               }
             }
@@ -104,7 +104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationErrorResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationErrorResponse"
                 }
               }
             }
@@ -115,17 +115,17 @@
         }
       }
     },
-    "/wallet-application-attestation/jwk": {
+    "/wallet-instance-attestation/jwk": {
       "post": {
         "tags": [
-          "wallet-application-attestation"
+          "wallet-instance-attestation"
         ],
-        "operationId": "issueJwkWalletApplicationAttestation",
+        "operationId": "issueJwkWalletInstanceAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JwkWalletApplicationAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/JwkWalletInstanceAttestationIssuanceRequest"
               }
             }
           },
@@ -137,7 +137,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationResponse"
                 }
               }
             }
@@ -147,7 +147,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletApplicationAttestationErrorResponse"
+                  "$ref": "#/components/schemas/WalletInstanceAttestationErrorResponse"
                 }
               }
             }
@@ -330,7 +330,7 @@
         ],
         "additionalProperties": false
       },
-      "AndroidPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
+      "AndroidPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "keyAttestation": {
@@ -364,7 +364,7 @@
         ],
         "additionalProperties": false
       },
-      "IosPlatformKeyAttestationWalletApplicationAttestationIssuanceRequest": {
+      "IosPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "keyAttestation": {
@@ -384,7 +384,7 @@
         "type": "object",
         "additionalProperties": true
       },
-      "JwkWalletApplicationAttestationIssuanceRequest": {
+      "JwkWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "jwk": {
@@ -396,19 +396,19 @@
         ],
         "additionalProperties": false
       },
-      "WalletApplicationAttestationResponse": {
+      "WalletInstanceAttestationResponse": {
         "type": "object",
         "properties": {
-          "walletApplicationAttestation": {
+          "walletInstanceAttestation": {
             "type": "string"
           }
         },
         "required": [
-          "walletApplicationAttestation"
+          "walletInstanceAttestation"
         ],
         "additionalProperties": false
       },
-      "WalletApplicationAttestationError": {
+      "WalletInstanceAttestationError": {
         "type": "string",
         "enum": [
           "invalid_challenge",
@@ -416,11 +416,11 @@
           "unsupported_attested_key"
         ]
       },
-      "WalletApplicationAttestationErrorResponse": {
+      "WalletInstanceAttestationErrorResponse": {
         "type": "object",
         "properties": {
           "error": {
-            "$ref": "#/components/schemas/WalletApplicationAttestationError"
+            "$ref": "#/components/schemas/WalletInstanceAttestationError"
           }
         },
         "required": [
@@ -483,7 +483,7 @@
           "errors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WalletApplicationAttestationError"
+              "$ref": "#/components/schemas/WalletInstanceAttestationError"
             },
             "minItems": 1,
             "uniqueItems": true

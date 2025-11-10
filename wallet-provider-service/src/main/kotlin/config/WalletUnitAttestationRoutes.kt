@@ -35,7 +35,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
-private val logger = LoggerFactory.getLogger("WalletApplicationUnitRoutes")
+private val logger = LoggerFactory.getLogger("WalletUnitAttestationRoutes")
 
 fun Application.configureWalletUnitAttestationRoutes(issueWalletUnitAttestation: IssueWalletUnitAttestation) {
     routing {
@@ -89,13 +89,13 @@ private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
                 when (it) {
                     is KeyAttestationValidationFailure.InvalidKeyAttestation ->
                         warn(
-                            "WalletApplicationAttestationIssuanceRequest validation failed Key Attestation is not valid: ${it.error}",
+                            "WalletUnitAttestationIssuanceRequest validation failed Key Attestation is not valid: ${it.error}",
                             it.cause,
                         )
 
                     is KeyAttestationValidationFailure.UnsupportedAttestedKey ->
                         warn(
-                            "WalletApplicationAttestationIssuanceRequest validation failed, Key Attestation contains an unsupported PublicKey: ${it.error}",
+                            "WalletUnitAttestationIssuanceRequest validation failed, Key Attestation contains an unsupported PublicKey: ${it.error}",
                             it.cause,
                         )
                 }
@@ -103,10 +103,10 @@ private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
         }
 
         WalletUnitAttestationIssuanceFailure.NoAttestedKeys ->
-            warn("WalletApplicationAttestationIssuanceRequest validation failed, contains no Attested Keys")
+            warn("WalletUnitAttestationIssuanceRequest validation failed, contains no Attested Keys")
 
         WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys ->
-            warn("WalletApplicationAttestationIssuanceRequest validation failed, contains non-unique Attested Keys")
+            warn("WalletUnitAttestationIssuanceRequest validation failed, contains non-unique Attested Keys")
     }
 }
 

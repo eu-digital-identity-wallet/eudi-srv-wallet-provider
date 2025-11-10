@@ -52,7 +52,7 @@ any of the open-sourced components is suitable for use in that application.
 
 The service supports issuance of:
 
-1. Key-bound Wallet Application Attestations
+1. Wallet Instance Attestations
 2. Wallet Unit Attestations
 
 per [Specification of Wallet Unit Attestations (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).
@@ -61,20 +61,20 @@ The following deviations apply:
 
 1. Wallet Unit Attestations do not use any revocation mechanism
 
-### Issuance of key-bound Wallet Application Attestation
+### Issuance of Wallet Instance Attestation
 
 #### Issuance using platform Key Attestation
 
-To issue a Wallet Application Attestation:
+To issue a Wallet Instance Attestation:
 
 1. The Wallet requests a single-use Challenge from the Wallet Provider
 2. The Wallet generates a new Key-Pair and platform Key Attestation which contains the single-use Challenge provided by the Wallet Provider
-3. The Wallet requests a key-bound Wallet Application Attestation from the Wallet Provider
+3. The Wallet requests a Wallet Instance Attestation from the Wallet Provider
 4. The Wallet Provider:
    1. Validates the single-use Challenge
    2. Validates the platform Key Attestation
    3. Verifies the platform Key Attestation contains the single-use Challenge
-   4. Issues a key-bound Wallet Application Attestation
+   4. Issues a Wallet Instance Attestation
 
 ```mermaid
 sequenceDiagram    
@@ -88,26 +88,26 @@ sequenceDiagram
     
     W->>+W: Generate new Key-Pair and platform Key Attestation (with single-use Challenge)
     
-    W->>+WP: Request Wallet Application Attestation Issuance
+    W->>+WP: Request Wallet Instance Attestation Issuance
     
     WP->>+WP: Validate Challenge
     WP->>+WP: Validate platform Key Attestation
-    WP->>+WP: Issue Wallet Application Attestation
+    WP->>+WP: Issue Wallet Instance Attestation
     
-    WP->>+W: Provide issued Wallet Application Attestation
+    WP->>+W: Provide issued Wallet Instance Attestation
 ```
 
 #### Issuance using Json Web Key
 
 > [!CAUTION]  
-> When using a Json Web Key, Wallet Provider performs **NO** validations and simply issues a key-bound Wallet Application Attestation 
+> When using a Json Web Key, Wallet Provider performs **NO** validations and simply issues a Wallet Instance Attestation 
 > using the provided Json Web Key.  
 
-To issue a Wallet Application Attestation:
+To issue a Wallet Instance Attestation:
 
 1. The Wallet generates a new Key-Pair
-2. The Wallet requests a key-bound Wallet Application Attestation from the Wallet Provider
-3. The Wallet Provider issues a key-bound Wallet Application Attestation
+2. The Wallet requests a Wallet Instance Attestation from the Wallet Provider
+3. The Wallet Provider issues a Wallet Instance Attestation
 
 ```mermaid
 sequenceDiagram    
@@ -115,9 +115,9 @@ sequenceDiagram
     participant WP as Wallet Provider
     
     W->>+W: Generate new Key-Pair
-    W->>+WP: Request Wallet Application Attestation Issuance
-    WP->>+WP: Issue Wallet Application Attestation
-    WP->>+W: Provide issued Wallet Application Attestation
+    W->>+WP: Request Wallet Instance Attestation Issuance
+    WP->>+WP: Issue Wallet Instance Attestation
+    WP->>+W: Provide issued Wallet Instance Attestation
 ```
 
 ### Issuance of Wallet Unit Attestation
@@ -394,19 +394,19 @@ Variable: `WALLETINFORMATION_WALLETSECURECRYPTOGRAPHICDEVICEINFORMATION_CERTIFIC
 Description: Information about the certification achieved by the WSCD.  
 Default value: N/A
 
-### Wallet Application Attestation Configuration
+### Wallet Instance Attestation Configuration
 
-Variable: `WALLETAPPLICATIONATTESTATION_VALIDITY`  
-Description: Duration a Wallet Application Attestations is valid for.  
+Variable: `WALLETINSTANCEATTESTATION_VALIDITY`  
+Description: Duration a Wallet Instance Attestations is valid for.  
 Default value: `24 hours`  
 Maximum value: `24 hours`  
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETNAME`  
-Description: Wallet Name that will be included in the Wallet Application Attestations.  
+Variable: `WALLETINSTANCEATTESTATION_WALLETNAME`  
+Description: Wallet Name that will be included in the Wallet Instance Attestations.  
 Default value: N/A  
 
-Variable: `WALLETAPPLICATIONATTESTATION_WALLETLINK`  
-Description: Wallet Link that will be included in the Wallet Application Attestations.  
+Variable: `WALLETINSTANCEATTESTATION_WALLETLINK`  
+Description: Wallet Link that will be included in the Wallet Instance Attestations.  
 Default value: N/A  
 
 ### Wallet Unit Attestation Configuration

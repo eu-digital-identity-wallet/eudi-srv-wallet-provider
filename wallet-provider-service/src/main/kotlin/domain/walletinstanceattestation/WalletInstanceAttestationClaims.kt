@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation
+package eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation
 
 import at.asitplus.signum.indispensable.josef.ConfirmationClaim
 import at.asitplus.signum.indispensable.josef.JwsSigned
@@ -25,7 +25,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WalletApplicationAttestationClaims(
+data class WalletInstanceAttestationClaims(
     @Required @SerialName(RFC7519.ISSUER) val issuer: Issuer,
     @Required @SerialName(RFC7519.SUBJECT) val subject: ClientId,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
@@ -45,4 +45,4 @@ data class WalletApplicationAttestationClaims(
 
 typealias WalletName = NonBlankString
 typealias WalletLink = StringUrl
-typealias WalletApplicationAttestation = JwsSigned<WalletApplicationAttestationClaims>
+typealias WalletInstanceAttestation = JwsSigned<WalletInstanceAttestationClaims>

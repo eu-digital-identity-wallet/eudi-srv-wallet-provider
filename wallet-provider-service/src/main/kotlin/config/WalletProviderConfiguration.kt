@@ -22,13 +22,13 @@ import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
-import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
+import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
+import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.PositiveDuration
-import eu.europa.ec.eudi.walletprovider.port.input.walletapplicationattestation.WalletApplicationAttestationValidity
+import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
@@ -48,7 +48,7 @@ data class WalletProviderConfiguration(
     val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInformation: WalletInformationConfiguration,
-    val walletApplicationAttestation: WalletApplicationAttestationConfiguration = WalletApplicationAttestationConfiguration(),
+    val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
 )
 
@@ -239,8 +239,8 @@ data class WalletSecureCryptographicDeviceInformationConfiguration(
     val certification: CertificationInformation,
 )
 
-data class WalletApplicationAttestationConfiguration(
-    val validity: WalletApplicationAttestationValidity = WalletApplicationAttestationValidity.ArfMax,
+data class WalletInstanceAttestationConfiguration(
+    val validity: WalletInstanceAttestationValidity = WalletInstanceAttestationValidity.ArfMax,
     val walletName: WalletName? = null,
     val walletLink: WalletLink? = null,
 )
