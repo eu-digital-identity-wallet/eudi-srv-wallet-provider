@@ -21,11 +21,7 @@ import com.sksamuel.hoplite.*
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
-import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
-import eu.europa.ec.eudi.walletprovider.domain.ClientId
-import eu.europa.ec.eudi.walletprovider.domain.Issuer
-import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.StringUrl
+import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletapplicationattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
