@@ -16,10 +16,9 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.toNonEmptyListOrNull
-import at.asitplus.attestation.AttestationService
 import at.asitplus.attestation.IosAttestationConfiguration
+import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
-import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.SignatureAlgorithm
@@ -29,7 +28,7 @@ import at.asitplus.signum.supreme.os.JKSProvider
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumValidateJwtSignature
-import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.WardenValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
@@ -58,6 +57,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import java.security.KeyStore
+import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
 private val logger = LoggerFactory.getLogger("WalletProviderApplication")
 
@@ -97,8 +97,8 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             is PlatformKeyAttestationValidationConfiguration.Enabled -> ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
         }
 
-    val wardenAttestationService = createWardenAttestationService(config, clock)
-    val validateKeyAttestation = WardenValidateKeyAttestation(wardenAttestationService)
+    val makotoAttestationService = createMakotoAttestationService(config, clock)
+    val validateKeyAttestation = MakotoValidateKeyAttestation(makotoAttestationService)
 
     val issueWalletInstanceAttestation =
         IssueWalletInstanceAttestationLive(
@@ -242,10 +242,10 @@ private fun CertificateChain.dropRootCaIfNeeded(): CertificateChain =
 
 private fun X509Certificate.isSelfSigned(): Boolean = tbsCertificate.issuerName == tbsCertificate.subjectName
 
-private fun createWardenAttestationService(
+private fun createMakotoAttestationService(
     config: WalletProviderConfiguration,
     clock: Clock,
-): AttestationService =
+): MakotoAttestationService =
     when (config.platformKeyAttestationValidation) {
         PlatformKeyAttestationValidationConfiguration.Disabled -> {
             logger.warn("Platform Key Attestation Validation is currently disabled")
@@ -258,10 +258,11 @@ private fun createWardenAttestationService(
                     AndroidAttestationConfiguration(
                         applications =
                             applications.map { application ->
-                                AndroidAttestationConfiguration.AppData(
-                                    packageName = application.packageName.value,
-                                    signatureDigests = application.signingCertificateDigests,
-                                )
+                                AndroidAttestationConfiguration.AppData
+                                    .Builder(
+                                        packageName = application.packageName.value,
+                                        signatureDigests = application.signingCertificateDigests,
+                                    ).build()
                             },
                         requireStrongBox = strongBoxRequired,
                         allowBootloaderUnlock = unlockedBootloaderAllowed,
@@ -284,17 +285,18 @@ private fun createWardenAttestationService(
                     IosAttestationConfiguration(
                         applications =
                             applications.map { application ->
-                                IosAttestationConfiguration.AppData(
-                                    teamIdentifier = application.team.value,
-                                    bundleIdentifier = application.bundle.value,
-                                    sandbox = IosEnvironment.Sandbox == application.environment,
-                                )
+                                IosAttestationConfiguration.AppData
+                                    .Builder(
+                                        teamIdentifier = application.team.value,
+                                        bundleIdentifier = application.bundle.value,
+                                    ).sandbox(IosEnvironment.Sandbox == application.environment)
+                                    .build()
                             },
                         attestationStatementValiditySeconds = attestationStatementValiditySkew.inWholeSeconds,
                     )
                 }
 
-            Warden(
+            Makoto(
                 androidAttestationConfiguration = androidAttestation,
                 iosAttestationConfiguration = iosAttestation,
                 clock = clock.toKotlinClock(),

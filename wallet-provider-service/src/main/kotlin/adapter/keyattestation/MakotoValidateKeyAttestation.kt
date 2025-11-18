@@ -26,16 +26,16 @@ import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttestedKey
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
-import at.asitplus.attestation.AttestationService as WardenAttestationService
+import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
-class WardenValidateKeyAttestation(
-    private val wardenAttestationService: WardenAttestationService,
+class MakotoValidateKeyAttestation(
+    private val makotoAttestationService: MakotoAttestationService,
 ) : ValidateKeyAttestation {
     override suspend fun invoke(
         unvalidatedKeyAttestation: Attestation,
         challenge: Challenge,
     ): Either<KeyAttestationValidationFailure, AttestedKey> =
-        wardenAttestationService
+        makotoAttestationService
             .verifyKeyAttestation(unvalidatedKeyAttestation, challenge.value)
             .let { verificationResult ->
                 when {
