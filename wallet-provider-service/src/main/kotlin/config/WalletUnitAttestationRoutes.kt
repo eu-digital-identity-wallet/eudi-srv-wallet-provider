@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWa
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -78,35 +79,48 @@ fun Application.configureWalletUnitAttestationRoutes(issueWalletUnitAttestation:
 
 private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
     when (failure) {
-        is WalletUnitAttestationIssuanceFailure.InvalidChallenge ->
+        is WalletUnitAttestationIssuanceFailure.InvalidChallenge -> {
             warn(
                 "WalletUnitAttestationIssuanceRequest validation failed Challenge is not valid: ${failure.error}",
                 failure.cause,
             )
+        }
 
         is WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations -> {
             failure.errors.forEach {
                 when (it) {
-                    is KeyAttestationValidationFailure.InvalidKeyAttestation ->
+                    is KeyAttestationValidationFailure.InvalidKeyAttestation -> {
                         warn(
                             "WalletUnitAttestationIssuanceRequest validation failed Key Attestation is not valid: ${it.error}",
                             it.cause,
                         )
+                    }
 
-                    is KeyAttestationValidationFailure.UnsupportedAttestedKey ->
+                    is KeyAttestationValidationFailure.UnsupportedAttestedKey -> {
                         warn(
                             "WalletUnitAttestationIssuanceRequest validation failed, Key Attestation contains an unsupported PublicKey: ${it.error}",
                             it.cause,
                         )
+                    }
                 }
             }
         }
 
-        WalletUnitAttestationIssuanceFailure.NoAttestedKeys ->
+        WalletUnitAttestationIssuanceFailure.NoAttestedKeys -> {
             warn("WalletUnitAttestationIssuanceRequest validation failed, contains no Attested Keys")
+        }
 
-        WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys ->
+        WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys -> {
             warn("WalletUnitAttestationIssuanceRequest validation failed, contains non-unique Attested Keys")
+        }
+
+        is WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+            when (failure.error) {
+                is StatusListTokenGenerationFailure.Unexpected -> {
+                    warn("WalletUnitAttestationIssuance failed, unable to generate Status List Token", failure.error.cause)
+                }
+            }
+        }
     }
 }
 
@@ -135,6 +149,9 @@ private enum class WalletUnitAttestationError {
 
     @SerialName("non_unique_attested_keys")
     NonUniqueAttestedKeys,
+
+    @SerialName("status_list_token_generation_failure")
+    StatusListTokenGenerationFailure,
 }
 
 @Serializable
@@ -144,8 +161,11 @@ private data class WalletUnitAttestationErrorResponse(
 
 private fun WalletUnitAttestationIssuanceFailure.toWalletUnitAttestationErrorResponse(): WalletUnitAttestationErrorResponse =
     when (this) {
-        is WalletUnitAttestationIssuanceFailure.InvalidChallenge -> nonEmptyListOf(WalletUnitAttestationError.InvalidChallenge)
-        is WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations ->
+        is WalletUnitAttestationIssuanceFailure.InvalidChallenge -> {
+            nonEmptyListOf(WalletUnitAttestationError.InvalidChallenge)
+        }
+
+        is WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations -> {
             errors
                 .map {
                     when (it) {
@@ -153,6 +173,17 @@ private fun WalletUnitAttestationIssuanceFailure.toWalletUnitAttestationErrorRes
                         is KeyAttestationValidationFailure.UnsupportedAttestedKey -> WalletUnitAttestationError.UnsupportedAttestedKey
                     }
                 }.distinct()
-        WalletUnitAttestationIssuanceFailure.NoAttestedKeys -> nonEmptyListOf(WalletUnitAttestationError.NoAttestedKeys)
-        WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys -> nonEmptyListOf(WalletUnitAttestationError.NonUniqueAttestedKeys)
+        }
+
+        WalletUnitAttestationIssuanceFailure.NoAttestedKeys -> {
+            nonEmptyListOf(WalletUnitAttestationError.NoAttestedKeys)
+        }
+
+        WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys -> {
+            nonEmptyListOf(WalletUnitAttestationError.NonUniqueAttestedKeys)
+        }
+
+        is WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+            nonEmptyListOf(WalletUnitAttestationError.StatusListTokenGenerationFailure)
+        }
     }.let { WalletUnitAttestationErrorResponse(it) }

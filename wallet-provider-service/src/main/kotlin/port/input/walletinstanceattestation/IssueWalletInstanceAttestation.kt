@@ -125,7 +125,9 @@ class IssueWalletInstanceAttestationLive(
                             .toJsonWebKey()
                     }
 
-                    is WalletInstanceAttestationIssuanceRequest.Jwk -> request.jwk
+                    is WalletInstanceAttestationIssuanceRequest.Jwk -> {
+                        request.jwk
+                    }
                 }
 
             val issuedAt = clock.now()

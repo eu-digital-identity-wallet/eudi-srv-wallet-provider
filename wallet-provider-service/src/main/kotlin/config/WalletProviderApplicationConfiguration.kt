@@ -16,6 +16,7 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.toNonEmptyListOrNull
+import arrow.fx.coroutines.ResourceScope
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
@@ -29,6 +30,8 @@ import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumValidateJwtSignature
 import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
@@ -42,7 +45,10 @@ import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.Iss
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import io.ktor.http.CacheControl.*
+import io.ktor.http.Url
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -61,6 +67,7 @@ import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
 private val logger = LoggerFactory.getLogger("WalletProviderApplication")
 
+context(resourceScope: ResourceScope)
 suspend fun Application.configureWalletProviderApplication(config: WalletProviderConfiguration) {
     logger.info("Configuring Wallet Provider Application using: {}", config)
 
@@ -94,7 +101,9 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
                 ValidateChallengeNoop
             }
 
-            is PlatformKeyAttestationValidationConfiguration.Enabled -> ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
+            is PlatformKeyAttestationValidationConfiguration.Enabled -> {
+                ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
+            }
         }
 
     val makotoAttestationService = createMakotoAttestationService(config, clock)
@@ -124,12 +133,32 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             ),
         )
 
+    val generateStatusListToken =
+        config.tokenStatusListService?.let {
+            val httpClient =
+                resourceScope.install(
+                    HttpClient(CIO) {
+                        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+                            json(json)
+                        }
+                    },
+                )
+
+            TokenStatusListServiceGenerateStatusListToken(
+                httpClient,
+                Url(it.serviceUrl.toExternalForm()),
+                ApiKey(it.apiKey.value),
+                clock,
+            )
+        }
+
     val issueWalletUnitAttestation =
         IssueWalletUnitAttestationLive(
             clock,
             validateChallenge,
             validateKeyAttestation,
             config.walletUnitAttestation.validity,
+            generateStatusListToken,
             issuer = config.issuer,
             clientId = config.clientId,
             keyStorage = config.walletUnitAttestation.keyStorage?.toNonEmptyListOrNull(),
@@ -216,6 +245,7 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
                             digest = signatureAlgorithm.digest
                         }
                     }
+
                     is SignatureAlgorithm.RSA -> {
                         rsa {
                             digest = signatureAlgorithm.digest

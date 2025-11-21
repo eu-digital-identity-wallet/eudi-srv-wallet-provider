@@ -30,6 +30,7 @@ import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
@@ -40,6 +41,7 @@ import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
@@ -99,6 +101,10 @@ sealed interface WalletUnitAttestationIssuanceFailure {
     data object NoAttestedKeys : WalletUnitAttestationIssuanceFailure
 
     data object NonUniqueAttestedKeys : WalletUnitAttestationIssuanceFailure
+
+    class StatusListTokenGenerationFailure(
+        val error: eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure,
+    ) : WalletUnitAttestationIssuanceFailure
 }
 
 @JvmInline
@@ -122,6 +128,7 @@ class IssueWalletUnitAttestationLive(
     private val validateChallenge: ValidateChallenge,
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
+    private val generateStatusListToken: GenerateStatusListToken?,
     private val issuer: Issuer,
     private val clientId: ClientId,
     private val keyStorage: NonEmptyList<AttackPotentialResistance>?,
@@ -150,7 +157,9 @@ class IssueWalletUnitAttestationLive(
                             .toNonEmptyListOrNull()
                     }
 
-                    is WalletUnitAttestationIssuanceRequest.JwkSet -> request.jwkSet.keys.toNonEmptyListOrNull()
+                    is WalletUnitAttestationIssuanceRequest.JwkSet -> {
+                        request.jwkSet.keys.toNonEmptyListOrNull()
+                    }
                 }
 
             ensureNotNull(attestedKeys) { WalletUnitAttestationIssuanceFailure.NoAttestedKeys }
@@ -158,6 +167,12 @@ class IssueWalletUnitAttestationLive(
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity.value
+            val statusListToken =
+                generateStatusListToken
+                    ?.invoke(expiresAt)
+                    ?.mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
+                    ?.bind()
+
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
                     issuer,
@@ -169,7 +184,7 @@ class IssueWalletUnitAttestationLive(
                     userAuthentication = userAuthentication,
                     certification,
                     request.nonce,
-                    null,
+                    statusListToken?.let { Status(it) },
                     WalletUnitAttestationClaims.WalletInformation(
                         generalInformation,
                         walletSecureCryptographicDeviceInformation,

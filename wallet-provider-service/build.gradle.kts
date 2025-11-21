@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.ktor.server.caching.headers)
     implementation(libs.ktor.server.forwarded.header)
     implementation(libs.ktor.server.swagger)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
 
     implementation(libs.slf4j.api)
     runtimeOnly(libs.logback.classic)
@@ -90,6 +93,7 @@ kotlin {
             "-Xjsr305=strict",
             "-Xconsistent-data-class-copy-visibility",
             "-Xnested-type-aliases",
+            "-Xcontext-parameters",
         )
         optIn.addAll(
             "kotlin.io.encoding.ExperimentalEncodingApi",

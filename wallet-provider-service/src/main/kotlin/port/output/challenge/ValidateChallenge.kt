@@ -52,11 +52,13 @@ class ValidateChallengeLive(
                 ifLeft = {
                     val (error, cause) =
                         when (it) {
-                            is JwtSignatureValidationFailure.InvalidSignature ->
+                            is JwtSignatureValidationFailure.InvalidSignature -> {
                                 "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
+                            }
 
-                            is JwtSignatureValidationFailure.UnparsableJwt ->
+                            is JwtSignatureValidationFailure.UnparsableJwt -> {
                                 "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
+                            }
                         }
                     raise(ChallengeValidationFailure(error, cause))
                 },

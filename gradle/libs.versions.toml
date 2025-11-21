@@ -10,8 +10,8 @@ logback-classic = "1.5.20"
 arrow = "2.2.0"
 warden-makoto = "0.9.99"
 hoplite = "3.0.0.RC1"
-spotless = "8.0.0"
-ktlint = "1.7.1"
+spotless = "8.1.0"
+ktlint = "1.8.0"
 indispensable = "3.18.2"
 supreme = "0.10.2"
 jib = "3.4.5"
@@ -34,6 +34,9 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers" }
 ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header" }
 ktor-server-swagger = { module = "io.ktor:ktor-server-swagger" }
+ktor-client-core = { module = "io.ktor:ktor-client-core" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
 slf4j-bom = { module = "org.slf4j:slf4j-bom", version.ref = "slf4j" }
 slf4j-api = { module = "org.slf4j:slf4j-api" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }

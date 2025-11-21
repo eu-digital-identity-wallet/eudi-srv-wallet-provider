@@ -474,7 +474,8 @@
           "invalid_key_attestation",
           "unsupported_attested_key",
           "no_attested_keys",
-          "non_unique_attested_keys"
+          "non_unique_attested_keys",
+          "status_list_token_generation_failure",
         ]
       },
       "WalletUnitAttestationErrorResponse": {

@@ -50,6 +50,7 @@ data class WalletProviderConfiguration(
     val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
+    val tokenStatusListService: TokenStatusListServiceConfiguration? = null,
 )
 
 data class ServerConfiguration(
@@ -103,7 +104,7 @@ class SignatureAlgorithmDecoder : Decoder<SignatureAlgorithm> {
         context: DecoderContext,
     ): ConfigResult<SignatureAlgorithm> =
         when (node) {
-            is StringNode ->
+            is StringNode -> {
                 runCatching {
                     val signatureAlgorithmProperty =
                         SignatureAlgorithm.Companion::class.memberProperties.firstOrNull {
@@ -116,7 +117,11 @@ class SignatureAlgorithmDecoder : Decoder<SignatureAlgorithm> {
                     { it.valid() },
                     { ConfigFailure.DecodeError(node, type).invalid() },
                 )
-            else -> ConfigFailure.DecodeError(node, type).invalid()
+            }
+
+            else -> {
+                ConfigFailure.DecodeError(node, type).invalid()
+            }
         }
 }
 
@@ -191,14 +196,18 @@ class Base64UrlSafeByteArrayDecoder : Decoder<Base64UrlSafeByteArray> {
         context: DecoderContext,
     ): ConfigResult<Base64UrlSafeByteArray> =
         when (node) {
-            is StringNode ->
+            is StringNode -> {
                 runCatching {
                     Base64.UrlSafe.decode(node.value)
                 }.fold(
                     { it.valid() },
                     { ConfigFailure.DecodeError(node, type).invalid() },
                 )
-            else -> ConfigFailure.DecodeError(node, type).invalid()
+            }
+
+            else -> {
+                ConfigFailure.DecodeError(node, type).invalid()
+            }
         }
 }
 
@@ -223,14 +232,18 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
         context: DecoderContext,
     ): ConfigResult<CertificationInformation> =
         when (node) {
-            is StringNode ->
+            is StringNode -> {
                 runCatching {
                     CertificationInformation(JsonPrimitive((node.value)))
                 }.fold(
                     { it.valid() },
                     { ConfigFailure.DecodeError(node, type).invalid() },
                 )
-            else -> ConfigFailure.DecodeError(node, type).invalid()
+            }
+
+            else -> {
+                ConfigFailure.DecodeError(node, type).invalid()
+            }
         }
 }
 
@@ -250,4 +263,9 @@ data class WalletUnitAttestationConfiguration(
     val keyStorage: List<AttackPotentialResistance>? = null,
     val userAuthentication: List<AttackPotentialResistance>? = null,
     val certification: StringUrl? = null,
+)
+
+data class TokenStatusListServiceConfiguration(
+    val serviceUrl: StringUrl,
+    val apiKey: Secret,
 )

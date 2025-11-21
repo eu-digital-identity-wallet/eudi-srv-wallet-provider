@@ -16,12 +16,17 @@
 package eu.europa.ec.eudi.walletprovider.domain.time
 
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaZoneId
+import java.time.ZonedDateTime
 import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 interface Clock {
     fun now(): Instant
 
     fun timeZone(): TimeZone
+
+    fun Instant.toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(toJavaInstant(), timeZone().toJavaZoneId())
 
     companion object {
         val System: Clock =

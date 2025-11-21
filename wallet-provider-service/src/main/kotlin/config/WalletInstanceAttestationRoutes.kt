@@ -78,22 +78,25 @@ fun Application.configureWalletInstanceAttestationRoutes(issueWalletInstanceAtte
 private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
     val (error, cause) =
         when (failure) {
-            is WalletInstanceAttestationIssuanceFailure.InvalidChallenge ->
+            is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> {
                 "WalletInstanceAttestationIssuanceRequest validation failed, " +
                     "Challenge is not valid: ${failure.error}" to
                     failure.cause
+            }
 
             is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation -> {
                 when (val keyAttestationFailure = failure.error) {
-                    is KeyAttestationValidationFailure.InvalidKeyAttestation ->
+                    is KeyAttestationValidationFailure.InvalidKeyAttestation -> {
                         "WalletInstanceAttestationIssuanceRequest validation failed, " +
                             "Key Attestation is not valid: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
+                    }
 
-                    is KeyAttestationValidationFailure.UnsupportedAttestedKey ->
+                    is KeyAttestationValidationFailure.UnsupportedAttestedKey -> {
                         "WalletInstanceAttestationIssuanceRequest validation failed, " +
                             "Key Attestation contains an unsupported PublicKey: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
+                    }
                 }
             }
         }
@@ -130,10 +133,14 @@ private data class WalletInstanceAttestationErrorResponse(
 
 private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestationErrorResponse(): WalletInstanceAttestationErrorResponse =
     when (this) {
-        is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> WalletInstanceAttestationError.InvalidChallenge
-        is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation ->
+        is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> {
+            WalletInstanceAttestationError.InvalidChallenge
+        }
+
+        is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation -> {
             when (error) {
                 is KeyAttestationValidationFailure.InvalidKeyAttestation -> WalletInstanceAttestationError.InvalidKeyAttestation
                 is KeyAttestationValidationFailure.UnsupportedAttestedKey -> WalletInstanceAttestationError.UnsupportedAttestedKey
             }
+        }
     }.let { WalletInstanceAttestationErrorResponse(it) }

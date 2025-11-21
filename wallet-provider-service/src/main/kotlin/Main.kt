@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.walletprovider.config.*
 import io.ktor.server.cio.*
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 
 fun main() =
     SuspendApp {
