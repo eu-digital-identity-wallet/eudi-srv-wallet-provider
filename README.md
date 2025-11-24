@@ -438,6 +438,20 @@ Variable: `WALLETUNITATTESTATION_CERTIFICATION`
 Description: URL that links to the certification of the key storage component.  
 Default value: N/A
 
+### Token Status List Service Configuration
+
+Wallet Provider optionally integrates with [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py),
+to include Status List Tokens based on [Token Status List draft12](https://www.ietf.org/archive/id/draft-ietf-oauth-status-list-12.html) in
+issued Wallet Instance Attestations.
+
+To enable this integration, use the following environment variables:
+
+Variable: `TOKENSTATUSLISTSERVICE_SERVICEURL`  
+Description: URL of the **take** operation of [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py).  
+
+Variable: `TOKENSTATUSLISTSERVICE_APIKEY`  
+Description: API Key used to access [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py).  
+
 ### Duration formats
 
 Duration types support unit strings in the following format (lower case only), with an optional space between the unit value and the unit type.
