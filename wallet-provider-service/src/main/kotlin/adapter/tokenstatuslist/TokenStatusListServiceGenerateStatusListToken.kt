@@ -18,6 +18,8 @@
 package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
 import arrow.core.Either
+import arrow.core.raise.catch
+import arrow.core.raise.either
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -29,10 +31,9 @@ import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTo
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
+import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.client.request.url
 import io.ktor.http.*
-import io.ktor.http.headers
 import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
 
@@ -45,8 +46,8 @@ class TokenStatusListServiceGenerateStatusListToken(
     private val clock: Clock,
 ) : GenerateStatusListToken {
     override suspend fun invoke(expiresAt: Instant): Either<StatusListTokenGenerationFailure, StatusListToken> =
-        Either
-            .catch {
+        either {
+            catch({
                 httpClient
                     .submitForm(
                         Parameters.build {
@@ -67,7 +68,10 @@ class TokenStatusListServiceGenerateStatusListToken(
                         }
                     }.body<Status>()
                     .statusList
-            }.mapLeft { error ->
-                StatusListTokenGenerationFailure.Unexpected("Unable to generate StatusListToken".toNonBlankString(), error)
+            }) { error ->
+                raise(
+                    StatusListTokenGenerationFailure.Unexpected("Unable to generate StatusListToken".toNonBlankString(), error),
+                )
             }
+        }
 }
