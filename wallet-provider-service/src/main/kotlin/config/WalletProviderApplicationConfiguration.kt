@@ -45,10 +45,10 @@ import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.Iss
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.http.*
 import io.ktor.http.CacheControl.*
-import io.ktor.http.Url
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
