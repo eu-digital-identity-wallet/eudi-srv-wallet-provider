@@ -17,7 +17,7 @@ package eu.europa.ec.eudi.walletprovider.domain.walletunitattestation
 
 import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
-import at.asitplus.signum.indispensable.josef.JsonWebKeySet
+import at.asitplus.signum.indispensable.josef.JsonWebKey
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
@@ -33,7 +33,8 @@ data class WalletUnitAttestationClaims(
     @Required @SerialName(RFC7519.SUBJECT) val subject: ClientId,
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
     @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant? = null,
-    @Required @SerialName(OpenId4VCISpec.ATTESTED_KEYS) val attestedKeys: JsonWebKeySet,
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
+    val attestedKeys: NonEmptyList<JsonWebKey>,
     @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
     val keyStorage: NonEmptyList<AttackPotentialResistance>? = null,
     @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.USER_AUTHENTICATION)
@@ -43,10 +44,6 @@ data class WalletUnitAttestationClaims(
     @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
     @Required @SerialName(ARF.EUDI_WALLET_INFORMATION) val walletInformation: WalletInformation,
 ) {
-    init {
-        require(attestedKeys.keys.isNotEmpty()) { "attestedKeys must not be empty" }
-    }
-
     @Serializable
     data class WalletInformation(
         @Required @SerialName(ARF.GENERAL_INFORMATION) val generalInformation: GeneralInformation,

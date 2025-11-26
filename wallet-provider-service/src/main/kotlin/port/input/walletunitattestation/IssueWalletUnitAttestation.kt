@@ -179,7 +179,7 @@ class IssueWalletUnitAttestationLive(
                     clientId,
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
-                    JsonWebKeySet(attestedKeys),
+                    attestedKeys,
                     keyStorage = keyStorage,
                     userAuthentication = userAuthentication,
                     certification,
