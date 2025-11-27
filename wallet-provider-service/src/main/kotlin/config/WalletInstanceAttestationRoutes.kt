@@ -78,6 +78,13 @@ fun Application.configureWalletInstanceAttestationRoutes(issueWalletInstanceAtte
 private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
     val (error, cause) =
         when (failure) {
+            is WalletInstanceAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
+                "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                    "Unsupported signing algorithms. Supported: ${failure.supportedSigningAlgorithm.identifier}, " +
+                    "requested: ${failure.requestedSigningAlgorithms.joinToString { it.identifier } }" to
+                    null
+            }
+
             is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> {
                 "WalletInstanceAttestationIssuanceRequest validation failed, " +
                     "Challenge is not valid: ${failure.error}" to
@@ -116,6 +123,9 @@ private fun WalletInstanceAttestation.toWalletInstanceAttestationResponse(): Wal
 
 @Serializable
 private enum class WalletInstanceAttestationError {
+    @SerialName("unsupported_signing_algorithms")
+    UnsupportedSigningAlgorithms,
+
     @SerialName("invalid_challenge")
     InvalidChallenge,
 
@@ -133,6 +143,10 @@ private data class WalletInstanceAttestationErrorResponse(
 
 private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestationErrorResponse(): WalletInstanceAttestationErrorResponse =
     when (this) {
+        is WalletInstanceAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
+            WalletInstanceAttestationError.UnsupportedSigningAlgorithms
+        }
+
         is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> {
             WalletInstanceAttestationError.InvalidChallenge
         }

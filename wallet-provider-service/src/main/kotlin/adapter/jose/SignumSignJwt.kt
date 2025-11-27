@@ -15,6 +15,7 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.jose
 
+import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import at.asitplus.signum.indispensable.josef.JwsHeader
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
@@ -35,6 +36,8 @@ class SignumSignJwt<T : Any>(
     private val serializer: SerializationStrategy<T>,
     private val json: Json,
 ) : SignJwt<T> {
+    override val signingAlgorithm: JwsAlgorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
+
     override suspend fun invoke(claims: T): JwsSigned<T> {
         val header =
             JwsHeader(

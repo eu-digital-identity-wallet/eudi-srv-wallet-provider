@@ -330,6 +330,25 @@
         ],
         "additionalProperties": false
       },
+      "JwsAlgorithm": {
+        "type": "string",
+        "enum": [
+          "ES256",
+          "ES384",
+          "ES512",
+          "RS256",
+          "RS384",
+          "RS512",
+          "PS256",
+          "PS384",
+          "PS512",
+          "RS1",
+          "HS256",
+          "HS384",
+          "HS512",
+          "H1"
+        ]
+      },
       "AndroidPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
@@ -338,6 +357,13 @@
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [
@@ -372,6 +398,13 @@
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [
@@ -389,6 +422,13 @@
         "properties": {
           "jwk": {
             "$ref": "#/components/schemas/Jwk"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [
@@ -411,6 +451,7 @@
       "WalletInstanceAttestationError": {
         "type": "string",
         "enum": [
+          "unsupported_signing_algorithms",
           "invalid_challenge",
           "invalid_key_attestation",
           "unsupported_attested_key"
@@ -447,6 +488,13 @@
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [
@@ -470,6 +518,7 @@
       "WalletUnitAttestationError": {
         "type": "string",
         "enum": [
+          "unsupported_signing_algorithms",
           "invalid_challenge",
           "invalid_key_attestation",
           "unsupported_attested_key",
@@ -511,6 +560,13 @@
           },
           "challenge": {
             "$ref": "#/components/schemas/Challenge"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [
@@ -544,6 +600,13 @@
           },
           "jwkSet": {
             "$ref": "#/components/schemas/JwkSet"
+          },
+          "supportedSigningAlgorithms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JwsAlgorithm"
+            },
+            "minItems": 1
           }
         },
         "required": [

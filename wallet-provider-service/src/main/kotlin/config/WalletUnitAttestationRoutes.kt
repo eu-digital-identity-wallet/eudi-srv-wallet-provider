@@ -79,9 +79,17 @@ fun Application.configureWalletUnitAttestationRoutes(issueWalletUnitAttestation:
 
 private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
     when (failure) {
+        is WalletUnitAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
+            warn(
+                "WalletUnitAttestationIssuanceRequest validation failed, " +
+                    "unsupported signing algorithms. Supported: ${failure.supportedSigningAlgorithm.identifier}, " +
+                    "requested: ${failure.requestedSigningAlgorithms.joinToString { it.identifier }}",
+            )
+        }
+
         is WalletUnitAttestationIssuanceFailure.InvalidChallenge -> {
             warn(
-                "WalletUnitAttestationIssuanceRequest validation failed Challenge is not valid: ${failure.error}",
+                "WalletUnitAttestationIssuanceRequest validation failed, Challenge is not valid: ${failure.error}",
                 failure.cause,
             )
         }
@@ -91,7 +99,7 @@ private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
                 when (it) {
                     is KeyAttestationValidationFailure.InvalidKeyAttestation -> {
                         warn(
-                            "WalletUnitAttestationIssuanceRequest validation failed Key Attestation is not valid: ${it.error}",
+                            "WalletUnitAttestationIssuanceRequest validation failed, Key Attestation is not valid: ${it.error}",
                             it.cause,
                         )
                     }
@@ -135,6 +143,9 @@ private fun WalletUnitAttestation.toWalletUnitAttestationResponse(): WalletUnitA
 
 @Serializable
 private enum class WalletUnitAttestationError {
+    @SerialName("unsupported_signing_algorithms")
+    UnsupportedSigningAlgorithms,
+
     @SerialName("invalid_challenge")
     InvalidChallenge,
 
@@ -161,6 +172,10 @@ private data class WalletUnitAttestationErrorResponse(
 
 private fun WalletUnitAttestationIssuanceFailure.toWalletUnitAttestationErrorResponse(): WalletUnitAttestationErrorResponse =
     when (this) {
+        is WalletUnitAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
+            nonEmptyListOf(WalletUnitAttestationError.UnsupportedSigningAlgorithms)
+        }
+
         is WalletUnitAttestationIssuanceFailure.InvalidChallenge -> {
             nonEmptyListOf(WalletUnitAttestationError.InvalidChallenge)
         }
