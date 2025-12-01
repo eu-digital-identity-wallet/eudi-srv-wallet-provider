@@ -250,12 +250,6 @@ Allowed values:
 * `ECDSAwithSHA256`
 * `ECDSAwithSHA384`
 * `ECDSAwithSHA512`
-* `RSAwithSHA256andPKCS1Padding`
-* `RSAwithSHA384andPKCS1Padding`
-* `RSAwithSHA512andPKCS1Padding`
-* `RSAwithSHA256andPSSPadding`
-* `RSAwithSHA384andPSSPadding`
-* `RSAwithSHA512andPSSPadding`
 
 #### Platform Key Attestation Validation Configuration
 

@@ -241,19 +241,12 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
     val signer =
         keystoreProvider
             .getSignerForKey(config.keyAlias.value) {
-                when (val signatureAlgorithm = config.algorithm) {
-                    is SignatureAlgorithm.ECDSA -> {
-                        ec {
-                            digest = signatureAlgorithm.digest
-                        }
-                    }
-
-                    is SignatureAlgorithm.RSA -> {
-                        rsa {
-                            digest = signatureAlgorithm.digest
-                            padding = signatureAlgorithm.padding
-                        }
-                    }
+                val signatureAlgorithm = config.algorithm
+                require(signatureAlgorithm is SignatureAlgorithm.ECDSA) {
+                    "only EC keys are supported for signing"
+                }
+                ec {
+                    digest = signatureAlgorithm.digest
                 }
                 privateKeyPassword = config.keyPassword?.value?.toCharArray()
             }.getOrThrow()

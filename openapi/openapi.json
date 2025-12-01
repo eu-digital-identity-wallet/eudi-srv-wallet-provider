@@ -330,24 +330,8 @@
         ],
         "additionalProperties": false
       },
-      "JwsAlgorithm": {
-        "type": "string",
-        "enum": [
-          "ES256",
-          "ES384",
-          "ES512",
-          "RS256",
-          "RS384",
-          "RS512",
-          "PS256",
-          "PS384",
-          "PS512",
-          "RS1",
-          "HS256",
-          "HS384",
-          "HS512",
-          "H1"
-        ]
+      "JsonWebAlgorithm": {
+        "type": "string"
       },
       "SecondsDuration": {
         "type": "number",
@@ -366,7 +350,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           }
@@ -407,7 +391,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           }
@@ -431,7 +415,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           }
@@ -497,7 +481,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           },
@@ -573,7 +557,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           },
@@ -616,7 +600,7 @@
           "supportedSigningAlgorithms": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JwsAlgorithm"
+              "$ref": "#/components/schemas/JsonWebAlgorithm"
             },
             "minItems": 1
           },

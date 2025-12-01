@@ -26,6 +26,7 @@ import arrow.fx.coroutines.parMapOrAccumulate
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.josef.JsonWebAlgorithm
 import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
@@ -57,7 +58,7 @@ fun interface IssueWalletUnitAttestation {
 
 sealed interface WalletUnitAttestationIssuanceRequest {
     val nonce: Nonce?
-    val supportedSigningAlgorithms: NonEmptyList<JwsAlgorithm>?
+    val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>?
     val preferredTtl: SecondsDuration?
 
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
@@ -70,7 +71,9 @@ sealed interface WalletUnitAttestationIssuanceRequest {
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
             @Required override val challenge: Challenge,
-            @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JwsAlgorithm>? = null,
+            @Serializable(
+                with = NonEmptyListSerializer::class,
+            ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
         ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
 
@@ -80,7 +83,9 @@ sealed interface WalletUnitAttestationIssuanceRequest {
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
             @Required override val challenge: Challenge,
-            @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JwsAlgorithm>? = null,
+            @Serializable(
+                with = NonEmptyListSerializer::class,
+            ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
         ) : PlatformKeyAttestation<IosHomebrewAttestation>
     }
@@ -89,7 +94,7 @@ sealed interface WalletUnitAttestationIssuanceRequest {
     data class JwkSet(
         override val nonce: Nonce? = null,
         val jwkSet: JsonWebKeySet,
-        @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JwsAlgorithm>? = null,
+        @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
     ) : WalletUnitAttestationIssuanceRequest {
         init {
@@ -101,7 +106,7 @@ sealed interface WalletUnitAttestationIssuanceRequest {
 sealed interface WalletUnitAttestationIssuanceFailure {
     class UnsupportedSigningAlgorithms(
         val supportedSigningAlgorithm: JwsAlgorithm,
-        val requestedSigningAlgorithms: NonEmptyList<JwsAlgorithm>,
+        val requestedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>,
     ) : WalletUnitAttestationIssuanceFailure
 
     data class InvalidPreferredTtl(
