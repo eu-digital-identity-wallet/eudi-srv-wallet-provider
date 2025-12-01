@@ -11,6 +11,7 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 * [Technical Details](#technical-details)
 * [Endpoints](#endpoints)
 * [Deployment](#deployment)
+* [Protected Resource Metadata](#protected-resource-metadata)
 * [How to contribute](#how-to-contribute)
 * [License](#license)
 
@@ -353,8 +354,8 @@ Default value: `5 minutes`
 ### Issuer Configuration
 
 Variable: `ISSUER`  
-Description: Issuer of the Attestations.  
-Default value: `eudi-srv-wallet-provider`  
+Description: Issuer of the Attestations, i.e., the public URL of this Wallet Provider. Must not contain a fragment.    
+Default value: `http://localhost:8080`  
 
 ### Client (i.e. Wallet) Configuration
 
@@ -465,6 +466,35 @@ Duration types support unit strings in the following format (lower case only), w
 * `d`, `day`, `days`
 
 For example, `10s`, `3 days`, or `12 hours`.
+
+## Protected Resource Metadata
+
+Wallet Provider supports [RFC9728: Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728.html), and provides the following metadata:
+
+* `resource`: The public URL of the Wallet Provider
+* `jwks_uri`: URL where the signing keys used by Wallet Provider can be retrieved from
+* `resource_signing_alg_values_supported`: JWS Algorithms used by Wallet Provider to sign issued Attestations
+
+Wallet Provider includes the following additional metadata:
+
+* `client_attestation_signing_alg_values_supported`: JWS Algorithms supported by Wallet Provider to sign Wallet Instance Attestations
+* `proof_signing_alg_values_supported`: JWS Algorithms supported by Wallet Provider to sign Wallet Unit Attestations
+
+Wallet Provider exposes Protected Resource Metadata at `/.well-known/oauth-protected-resource`. Per Section 3 of [RFC9728: Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728.html):
+
+> Protected resources supporting metadata MUST make a JSON document containing metadata as specified in Section 2 available 
+> at a URL formed by inserting a well-known URI string into the protected resource's resource identifier between the host 
+> component and the path and/or query components, if any. By default, the well-known URI string used is 
+> /.well-known/oauth-protected-resource. The syntax and semantics of .well-known are defined in RFC8615.
+
+When Wallet Provider is not deployed under the root path, a reverse proxy must be configured appropriately to rewrite the 
+Protected Resource Metadata well-known URL to what Wallet Provider exposes.
+
+For instance:
+
+Public URL of Wallet Provider is: `https://example.com/wallet-provider`  
+Protected Resource Metadata URL is `https://example.com/.well-known/oauth-protected-resource/wallet-provider`  
+Reverse Proxy rewritten Protected Resource Metadata URL is: `https://example.com/wallet-provider/.well-known/oauth-protected-resource`   
 
 ## How to contribute
 

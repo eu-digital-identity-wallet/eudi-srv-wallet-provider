@@ -185,6 +185,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
     configureChallengeRoutes(generateChallenge)
     configureWalletInstanceAttestationRoutes(issueWalletInstanceAttestation)
     configureWalletUnitAttestationRoutes(issueWalletUnitAttestation)
+    configureMetadataRoutes(config.issuer, signer, certificateChain)
 }
 
 private fun Application.configureServerPlugins(json: Json) {

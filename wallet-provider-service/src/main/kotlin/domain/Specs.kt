@@ -21,6 +21,8 @@ import kotlin.time.Duration.Companion.hours
 
 object AttestationBasedClientAuthenticationSpec {
     const val CLIENT_ATTESTATION_JWT_TYPE: String = "oauth-client-attestation+jwt"
+
+    const val CLIENT_ATTESTATION_SIGNING_ALGORITHMS_SUPPORTED: String = "client_attestation_signing_alg_values_supported"
 }
 
 object RFC7519 {
@@ -82,4 +84,17 @@ object OpenId4VCISpec {
     const val ATTACK_POTENTIAL_RESISTANCE_ISO_18045_MODERATE: String = "iso_18045_moderate"
     const val ATTACK_POTENTIAL_RESISTANCE_ISO_18045_ENHANCED_BASIC: String = "iso_18045_enhanced-basic"
     const val ATTACK_POTENTIAL_RESISTANCE_ISO_18045_BASIC: String = "iso_18045_basic"
+
+    const val PROOF_SIGNING_ALGORITHMS_SUPPORTED: String = "proof_signing_alg_values_supported"
+}
+
+/**
+ * [OAuth 2.0 Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728.html)
+ */
+object RFC9728 {
+    const val WELL_KNOWN_URI_SUFFIX: String = "/.well-known/oauth-protected-resource"
+
+    const val RESOURCE: String = "resource"
+    const val JWKS_URI: String = "jwks_uri"
+    const val RESOURCE_SIGNING_ALGORITHMS_SUPPORTED: String = "resource_signing_alg_values_supported"
 }

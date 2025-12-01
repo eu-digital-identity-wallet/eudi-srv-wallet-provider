@@ -46,7 +46,6 @@ value class NonBlankString(
 
 fun String.toNonBlankString() = NonBlankString(this)
 
-typealias Issuer = NonBlankString
 typealias ClientId = NonBlankString
 
 typealias StringUri =
@@ -56,6 +55,20 @@ typealias StringUri =
 typealias StringUrl =
     @Serializable(with = UrlStringSerializer::class)
     URL
+
+@JvmInline
+@Serializable
+value class Issuer(
+    val value: StringUrl,
+) {
+    init {
+        require(value.toExternalForm().substringAfter(delimiter = "#", missingDelimiterValue = "").isEmpty())
+    }
+
+    companion object {
+        fun create(value: String): Issuer = Issuer(URI.create(value).toURL())
+    }
+}
 
 typealias JwtType = NonBlankString
 

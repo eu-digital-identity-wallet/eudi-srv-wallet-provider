@@ -45,7 +45,7 @@ data class WalletProviderConfiguration(
     val signingKey: SigningKeyConfiguration = SigningKeyConfiguration.GenerateRandom,
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
-    val issuer: Issuer = Issuer("eudi-srv-wallet-provider"),
+    val issuer: Issuer = Issuer.create("http://localhost:8080"),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
