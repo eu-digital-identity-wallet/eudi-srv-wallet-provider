@@ -70,6 +70,8 @@ value class Issuer(
     }
 }
 
+typealias Name = NonBlankString
+
 typealias JwtType = NonBlankString
 
 @JvmInline

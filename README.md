@@ -353,9 +353,13 @@ Default value: `5 minutes`
 
 ### Issuer Configuration
 
-Variable: `ISSUER`  
+Variable: `ISSUER_PUBLICURL`  
 Description: Issuer of the Attestations, i.e., the public URL of this Wallet Provider. Must not contain a fragment.    
 Default value: `http://localhost:8080`  
+
+Variable: `ISSUER_NAME`  
+Description: A human-readable name for this Wallet Provider.       
+Default value: `Wallet Provider`
 
 ### Client (i.e. Wallet) Configuration
 

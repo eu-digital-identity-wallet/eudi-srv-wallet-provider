@@ -115,7 +115,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             validateChallenge,
             validateKeyAttestation,
             config.walletInstanceAttestation.validity,
-            issuer = config.issuer,
+            issuer = config.issuer.publicUrl,
             clientId = config.clientId,
             config.walletInstanceAttestation.walletName,
             config.walletInstanceAttestation.walletLink,
@@ -159,7 +159,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             validateKeyAttestation,
             config.walletUnitAttestation.validity,
             generateStatusListToken,
-            issuer = config.issuer,
+            issuer = config.issuer.publicUrl,
             clientId = config.clientId,
             keyStorage = config.walletUnitAttestation.keyStorage?.toNonEmptyListOrNull(),
             userAuthentication = config.walletUnitAttestation.userAuthentication?.toNonEmptyListOrNull(),
@@ -185,7 +185,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
     configureChallengeRoutes(generateChallenge)
     configureWalletInstanceAttestationRoutes(issueWalletInstanceAttestation)
     configureWalletUnitAttestationRoutes(issueWalletUnitAttestation)
-    configureMetadataRoutes(config.issuer, signer, certificateChain)
+    configureMetadataRoutes(config.issuer.publicUrl, config.issuer.name, signer, certificateChain)
 }
 
 private fun Application.configureServerPlugins(json: Json) {

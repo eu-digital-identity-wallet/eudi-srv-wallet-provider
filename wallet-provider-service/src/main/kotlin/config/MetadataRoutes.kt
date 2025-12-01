@@ -26,6 +26,7 @@ import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.Issuer
+import eu.europa.ec.eudi.walletprovider.domain.Name
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.RFC9728
 import eu.europa.ec.eudi.walletprovider.domain.StringUrl
@@ -47,6 +48,7 @@ private val logger = LoggerFactory.getLogger("MetadataRoutes")
 
 fun Application.configureMetadataRoutes(
     issuer: Issuer,
+    name: Name,
     signer: Signer,
     certificateChain: CertificateChain?,
 ) {
@@ -66,6 +68,7 @@ fun Application.configureMetadataRoutes(
                         ProtectedResourceMetadataResponse(
                             issuer,
                             jwksUri,
+                            name,
                             resourceSigningAlgorithmsSupported = nonEmptyListOf(signingAlgorithm),
                             clientAttestationSigningAlgorithmsSupported = nonEmptyListOf(signingAlgorithm),
                             proofSigningAlgorithmsSupported = nonEmptyListOf(signingAlgorithm),
@@ -90,6 +93,7 @@ fun Application.configureMetadataRoutes(
 private data class ProtectedResourceMetadataResponse(
     @Required @SerialName(RFC9728.RESOURCE) val resource: Issuer,
     @Required @SerialName(RFC9728.JWKS_URI) val jwksUri: StringUrl,
+    @Required @SerialName(RFC9728.RESOURCE_NAME) val name: Name,
     @Required @SerialName(RFC9728.RESOURCE_SIGNING_ALGORITHMS_SUPPORTED) @Serializable(with = NonEmptyListSerializer::class)
     val resourceSigningAlgorithmsSupported: NonEmptyList<JwsAlgorithm>,
     @Required @SerialName(

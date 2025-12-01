@@ -45,7 +45,7 @@ data class WalletProviderConfiguration(
     val signingKey: SigningKeyConfiguration = SigningKeyConfiguration.GenerateRandom,
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
-    val issuer: Issuer = Issuer.create("http://localhost:8080"),
+    val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
@@ -268,4 +268,9 @@ data class WalletUnitAttestationConfiguration(
 data class TokenStatusListServiceConfiguration(
     val serviceUrl: StringUrl,
     val apiKey: Secret,
+)
+
+data class IssuerConfiguration(
+    val publicUrl: Issuer = Issuer.create("http://localhost:8080"),
+    val name: Name = Name("Wallet Provider"),
 )

@@ -96,5 +96,6 @@ object RFC9728 {
 
     const val RESOURCE: String = "resource"
     const val JWKS_URI: String = "jwks_uri"
+    const val RESOURCE_NAME: String = "resource_name"
     const val RESOURCE_SIGNING_ALGORITHMS_SUPPORTED: String = "resource_signing_alg_values_supported"
 }
