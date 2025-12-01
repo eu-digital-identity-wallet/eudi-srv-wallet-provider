@@ -29,7 +29,6 @@ import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPoten
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
-import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
 import kotlin.io.encoding.Base64

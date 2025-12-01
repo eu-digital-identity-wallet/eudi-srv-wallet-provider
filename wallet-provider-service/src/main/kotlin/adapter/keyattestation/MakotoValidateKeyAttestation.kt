@@ -16,10 +16,11 @@
 package eu.europa.ec.eudi.walletprovider.adapter.keyattestation
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.raise.either
+import arrow.core.raise.ensure
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import eu.europa.ec.eudi.walletprovider.domain.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttestedKey
@@ -35,34 +36,38 @@ class MakotoValidateKeyAttestation(
         unvalidatedKeyAttestation: Attestation,
         challenge: Challenge,
     ): Either<KeyAttestationValidationFailure, AttestedKey> =
-        makotoAttestationService
-            .verifyKeyAttestation(unvalidatedKeyAttestation, challenge.value)
-            .let { verificationResult ->
-                when {
-                    !verificationResult.isSuccess -> {
-                        val errorDetails = verificationResult.details as AttestationResult.Error
-                        KeyAttestationValidationFailure
-                            .InvalidKeyAttestation(
-                                errorDetails.explanation.toNonBlankString(),
-                                errorDetails.cause,
-                            ).left()
-                    }
+        either {
+            val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge.value)
 
-                    else -> {
-                        val publicKey = checkNotNull(verificationResult.attestedPublicKey)
-                        publicKey
-                            .toCryptoPublicKey()
-                            .fold(
-                                onFailure = {
-                                    KeyAttestationValidationFailure
-                                        .UnsupportedAttestedKey(
-                                            "Attested PublicKey is not supported".toNonBlankString(),
-                                            it,
-                                        ).left()
-                                },
-                                onSuccess = { AttestedKey(it, verificationResult.details).right() },
-                            )
-                    }
-                }
+            if (!verificationResult.isSuccess) {
+                val errorDetails = verificationResult.details as AttestationResult.Error
+                raise(
+                    KeyAttestationValidationFailure
+                        .InvalidKeyAttestation(
+                            errorDetails.explanation.toNonBlankString(),
+                            errorDetails.cause,
+                        ),
+                )
             }
+
+            val publicKey = checkNotNull(verificationResult.attestedPublicKey)
+            val cryptoPublicKey =
+                publicKey
+                    .toCryptoPublicKey()
+                    .getOrElse {
+                        raise(
+                            KeyAttestationValidationFailure.UnsupportedAttestedKey(
+                                "Attested PublicKey is not supported".toNonBlankString(),
+                                it,
+                            ),
+                        )
+                    }
+            ensure(cryptoPublicKey is CryptoPublicKey.EC) {
+                KeyAttestationValidationFailure.UnsupportedAttestedKey(
+                    "Attested PublicKey is not supported, only EC keys are supported".toNonBlankString(),
+                )
+            }
+
+            AttestedKey(cryptoPublicKey, verificationResult.details)
+        }
 }

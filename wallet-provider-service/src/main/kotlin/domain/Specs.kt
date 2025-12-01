@@ -17,7 +17,6 @@ package eu.europa.ec.eudi.walletprovider.domain
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 
 object AttestationBasedClientAuthenticationSpec {
     const val CLIENT_ATTESTATION_JWT_TYPE: String = "oauth-client-attestation+jwt"
