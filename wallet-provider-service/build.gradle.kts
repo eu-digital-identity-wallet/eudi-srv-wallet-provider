@@ -67,6 +67,10 @@ dependencies {
     implementation(libs.supreme)
 
     implementation(libs.hoplite.core)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 abstract class VirtualPlatformAlignmentRule
@@ -188,4 +192,8 @@ dependencyCheck {
     nvd {
         apiKey = System.getenv("NVD_API_KEY") ?: properties["nvdApiKey"]?.toString()
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

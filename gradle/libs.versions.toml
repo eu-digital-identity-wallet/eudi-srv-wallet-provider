@@ -21,8 +21,10 @@ dependency-check = "12.1.8"
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlinx-coroutines-bom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
 kotlinx-serialization-bom = { module = "org.jetbrains.kotlinx:kotlinx-serialization-bom", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -34,6 +36,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers" }
 ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header" }
 ktor-server-swagger = { module = "io.ktor:ktor-server-swagger" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host" }
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
