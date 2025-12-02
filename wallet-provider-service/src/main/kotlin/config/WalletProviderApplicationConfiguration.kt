@@ -79,7 +79,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             prettyPrint = true
         }
 
-    configureServerPlugins(json)
+    configureServerPlugins(json, config.swaggerUi)
 
     val (signer, certificateChain) =
         when (val config = config.signingKey) {
@@ -189,7 +189,10 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
     configureMetadataRoutes(config.issuer.publicUrl, config.issuer.name, signer, certificateChain)
 }
 
-private fun Application.configureServerPlugins(json: Json) {
+private fun Application.configureServerPlugins(
+    json: Json,
+    swaggerUiConfiguration: SwaggerUiConfiguration,
+) {
     install(ContentNegotiation) {
         json(json)
     }
@@ -203,10 +206,12 @@ private fun Application.configureServerPlugins(json: Json) {
     install(XForwardedHeaders)
     install(ForwardedHeaders)
 
-    routing {
-        swaggerUI(path = "/swagger", swaggerFile = "openapi/openapi.json")
-        get("/") {
-            call.respondRedirect("/swagger")
+    if (swaggerUiConfiguration is SwaggerUiConfiguration.Enabled) {
+        routing {
+            swaggerUI(path = swaggerUiConfiguration.path.value, swaggerFile = swaggerUiConfiguration.swaggerFile.value)
+            get("/") {
+                call.respondRedirect(swaggerUiConfiguration.path.value)
+            }
         }
     }
 }

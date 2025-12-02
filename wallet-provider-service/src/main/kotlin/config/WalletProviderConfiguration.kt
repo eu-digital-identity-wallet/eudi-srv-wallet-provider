@@ -50,6 +50,7 @@ data class WalletProviderConfiguration(
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
     val tokenStatusListService: TokenStatusListServiceConfiguration? = null,
+    val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration.Enabled(),
 )
 
 data class ServerConfiguration(
@@ -280,3 +281,12 @@ data class IssuerConfiguration(
     val publicUrl: Issuer = Issuer.create("http://localhost:8080"),
     val name: Name = Name("Wallet Provider"),
 )
+
+sealed interface SwaggerUiConfiguration {
+    data object Disabled : SwaggerUiConfiguration
+
+    data class Enabled(
+        val path: NonBlankString = "/swagger".toNonBlankString(),
+        val swaggerFile: NonBlankString = "openapi/openapi.json".toNonBlankString(),
+    ) : SwaggerUiConfiguration
+}

@@ -454,6 +454,20 @@ Description: URL of the **take** operation of [eudi-srv-statuslist-py](https://g
 Variable: `TOKENSTATUSLISTSERVICE_APIKEY`  
 Description: API Key used to access [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py).  
 
+### Swagger UI Configuration
+
+Wallet Provider exposes an OpenAPI specification of its endpoints using Swagger UI. You can configure the Swagger UI using the following environment variables:
+
+Variable: `SWAGGERUI_PATH`  
+Description: The path at which Swagger UI is exposed.      
+Default value: `/swagger`  
+
+Variable: `SWAGGERUI_SWAGGERFILE`  
+Description: The location of the OpenAPI specification file to serve.      
+Default value: `openapi/openapi.json`  
+
+To disable Swagger UI, set the environment variable `SWAGGERUI` to `Disabled`.  
+
 ### Duration formats
 
 Duration types support unit strings in the following format (lower case only), with an optional space between the unit value and the unit type.
