@@ -85,7 +85,7 @@ value class Challenge(
         require(value.isNotEmpty()) { "value must not be empty" }
     }
 
-    override fun toString(): String = value.toString()
+    override fun toString(): String = value.contentToString()
 }
 
 typealias SecondsDuration =

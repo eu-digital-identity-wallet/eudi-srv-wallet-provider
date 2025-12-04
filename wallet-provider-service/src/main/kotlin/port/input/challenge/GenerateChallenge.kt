@@ -68,10 +68,10 @@ class GenerateChallengeLive(
         }
 
         override fun equals(other: Any?): Boolean =
-            if (other is ChallengeClaims)
-                challenge.contentEquals(other.challenge) && notBefore == other.notBefore && expiresAt == other.expiresAt
-            else
-                false
+            other is ChallengeClaims &&
+                challenge.contentEquals(other.challenge) &&
+                notBefore == other.notBefore &&
+                expiresAt == other.expiresAt
 
         override fun hashCode(): Int = 31 * (31 * challenge.contentHashCode() + notBefore.hashCode()) + expiresAt.hashCode()
     }

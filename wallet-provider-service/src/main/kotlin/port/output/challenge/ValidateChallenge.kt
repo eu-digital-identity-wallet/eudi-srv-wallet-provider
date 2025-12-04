@@ -86,9 +86,4 @@ class ValidateChallengeLive(
         }
 }
 
-object ValidateChallengeNoop : ValidateChallenge {
-    override suspend fun invoke(
-        challenge: Challenge,
-        at: Instant,
-    ): Either<ChallengeValidationFailure, Unit> = Unit.right()
-}
+val ValidateChallengeNoop = ValidateChallenge { _, _ -> Unit.right() }
