@@ -14,7 +14,7 @@ spotless = "8.1.0"
 ktlint = "1.8.0"
 indispensable = "3.19.1"
 supreme = "0.11.1"
-jib = "3.4.5"
+jib = "3.5.2"
 kover = "0.9.3"
 dependency-check = "12.1.8"
 
