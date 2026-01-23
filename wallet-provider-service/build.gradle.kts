@@ -102,6 +102,7 @@ kotlin {
         optIn.addAll(
             "kotlin.io.encoding.ExperimentalEncodingApi",
             "kotlin.time.ExperimentalTime",
+            "at.asitplus.attestation.DisabledAttestation",
         )
     }
 

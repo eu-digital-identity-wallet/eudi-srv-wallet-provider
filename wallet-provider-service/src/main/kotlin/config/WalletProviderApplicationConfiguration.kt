@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.toNonEmptyListOrNull
 import arrow.fx.coroutines.ResourceScope
+import arrow.fx.coroutines.resourceScope
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
@@ -59,6 +60,8 @@ import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -228,15 +231,20 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
     config: SigningKeyConfiguration.LoadFromKeystore,
 ): Pair<Signer, CertificateChain> {
     val keystore =
-        Files
-            .newInputStream(config.keystoreFile, StandardOpenOption.READ)
-            .use { inputStream ->
-                KeyStore
-                    .getInstance(config.keystoreType.value)
-                    .apply {
-                        load(inputStream, config.keystorePassword?.value?.toCharArray())
-                    }
-            }
+        resourceScope {
+            val inputStream =
+                install(
+                    withContext(Dispatchers.IO) {
+                        Files.newInputStream(config.keystoreFile, StandardOpenOption.READ)
+                    },
+                )
+            KeyStore
+                .getInstance(config.keystoreType.value)
+                .apply {
+                    load(inputStream, config.keystorePassword?.value?.toCharArray())
+                }
+        }
+
     val keystoreProvider =
         JKSProvider {
             withBackingObject {
