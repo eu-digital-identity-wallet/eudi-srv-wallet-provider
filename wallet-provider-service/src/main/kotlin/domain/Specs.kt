@@ -99,3 +99,10 @@ object RFC9728 {
     const val RESOURCE_NAME: String = "resource_name"
     const val RESOURCE_SIGNING_ALGORITHMS_SUPPORTED: String = "resource_signing_alg_values_supported"
 }
+
+/**
+ * Custom fields not part of any standard specification
+ */
+object CustomFields {
+    const val WALLET_METADATA: String = "wallet_metadata"
+}
