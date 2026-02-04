@@ -18,6 +18,7 @@ package eu.europa.ec.eudi.walletprovider.adapter.keyattestation
 import arrow.core.Either
 import arrow.core.raise.either
 import at.asitplus.attestation.AttestationResult
+import at.asitplus.attestation.Makoto
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import eu.europa.ec.eudi.walletprovider.domain.Challenge
@@ -39,10 +40,20 @@ class MakotoValidateKeyAttestation(
 
             if (!verificationResult.isSuccess) {
                 val errorDetails = verificationResult.details as AttestationResult.Error
+                val prefix = if (errorDetails.explanation.isNotBlank()) errorDetails.explanation + "; " else ""
                 raise(
                     KeyAttestationValidationFailure
                         .InvalidKeyAttestation(
-                            errorDetails.explanation.toNonBlankString(),
+                            (
+                                if (makotoAttestationService is Makoto)
+                                    prefix + (
+                                        makotoAttestationService
+                                            .collectDebugInfo(unvalidatedKeyAttestation, challenge.value)
+                                            .serializeCompact()
+                                    )
+                                else
+                                    errorDetails.explanation
+                            ).toNonBlankString(),
                             errorDetails.cause,
                         ),
                 )
