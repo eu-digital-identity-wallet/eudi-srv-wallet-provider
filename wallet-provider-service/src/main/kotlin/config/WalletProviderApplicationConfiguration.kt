@@ -293,6 +293,7 @@ private fun createMakotoAttestationService(
         is PlatformKeyAttestationValidationConfiguration.Enabled -> {
             val androidAttestation =
                 with(config.platformKeyAttestationValidation.android) {
+                    if (this == null) return@with null
                     AndroidAttestationConfiguration(
                         applications =
                             applications.map { application ->
@@ -313,13 +314,13 @@ private fun createMakotoAttestationService(
                                 is AttestationStatementValidity.Enforced -> attestationStatementValidity.skew.inWholeSeconds
                             },
                         disableHardwareAttestation = !hardwareAttestationEnabled,
-                        enableNougatAttestation = nougatAttestationEnabled,
                         enableSoftwareAttestation = softwareAttestationEnabled,
                     )
                 }
 
             val iosAttestation =
                 with(config.platformKeyAttestationValidation.ios) {
+                    if (this == null) return@with null
                     IosAttestationConfiguration(
                         applications =
                             applications.map { application ->
@@ -334,11 +335,24 @@ private fun createMakotoAttestationService(
                     )
                 }
 
-            Makoto(
+            if (androidAttestation == null && iosAttestation == null) {
+                logger.warn("Platform Key Attestation Validation is currently disabled")
+                return NoopAttestationService
+            }
+
+            if (androidAttestation != null && iosAttestation != null) Makoto(
                 androidAttestationConfiguration = androidAttestation,
                 iosAttestationConfiguration = iosAttestation,
                 clock = clock.toKotlinClock(),
-                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew,
+                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
+            ) else if (iosAttestation != null) Makoto(
+                iosAttestationConfiguration = iosAttestation,
+                clock = clock.toKotlinClock(),
+                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
+            ) else Makoto(
+                androidAttestationConfiguration = androidAttestation!!,
+                clock = clock.toKotlinClock(),
+                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
             )
         }
     }

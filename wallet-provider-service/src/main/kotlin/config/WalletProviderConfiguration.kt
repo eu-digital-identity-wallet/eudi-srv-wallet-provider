@@ -129,8 +129,8 @@ sealed interface PlatformKeyAttestationValidationConfiguration {
     data object Disabled : PlatformKeyAttestationValidationConfiguration
 
     data class Enabled(
-        val android: AndroidKeyAttestationConfiguration = AndroidKeyAttestationConfiguration(),
-        val ios: IosKeyAttestationConfiguration = IosKeyAttestationConfiguration(),
+        val android: AndroidKeyAttestationConfiguration? = AndroidKeyAttestationConfiguration(),
+        val ios: IosKeyAttestationConfiguration? = IosKeyAttestationConfiguration(),
         val verificationTimeSkew: Duration = 0.seconds,
     ) : PlatformKeyAttestationValidationConfiguration
 }
@@ -144,8 +144,8 @@ data class AndroidKeyAttestationConfiguration(
     val verificationSkew: Duration = 0.seconds,
     val attestationStatementValidity: AttestationStatementValidity = AttestationStatementValidity.Enforced(),
     val hardwareAttestationEnabled: Boolean = true,
-    val nougatAttestationEnabled: Boolean = false,
     val softwareAttestationEnabled: Boolean = false,
+    val supremeParser: Boolean = false,
 ) {
     data class ApplicationConfiguration(
         val packageName: PackageName,
