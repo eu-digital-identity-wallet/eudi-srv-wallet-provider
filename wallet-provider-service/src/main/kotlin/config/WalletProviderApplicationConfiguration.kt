@@ -340,19 +340,23 @@ private fun createMakotoAttestationService(
                 return NoopAttestationService
             }
 
-            if (androidAttestation != null && iosAttestation != null) Makoto(
-                androidAttestationConfiguration = androidAttestation,
-                iosAttestationConfiguration = iosAttestation,
-                clock = clock.toKotlinClock(),
-                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
-            ) else if (iosAttestation != null) Makoto(
-                iosAttestationConfiguration = iosAttestation,
-                clock = clock.toKotlinClock(),
-                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
-            ) else Makoto(
-                androidAttestationConfiguration = androidAttestation!!,
-                clock = clock.toKotlinClock(),
-                verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew
-            )
+            if (androidAttestation != null && iosAttestation != null)
+                Makoto(
+                    androidAttestationConfiguration = androidAttestation,
+                    iosAttestationConfiguration = iosAttestation,
+                    clock = clock.toKotlinClock(),
+                    verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew,
+                ) else if (iosAttestation != null)
+                Makoto(
+                    iosAttestationConfiguration = iosAttestation,
+                    clock = clock.toKotlinClock(),
+                    verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew,
+                )
+            else
+                Makoto(
+                    androidAttestationConfiguration = androidAttestation!!,
+                    clock = clock.toKotlinClock(),
+                    verificationTimeOffset = config.platformKeyAttestationValidation.verificationTimeSkew,
+                )
         }
     }
