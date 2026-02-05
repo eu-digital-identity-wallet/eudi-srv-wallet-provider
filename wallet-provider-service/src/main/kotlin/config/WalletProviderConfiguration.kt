@@ -134,7 +134,7 @@ sealed interface PlatformKeyAttestationValidationConfiguration {
         val verificationTimeSkew: Duration = 0.seconds,
     ) : PlatformKeyAttestationValidationConfiguration {
         init {
-            require(android.enabled || ios.enabled) { "At least one type of Platform Key Attestation must be enabled" }
+            require(android.enabled || ios.enabled) { "At least one type of platform Key Attestation must be enabled" }
         }
     }
 }
