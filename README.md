@@ -299,6 +299,10 @@ Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_SOFTWAREATTESTATIONENABLED`
 Description: Whether **software** Key Attestations are accepted.  
 Default value: `false`  
 
+Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_SUPREMEPARSERENABLED`  
+Description: Whether to enable the Android platform Key Attestation parser provided by Warden Supreme.  
+Default value: `false`
+
 **Validity of Key Attestation**
 
 By default, Wallet Provider validates the creation time of the Key Attestation using a default skew of `5 minutes`. You can modify the `skew` using

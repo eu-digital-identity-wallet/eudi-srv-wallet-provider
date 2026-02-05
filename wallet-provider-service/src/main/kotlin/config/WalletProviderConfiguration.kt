@@ -150,7 +150,7 @@ data class AndroidKeyAttestationConfiguration(
     val attestationStatementValidity: AttestationStatementValidity = AttestationStatementValidity.Enforced(),
     val hardwareAttestationEnabled: Boolean = true,
     val softwareAttestationEnabled: Boolean = false,
-    val supremeParser: Boolean = false,
+    val supremeParserEnabled: Boolean = false,
 ) {
     data class ApplicationConfiguration(
         val packageName: PackageName,

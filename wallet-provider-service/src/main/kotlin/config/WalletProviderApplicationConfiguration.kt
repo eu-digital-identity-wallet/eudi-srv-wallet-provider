@@ -317,6 +317,7 @@ private fun createMakotoAttestationService(
                                 },
                             disableHardwareAttestation = !hardwareAttestationEnabled,
                             enableSoftwareAttestation = softwareAttestationEnabled,
+                            supremeParser = supremeParserEnabled,
                         )
                     }
 
