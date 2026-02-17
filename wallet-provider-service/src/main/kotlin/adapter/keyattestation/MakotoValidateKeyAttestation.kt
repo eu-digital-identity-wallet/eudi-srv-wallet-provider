@@ -40,20 +40,19 @@ class MakotoValidateKeyAttestation(
 
             if (!verificationResult.isSuccess) {
                 val errorDetails = verificationResult.details as AttestationResult.Error
-                val prefix = if (errorDetails.explanation.isNotBlank()) errorDetails.explanation + "; " else ""
+                val error =
+                    buildString {
+                        append(errorDetails.explanation)
+                        makotoAttestationService
+                            .debugInfo(unvalidatedKeyAttestation, challenge)
+                            ?.let {
+                                append("; $it")
+                            }
+                    }.toNonBlankString()
                 raise(
                     KeyAttestationValidationFailure
                         .InvalidKeyAttestation(
-                            (
-                                if (makotoAttestationService is Makoto)
-                                    prefix + (
-                                        makotoAttestationService
-                                            .collectDebugInfo(unvalidatedKeyAttestation, challenge.value)
-                                            .serializeCompact()
-                                    )
-                                else
-                                    errorDetails.explanation
-                            ).toNonBlankString(),
+                            error,
                             errorDetails.cause,
                         ),
                 )
@@ -75,3 +74,12 @@ class MakotoValidateKeyAttestation(
             AttestedKey(cryptoPublicKey, verificationResult.details)
         }
 }
+
+private fun MakotoAttestationService.debugInfo(
+    unvalidatedKeyAttestation: Attestation,
+    challenge: Challenge,
+): String? =
+    if (this !is Makoto)
+        null
+    else
+        collectDebugInfo(unvalidatedKeyAttestation, challenge.value).serializeCompact()
