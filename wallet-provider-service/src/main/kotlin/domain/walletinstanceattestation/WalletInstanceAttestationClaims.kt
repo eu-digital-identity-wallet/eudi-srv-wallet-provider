@@ -45,12 +45,14 @@ data class WalletInstanceAttestationClaims(
     )
 }
 
+typealias WalletName = NonBlankString
+typealias WalletLink = StringUrl
+
 /**
- * Custom metadata that can be included in wallet instance attestation claims.
- * Accepts any JsonElement type (object, array, primitive, or null) for maximum flexibility.
+ * Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation.
+ *
+ * Can be any valid JSON value (object, array, string, number, boolean, or null).
  */
 typealias WalletMetadata = JsonElement
 
-typealias WalletName = NonBlankString
-typealias WalletLink = StringUrl
 typealias WalletInstanceAttestation = JwsSigned<WalletInstanceAttestationClaims>

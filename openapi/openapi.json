@@ -338,6 +338,12 @@
         "format": "int64",
         "description": "Duration in seconds"
       },
+      "Any": {
+        "description": "Any valid JSON value (object, array, string, number, boolean, or null)"
+      },
+      "WalletMetadata": {
+        "$ref": "#/components/schemas/Any"
+      },
       "AndroidPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
@@ -355,14 +361,13 @@
             "minItems": 1
           },
           "walletMetadata": {
-            "description": "Custom metadata to be included in the wallet instance attestation JWT. Can be any JSON value (object, array, string, number, boolean, or null).",
-            "oneOf": [
-              { "type": "object" },
-              { "type": "array" },
-              { "type": "string" },
-              { "type": "number" },
-              { "type": "boolean" },
-              { "type": "null" }
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WalletMetadata"
+              },
+              {
+                "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
+              }
             ]
           }
         },
@@ -407,14 +412,13 @@
             "minItems": 1
           },
           "walletMetadata": {
-            "description": "Custom metadata to be included in the wallet instance attestation JWT. Can be any JSON value (object, array, string, number, boolean, or null).",
-            "oneOf": [
-              { "type": "object" },
-              { "type": "array" },
-              { "type": "string" },
-              { "type": "number" },
-              { "type": "boolean" },
-              { "type": "null" }
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WalletMetadata"
+              },
+              {
+                "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
+              }
             ]
           }
         },
@@ -442,14 +446,13 @@
             "minItems": 1
           },
           "walletMetadata": {
-            "description": "Custom metadata to be included in the wallet instance attestation JWT. Can be any JSON value (object, array, string, number, boolean, or null).",
-            "oneOf": [
-              { "type": "object" },
-              { "type": "array" },
-              { "type": "string" },
-              { "type": "number" },
-              { "type": "boolean" },
-              { "type": "null" }
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WalletMetadata"
+              },
+              {
+                "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
+              }
             ]
           }
         },
