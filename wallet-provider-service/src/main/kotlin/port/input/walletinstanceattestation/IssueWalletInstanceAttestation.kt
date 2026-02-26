@@ -27,11 +27,7 @@ import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestation
-import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestationClaims
-import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
-import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletMetadata
-import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
+import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure

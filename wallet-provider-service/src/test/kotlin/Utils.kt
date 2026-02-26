@@ -15,14 +15,55 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
-import arrow.fx.coroutines.ResourceScope
 import arrow.fx.coroutines.resourceScope
+import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.test.TestResult
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 
-fun testResourceScopedApplication(block: suspend context(ResourceScope) ApplicationTestBuilder.() -> Unit): TestResult =
+fun runWalletProviderTestCase(
+    config: WalletProviderConfiguration =
+        WalletProviderConfiguration(
+            walletInformation =
+                WalletInformationConfiguration(
+                    GeneralInformationConfiguration(
+                        provider = WalletProviderName("Wallet Provider"),
+                        id = SolutionId("EUDI Wallet"),
+                        version = SolutionVersion("1.0.0"),
+                        certification = CertificationInformation(JsonPrimitive("ARF")),
+                    ),
+                    WalletSecureCryptographicDeviceInformationConfiguration(
+                        WalletSecureCryptographicDeviceType.LocalNative,
+                        CertificationInformation(JsonPrimitive("ARF")),
+                    ),
+                ),
+            swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
+        ),
+    testCase: suspend ApplicationTestBuilder.() -> Unit,
+): TestResult =
     testApplication {
         resourceScope {
-            block()
+            application {
+                configureWalletProviderApplication(config)
+            }
+            client =
+                install(
+                    createClient {
+                        install(ContentNegotiation) {
+                            json(
+                                Json {
+                                    ignoreUnknownKeys = true
+                                    prettyPrint = true
+                                },
+                            )
+                        }
+                    },
+                )
+            testCase()
         }
     }
