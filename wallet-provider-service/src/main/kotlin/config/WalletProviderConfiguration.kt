@@ -33,7 +33,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
 import kotlin.io.encoding.Base64
 import kotlin.reflect.KType
-import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -91,38 +90,8 @@ sealed interface SigningKeyConfiguration {
         val keystoreType: NonBlankString = NonBlankString("JKS"),
         val keyAlias: NonBlankString,
         val keyPassword: Secret? = null,
-        val algorithm: SignatureAlgorithm,
+        val algorithm: AvailableDigests,
     ) : SigningKeyConfiguration
-}
-
-class SignatureAlgorithmDecoder : Decoder<SignatureAlgorithm> {
-    override fun supports(type: KType): Boolean = type.classifier == SignatureAlgorithm::class
-
-    override fun decode(
-        node: Node,
-        type: KType,
-        context: DecoderContext,
-    ): ConfigResult<SignatureAlgorithm> =
-        when (node) {
-            is StringNode -> {
-                runCatching {
-                    val signatureAlgorithmProperty =
-                        SignatureAlgorithm.Companion::class.memberProperties.firstOrNull {
-                            it.name ==
-                                node.value
-                        }
-                    requireNotNull(signatureAlgorithmProperty) { "Unknown SignatureAlgorithm '${node.value}'" }
-                    signatureAlgorithmProperty.call(SignatureAlgorithm.Companion) as SignatureAlgorithm
-                }.fold(
-                    { it.valid() },
-                    { ConfigFailure.DecodeError(node, type).invalid() },
-                )
-            }
-
-            else -> {
-                ConfigFailure.DecodeError(node, type).invalid()
-            }
-        }
 }
 
 sealed interface PlatformKeyAttestationValidationConfiguration {

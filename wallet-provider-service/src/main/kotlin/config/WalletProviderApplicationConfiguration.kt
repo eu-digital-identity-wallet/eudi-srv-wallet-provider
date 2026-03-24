@@ -22,6 +22,8 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
@@ -254,15 +256,27 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
     val signer =
         keystoreProvider
             .getSignerForKey(config.keyAlias.value) {
-                val signatureAlgorithm = config.algorithm
-                require(signatureAlgorithm is SignatureAlgorithm.ECDSA) {
-                    "only EC keys are supported for signing"
-                }
+                val configDigest =
+                    when (config.algorithm) {
+                        AvailableDigests.SHA256 -> Digest.SHA256
+                        AvailableDigests.SHA384 -> Digest.SHA384
+                        AvailableDigests.SHA512 -> Digest.SHA512
+                    }
+
                 ec {
-                    digest = signatureAlgorithm.digest
+                    digest = configDigest
                 }
                 privateKeyPassword = config.keyPassword?.value?.toCharArray()
             }.getOrThrow()
+
+    val signerPublicKey = signer.publicKey
+    require(signerPublicKey is CryptoPublicKey.EC)
+    when (signerPublicKey.curve) {
+        ECCurve.SECP_256_R_1 -> require(config.algorithm == AvailableDigests.SHA256)
+        ECCurve.SECP_384_R_1 -> require(config.algorithm == AvailableDigests.SHA384)
+        ECCurve.SECP_521_R_1 -> require(config.algorithm == AvailableDigests.SHA512)
+    }
+
     val certificateChain: CertificateChain =
         keystore
             .getCertificateChain(config.keyAlias.value)
