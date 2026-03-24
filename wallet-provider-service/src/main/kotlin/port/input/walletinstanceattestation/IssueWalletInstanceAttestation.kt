@@ -35,6 +35,7 @@ import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAt
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 fun interface IssueWalletInstanceAttestation {
@@ -102,6 +103,9 @@ value class WalletInstanceAttestationValidity(
 ) {
     init {
         require(value.isPositive())
+        require(value < 24.hours) {
+            "validity must be less than 24 hours"
+        }
     }
 
     override fun toString(): String = value.toString()
