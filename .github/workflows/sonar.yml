@@ -34,7 +34,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew test koverXmlReport
       - name: Analysis on push or workflow dispatch
         uses: sonarsource/sonarqube-scan-action@v7.0.0
