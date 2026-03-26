@@ -252,7 +252,7 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
                 store = keystore
             }
         }.getOrThrow()
-    val (configDigest, curve) =
+    val (digest, curve) =
         when (config.algorithm) {
             SigningAlgorithm.ES256 -> Digest.SHA256 to ECCurve.SECP_256_R_1
             SigningAlgorithm.ES384 -> Digest.SHA384 to ECCurve.SECP_384_R_1
@@ -262,7 +262,7 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
         keystoreProvider
             .getSignerForKey(config.keyAlias.value) {
                 ec {
-                    digest = configDigest
+                    this.digest = digest
                 }
                 privateKeyPassword = config.keyPassword?.value?.toCharArray()
             }.getOrThrow()
