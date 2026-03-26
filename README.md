@@ -244,7 +244,7 @@ Description: Password of the Key to load.
 Default value: N/A  
 
 Variable: `SIGNINGKEY_ALGORITHM`   
-Description: JWS Algorithm used to sign the generated Attestations.
+Description: JWS Algorithm used to sign the generated Attestations.  
 Default value: N/A  
 Allowed values:
 * `ES256`
