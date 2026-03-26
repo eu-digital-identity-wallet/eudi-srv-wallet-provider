@@ -35,6 +35,7 @@ import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAt
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 fun interface IssueWalletInstanceAttestation {
@@ -102,6 +103,9 @@ value class WalletInstanceAttestationValidity(
 ) {
     init {
         require(value.isPositive())
+        require(value < ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY) {
+            "Wallet Instance Attestation validity must be less than ${ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY}"
+        }
     }
 
     override fun toString(): String = value.toString()
