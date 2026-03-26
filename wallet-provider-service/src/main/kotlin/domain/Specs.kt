@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.domain
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 object AttestationBasedClientAuthenticationSpec {
     const val CLIENT_ATTESTATION_JWT_TYPE: String = "oauth-client-attestation+jwt"
@@ -48,6 +49,7 @@ object ARF {
     const val WALLET_SOLUTION_VERSION: String = "wallet_solution_version"
     const val WALLET_SOLUTION_CERTIFICATION_INFORMATION: String = "wallet_solution_certification_information"
     val MIN_WALLET_UNIT_ATTESTATION_VALIDITY: Duration = 31.days
+    val MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY: Duration = 24.hours
 
     const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_INFORMATION: String = "wscd_info"
     const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE: String = "wscd_type"
