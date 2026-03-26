@@ -31,7 +31,6 @@ fun main() =
         val config =
             ConfigLoader
                 .builder()
-                .addDecoder(SignatureAlgorithmDecoder())
                 .addDecoder(Base64UrlSafeByteArrayDecoder())
                 .addDecoder(CertificationInformationDecoder())
                 .build()
