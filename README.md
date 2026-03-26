@@ -244,12 +244,12 @@ Description: Password of the Key to load.
 Default value: N/A  
 
 Variable: `SIGNINGKEY_ALGORITHM`   
-Description: Algorithm used to sign the generated Attestations.  
+Description: JWS Algorithm used to sign the generated Attestations.
 Default value: N/A  
 Allowed values:
-* `ECDSAwithSHA256`
-* `ECDSAwithSHA384`
-* `ECDSAwithSHA512`
+* `ES256`
+* `ES384`
+* `ES512`
 
 #### Platform Key Attestation Validation Configuration
 
