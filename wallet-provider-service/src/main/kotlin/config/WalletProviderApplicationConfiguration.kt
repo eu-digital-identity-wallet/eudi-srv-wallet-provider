@@ -22,8 +22,9 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.os.JKSProvider
@@ -251,18 +252,29 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
                 store = keystore
             }
         }.getOrThrow()
+    val (digest, curve) =
+        when (config.algorithm) {
+            SigningAlgorithm.ES256 -> Digest.SHA256 to ECCurve.SECP_256_R_1
+            SigningAlgorithm.ES384 -> Digest.SHA384 to ECCurve.SECP_384_R_1
+            SigningAlgorithm.ES512 -> Digest.SHA512 to ECCurve.SECP_521_R_1
+        }
     val signer =
         keystoreProvider
             .getSignerForKey(config.keyAlias.value) {
-                val signatureAlgorithm = config.algorithm
-                require(signatureAlgorithm is SignatureAlgorithm.ECDSA) {
-                    "only EC keys are supported for signing"
-                }
                 ec {
-                    digest = signatureAlgorithm.digest
+                    this.digest = digest
                 }
                 privateKeyPassword = config.keyPassword?.value?.toCharArray()
             }.getOrThrow()
+
+    val publicKey = signer.publicKey
+    require(publicKey is CryptoPublicKey.EC) {
+        "Signing key must be an EC key"
+    }
+    require(curve == publicKey.curve) {
+        "Signing key must be on curve: ${curve.name}"
+    }
+
     val certificateChain: CertificateChain =
         keystore
             .getCertificateChain(config.keyAlias.value)
