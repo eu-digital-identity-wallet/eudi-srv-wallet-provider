@@ -252,16 +252,15 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
                 store = keystore
             }
         }.getOrThrow()
+    val (configDigest, curve) =
+        when (config.algorithm) {
+            SigningAlgorithm.ES256 -> Digest.SHA256 to ECCurve.SECP_256_R_1
+            SigningAlgorithm.ES384 -> Digest.SHA384 to ECCurve.SECP_384_R_1
+            SigningAlgorithm.ES512 -> Digest.SHA512 to ECCurve.SECP_521_R_1
+        }
     val signer =
         keystoreProvider
             .getSignerForKey(config.keyAlias.value) {
-                val configDigest =
-                    when (config.algorithm) {
-                        SigningAlgorithm.ES256 -> Digest.SHA256
-                        SigningAlgorithm.ES384 -> Digest.SHA384
-                        SigningAlgorithm.ES512 -> Digest.SHA512
-                    }
-
                 ec {
                     digest = configDigest
                 }
@@ -272,12 +271,6 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
     require(publicKey is CryptoPublicKey.EC) {
         "Signing key must be an EC key"
     }
-    val curve =
-        when (config.algorithm) {
-            SigningAlgorithm.ES256 -> ECCurve.SECP_256_R_1
-            SigningAlgorithm.ES384 -> ECCurve.SECP_384_R_1
-            SigningAlgorithm.ES512 -> ECCurve.SECP_521_R_1
-        }
     require(curve == publicKey.curve) {
         "Signing key must be ${curve.name} curve"
     }
