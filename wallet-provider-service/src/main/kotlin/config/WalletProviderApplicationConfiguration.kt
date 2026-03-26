@@ -25,7 +25,6 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.os.JKSProvider
@@ -258,9 +257,9 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
             .getSignerForKey(config.keyAlias.value) {
                 val configDigest =
                     when (config.algorithm) {
-                        AvailableDigests.SHA256 -> Digest.SHA256
-                        AvailableDigests.SHA384 -> Digest.SHA384
-                        AvailableDigests.SHA512 -> Digest.SHA512
+                        SigningAlgorithm.ES256 -> Digest.SHA256
+                        SigningAlgorithm.ES384 -> Digest.SHA384
+                        SigningAlgorithm.ES512 -> Digest.SHA512
                     }
 
                 ec {
@@ -272,9 +271,9 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
     val signerPublicKey = signer.publicKey
     require(signerPublicKey is CryptoPublicKey.EC)
     when (signerPublicKey.curve) {
-        ECCurve.SECP_256_R_1 -> require(config.algorithm == AvailableDigests.SHA256)
-        ECCurve.SECP_384_R_1 -> require(config.algorithm == AvailableDigests.SHA384)
-        ECCurve.SECP_521_R_1 -> require(config.algorithm == AvailableDigests.SHA512)
+        ECCurve.SECP_256_R_1 -> require(config.algorithm == SigningAlgorithm.ES256)
+        ECCurve.SECP_384_R_1 -> require(config.algorithm == SigningAlgorithm.ES384)
+        ECCurve.SECP_521_R_1 -> require(config.algorithm == SigningAlgorithm.ES512)
     }
 
     val certificateChain: CertificateChain =

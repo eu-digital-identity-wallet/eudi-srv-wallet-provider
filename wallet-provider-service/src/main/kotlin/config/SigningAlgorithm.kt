@@ -15,8 +15,8 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
-enum class AvailableDigests {
-    SHA256,
-    SHA384,
-    SHA512,
+enum class SigningAlgorithm {
+    ES256,
+    ES384,
+    ES512,
 }

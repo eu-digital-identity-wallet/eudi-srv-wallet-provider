@@ -16,7 +16,6 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.NonEmptyList
-import at.asitplus.signum.indispensable.SignatureAlgorithm
 import com.sksamuel.hoplite.*
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
@@ -90,7 +89,7 @@ sealed interface SigningKeyConfiguration {
         val keystoreType: NonBlankString = NonBlankString("JKS"),
         val keyAlias: NonBlankString,
         val keyPassword: Secret? = null,
-        val algorithm: AvailableDigests,
+        val algorithm: SigningAlgorithm,
     ) : SigningKeyConfiguration
 }
 
