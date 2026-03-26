@@ -103,8 +103,8 @@ value class WalletInstanceAttestationValidity(
 ) {
     init {
         require(value.isPositive())
-        require(value < 24.hours) {
-            "validity must be less than 24 hours"
+        require(value < ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY) {
+            "validity must be less than ${ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY}"
         }
     }
 
