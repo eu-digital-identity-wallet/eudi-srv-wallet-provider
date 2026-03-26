@@ -272,7 +272,7 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
         "Signing key must be an EC key"
     }
     require(curve == publicKey.curve) {
-        "Signing key must be ${curve.name} curve"
+        "Signing key must be on curve: ${curve.name}"
     }
 
     val certificateChain: CertificateChain =
