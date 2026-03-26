@@ -268,12 +268,18 @@ private suspend fun loadSignerAndCertificateChainFromKeystore(
                 privateKeyPassword = config.keyPassword?.value?.toCharArray()
             }.getOrThrow()
 
-    val signerPublicKey = signer.publicKey
-    require(signerPublicKey is CryptoPublicKey.EC)
-    when (signerPublicKey.curve) {
-        ECCurve.SECP_256_R_1 -> require(config.algorithm == SigningAlgorithm.ES256)
-        ECCurve.SECP_384_R_1 -> require(config.algorithm == SigningAlgorithm.ES384)
-        ECCurve.SECP_521_R_1 -> require(config.algorithm == SigningAlgorithm.ES512)
+    val publicKey = signer.publicKey
+    require(publicKey is CryptoPublicKey.EC) {
+        "Signing key must be an EC key"
+    }
+    val curve =
+        when (config.algorithm) {
+            SigningAlgorithm.ES256 -> ECCurve.SECP_256_R_1
+            SigningAlgorithm.ES384 -> ECCurve.SECP_384_R_1
+            SigningAlgorithm.ES512 -> ECCurve.SECP_521_R_1
+        }
+    require(curve == publicKey.curve) {
+        "Signing key must be ${curve.name} curve"
     }
 
     val certificateChain: CertificateChain =

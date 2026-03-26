@@ -264,3 +264,9 @@ sealed interface SwaggerUiConfiguration {
         val swaggerFile: NonBlankString = "openapi/openapi.json".toNonBlankString(),
     ) : SwaggerUiConfiguration
 }
+
+enum class SigningAlgorithm {
+    ES256,
+    ES384,
+    ES512,
+}
