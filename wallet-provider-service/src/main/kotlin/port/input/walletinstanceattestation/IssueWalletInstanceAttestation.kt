@@ -35,7 +35,6 @@ import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAt
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 fun interface IssueWalletInstanceAttestation {

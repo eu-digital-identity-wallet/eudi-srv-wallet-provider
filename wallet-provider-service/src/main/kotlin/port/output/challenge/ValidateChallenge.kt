@@ -21,11 +21,10 @@ import arrow.core.raise.ensure
 import arrow.core.right
 import eu.europa.ec.eudi.walletprovider.domain.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.RFC7519
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
-import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
-import eu.europa.ec.eudi.walletprovider.port.output.jose.JwtSignatureValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.jose.ValidateJwtSignature
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.IsChallengeActive
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.MarkChallengeInactive
 import kotlin.time.Instant
 
 fun interface ValidateChallenge {
@@ -41,48 +40,21 @@ class ChallengeValidationFailure(
 )
 
 class ValidateChallengeLive(
-    private val validateJwtSignature: ValidateJwtSignature<GenerateChallengeLive.ChallengeClaims>,
+    private val runInTransaction: RunInTransaction,
+    private val isChallengeActive: IsChallengeActive,
+    private val markChallengeInactive: MarkChallengeInactive,
 ) : ValidateChallenge {
     override suspend fun invoke(
         challenge: Challenge,
         at: Instant,
     ): Either<ChallengeValidationFailure, Unit> =
         either {
-            validateJwtSignature(challenge.value.decodeToString()).fold(
-                ifLeft = {
-                    val (error, cause) =
-                        when (it) {
-                            is JwtSignatureValidationFailure.InvalidSignature -> {
-                                "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
-                            }
-
-                            is JwtSignatureValidationFailure.UnparsableJwt -> {
-                                "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
-                            }
-                        }
-                    raise(ChallengeValidationFailure(error, cause))
-                },
-                ifRight = { challengeJwt ->
-                    ensure(challengeJwt.header.type == GenerateChallengeLive.CHALLENGE_JWT_TYPE) {
-                        ChallengeValidationFailure(
-                            (
-                                "Challenge is not valid, contains invalid `${RFC7519.TYPE}`. " +
-                                    "Expected: '${GenerateChallengeLive.CHALLENGE_JWT_TYPE}', " +
-                                    "found: '${challengeJwt.header.type ?: ""}'."
-                            ).toNonBlankString(),
-                        )
-                    }
-
-                    val challengeClaims = challengeJwt.payload
-                    ensure(challengeClaims.notBefore <= at) {
-                        ChallengeValidationFailure("Challenge is not active yet.".toNonBlankString())
-                    }
-
-                    ensure(at < challengeClaims.expiresAt) {
-                        ChallengeValidationFailure("Challenge is expired.".toNonBlankString())
-                    }
-                },
-            )
+            runInTransaction {
+                ensure(isChallengeActive(challenge, at)) {
+                    ChallengeValidationFailure("Challenge is not active.".toNonBlankString())
+                }
+                markChallengeInactive(challenge)
+            }
         }
 }
 

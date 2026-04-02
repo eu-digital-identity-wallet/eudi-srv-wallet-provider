@@ -30,8 +30,12 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.os.JKSProvider
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
-import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumValidateJwtSignature
 import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.IsChallengeActiveLive
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.MarkChallengeInactiveLive
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.StoreActiveChallengeLive
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
@@ -61,9 +65,15 @@ import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.r2dbc.spi.IsolationLevel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.v1.core.vendors.*
+import org.jetbrains.exposed.v1.migration.r2dbc.MigrationUtils
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
@@ -85,6 +95,8 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
 
     configureServerPlugins(json, config.swaggerUi)
 
+    configureDatabase(config.database)
+
     val (signer, certificateChain) = loadSignerAndCertificateChainFromKeystore(config.signingKey)
 
     val generateChallenge =
@@ -92,7 +104,8 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             clock = clock,
             length = config.challenge.length,
             validity = config.challenge.validity,
-            signJwt = SignumSignJwt(signer, certificateChain, JwtType(GenerateChallengeLive.CHALLENGE_JWT_TYPE), json),
+            runInTransaction = RunInTransactionLive,
+            storeActiveChallenge = StoreActiveChallengeLive,
         )
 
     val validateChallenge =
@@ -103,7 +116,11 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             }
 
             is PlatformKeyAttestationValidationConfiguration.Enabled -> {
-                ValidateChallengeLive(SignumValidateJwtSignature(signer, json))
+                ValidateChallengeLive(
+                    runInTransaction = RunInTransactionLive,
+                    isChallengeActive = IsChallengeActiveLive,
+                    markChallengeInactive = MarkChallengeInactiveLive,
+                )
             }
         }
 
@@ -213,6 +230,47 @@ private fun Application.configureServerPlugins(
                 call.respondRedirect(swaggerUiConfiguration.path.value)
             }
         }
+    }
+}
+
+private suspend fun configureDatabase(config: DatabaseConfiguration) {
+    R2dbcDatabase.connect(
+        url = config.url.value,
+        user = config.user.orEmpty(),
+        password = config.password?.value.orEmpty(),
+        driver =
+            when (config.driver) {
+                DatabaseConfiguration.Driver.H2 -> "h2"
+                DatabaseConfiguration.Driver.MariaDB -> "mariadb"
+                DatabaseConfiguration.Driver.MySQL -> "mysql"
+                DatabaseConfiguration.Driver.Oracle -> "oracle"
+                DatabaseConfiguration.Driver.PostgreSQL -> "postgresql"
+                DatabaseConfiguration.Driver.MSSQL -> "sqlserver"
+            },
+        databaseConfig =
+            R2dbcDatabaseConfig {
+                defaultR2dbcIsolationLevel = IsolationLevel.SERIALIZABLE
+                explicitDialect =
+                    when (config.driver) {
+                        DatabaseConfiguration.Driver.H2 -> H2Dialect()
+                        DatabaseConfiguration.Driver.MariaDB -> MariaDBDialect()
+                        DatabaseConfiguration.Driver.MySQL -> MysqlDialect()
+                        DatabaseConfiguration.Driver.Oracle -> OracleDialect()
+                        DatabaseConfiguration.Driver.PostgreSQL -> PostgreSQLDialect()
+                        DatabaseConfiguration.Driver.MSSQL -> SQLServerDialect()
+                    }
+            },
+    )
+
+    val migrations =
+        suspendTransaction {
+            MigrationUtils.statementsRequiredForDatabaseMigration(
+                Challenges,
+                withLogs = true,
+            )
+        }
+    check(migrations.isEmpty()) {
+        "Database is not up to date. The following migration are required: \n\t${migrations.joinToString(separator = "\n\t") { "'$it'" }}"
     }
 }
 

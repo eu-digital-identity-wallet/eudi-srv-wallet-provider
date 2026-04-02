@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.seconds
 @Suppress("ktlint:standard:max-line-length")
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
+    val database: DatabaseConfiguration,
     val signingKey: SigningKeyConfiguration,
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
@@ -57,6 +58,22 @@ data class ServerConfiguration(
     val grace: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.seconds),
     val timeout: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.seconds),
 )
+
+data class DatabaseConfiguration(
+    val url: NonBlankString,
+    val user: String? = null,
+    val password: Secret? = null,
+    val driver: Driver,
+) {
+    enum class Driver {
+        H2,
+        MariaDB,
+        MySQL,
+        Oracle,
+        PostgreSQL,
+        MSSQL,
+    }
+}
 
 @JvmInline
 value class Port(
