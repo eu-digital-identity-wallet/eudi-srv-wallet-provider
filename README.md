@@ -219,28 +219,17 @@ Default value: `5 seconds`
 
 ### Database Configuration
 
-Wallet Provider is compatible with a wide range of relational database systems.   
-It uses [Exposed](https://www.jetbrains.com/exposed/) with [R2DBC](https://r2dbc.io/).  
-R2DBC drivers are included for all major relational database systems.  
+Wallet Provider is developed and tested using MySQL.   
+It uses [Exposed](https://www.jetbrains.com/exposed/) with [R2DBC](https://r2dbc.io/).   
 
-Currently, no migration scripts are provided. During startup, Wallet Provider checks the configured database and prints the required migrations.
+The database schema is available [here](wallet-provider-service/src/test/resources/schema.sql)
 
 To configure the database, use the following environment variables:
 
 Variable: `DATABASE_URL`  
-Description: R2DBC URL used to connect to the database.  
-Allowed protocols: `r2dbc`  
-
-Available drivers:
-* `h2`
-* `postgresql`
-* `mysql`
-* `mariadb`
-* `oracle`
-* `mssql`
-
+Description: R2DBC URL used to connect to the database.
 Default value: N/A  
-Example value: `r2dbc:postgresql://localhost:5432/wallet-provider`  
+Example value: `r2dbc:mysql://localhost:3306/wallet-provider`  
 
 Variable: `DATABASE_USERNAME`   
 Description: Username of the database user.  

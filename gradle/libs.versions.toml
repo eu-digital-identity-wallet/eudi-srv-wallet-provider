@@ -18,12 +18,7 @@ jib = "3.5.2"
 kover = "0.9.8"
 dependency-check = "12.2.0"
 exposed = "1.1.1"
-r2dbc-h2 = "1.1.0.RELEASE"
-r2dbc-mariadb = "1.4.0"
 r2dbc-mysql = "1.4.1"
-r2dbc-oracle = "1.3.0"
-r2dbc-postgresql = "1.1.1.RELEASE"
-r2dbc-mssql = "1.0.4.RELEASE"
 testcontainers = "2.0.4"
 jdbc-mysql = "9.6.0"
 
@@ -70,12 +65,7 @@ exposed-r2dbc = { module = "org.jetbrains.exposed:exposed-r2dbc" }
 exposed-migration-core = { module = "org.jetbrains.exposed:exposed-migration-core" }
 exposed-migration-r2dbc = { module = "org.jetbrains.exposed:exposed-migration-r2dbc" }
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime" }
-r2dbc-h2 = { module = "io.r2dbc:r2dbc-h2", version.ref = "r2dbc-h2" }
-r2dbc-mariadb = { module = "org.mariadb:r2dbc-mariadb", version.ref = "r2dbc-mariadb" }
 r2dbc-mysql = { module = "io.asyncer:r2dbc-mysql", version.ref = "r2dbc-mysql" }
-r2dbc-oracle = { module = "com.oracle.database.r2dbc:oracle-r2dbc", version.ref = "r2dbc-oracle" }
-r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "r2dbc-postgresql" }
-r2dbc-mssql = { module = "io.r2dbc:r2dbc-mssql", version.ref = "r2dbc-mssql" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }
 jdbc-mysql = { module = "com.mysql:mysql-connector-j", version.ref = "jdbc-mysql" }
