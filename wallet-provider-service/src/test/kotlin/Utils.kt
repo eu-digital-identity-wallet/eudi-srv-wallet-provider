@@ -16,6 +16,7 @@
 package eu.europa.ec.eudi.walletprovider
 
 import arrow.fx.coroutines.resourceScope
+import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.config.*
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
@@ -25,6 +26,7 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.test.TestResult
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
+import java.nio.file.Path
 
 fun runWalletProviderTestCase(
     config: WalletProviderConfiguration =
@@ -43,6 +45,14 @@ fun runWalletProviderTestCase(
                     ),
                 ),
             swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
+            signingKey =
+                SigningKeyConfiguration(
+                    keystoreFile = Path.of("src/test/resources/keystore.jks"),
+                    keystorePassword = Secret("testKeystore"),
+                    keyAlias = "test-key".toNonBlankString(),
+                    keyPassword = Secret("testKeystore"),
+                    algorithm = SigningAlgorithm.ES256,
+                ),
         ),
     testCase: suspend ApplicationTestBuilder.() -> Unit,
 ): TestResult =
