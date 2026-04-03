@@ -73,6 +73,7 @@ import org.jetbrains.exposed.v1.core.vendors.*
 import org.jetbrains.exposed.v1.migration.r2dbc.MigrationUtils
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
+import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -233,34 +234,37 @@ private fun Application.configureServerPlugins(
     }
 }
 
+context(resourceScope: ResourceScope)
 private suspend fun configureDatabase(config: DatabaseConfiguration) {
-    R2dbcDatabase.connect(
-        url = config.url.value,
-        user = config.user.orEmpty(),
-        password = config.password?.value.orEmpty(),
-        driver =
-            when (config.driver) {
-                DatabaseConfiguration.Driver.H2 -> "h2"
-                DatabaseConfiguration.Driver.MariaDB -> "mariadb"
-                DatabaseConfiguration.Driver.MySQL -> "mysql"
-                DatabaseConfiguration.Driver.Oracle -> "oracle"
-                DatabaseConfiguration.Driver.PostgreSQL -> "postgresql"
-                DatabaseConfiguration.Driver.MSSQL -> "sqlserver"
-            },
-        databaseConfig =
-            R2dbcDatabaseConfig {
-                defaultR2dbcIsolationLevel = IsolationLevel.SERIALIZABLE
-                explicitDialect =
-                    when (config.driver) {
-                        DatabaseConfiguration.Driver.H2 -> H2Dialect()
-                        DatabaseConfiguration.Driver.MariaDB -> MariaDBDialect()
-                        DatabaseConfiguration.Driver.MySQL -> MysqlDialect()
-                        DatabaseConfiguration.Driver.Oracle -> OracleDialect()
-                        DatabaseConfiguration.Driver.PostgreSQL -> PostgreSQLDialect()
-                        DatabaseConfiguration.Driver.MSSQL -> SQLServerDialect()
-                    }
-            },
-    )
+    resourceScope.install({
+        R2dbcDatabase.connect(
+            url = config.url.value,
+            user = config.user.orEmpty(),
+            password = config.password?.value.orEmpty(),
+            driver =
+                when (config.driver) {
+                    DatabaseConfiguration.Driver.H2 -> "h2"
+                    DatabaseConfiguration.Driver.MariaDB -> "mariadb"
+                    DatabaseConfiguration.Driver.MySQL -> "mysql"
+                    DatabaseConfiguration.Driver.Oracle -> "oracle"
+                    DatabaseConfiguration.Driver.PostgreSQL -> "postgresql"
+                    DatabaseConfiguration.Driver.MSSQL -> "sqlserver"
+                },
+            databaseConfig =
+                R2dbcDatabaseConfig {
+                    defaultR2dbcIsolationLevel = IsolationLevel.SERIALIZABLE
+                    explicitDialect =
+                        when (config.driver) {
+                            DatabaseConfiguration.Driver.H2 -> H2Dialect()
+                            DatabaseConfiguration.Driver.MariaDB -> MariaDBDialect()
+                            DatabaseConfiguration.Driver.MySQL -> MysqlDialect()
+                            DatabaseConfiguration.Driver.Oracle -> OracleDialect()
+                            DatabaseConfiguration.Driver.PostgreSQL -> PostgreSQLDialect()
+                            DatabaseConfiguration.Driver.MSSQL -> SQLServerDialect()
+                        }
+                },
+        )
+    }) { database, _ -> TransactionManager.closeAndUnregister(database) }
 
     val migrations =
         suspendTransaction {
