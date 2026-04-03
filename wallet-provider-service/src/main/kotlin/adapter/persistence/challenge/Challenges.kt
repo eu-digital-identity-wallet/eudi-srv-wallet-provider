@@ -15,6 +15,7 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge
 
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.ForPrimaryDatabase
 import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.map
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.vendors.ForUpdateOption
 import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -49,7 +49,7 @@ val ChallengeRepositoryLive =
         override suspend fun findByValueAndLock(value: ByteArray): Challenge? =
             Challenges
                 .selectAll()
-                .forUpdate(ForUpdateOption.MySQL.ForUpdate(mode = ForUpdateOption.MySQL.MODE.NO_WAIT))
+                .forUpdate(ForPrimaryDatabase)
                 .where { Challenges.value.eq(value) }
                 .map {
                     Challenge(

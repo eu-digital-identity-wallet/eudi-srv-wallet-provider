@@ -75,7 +75,12 @@ dependencies {
     implementation(libs.exposed.migration.core)
     implementation(libs.exposed.migration.r2dbc)
     implementation(libs.exposed.kotlin.datetime)
+    runtimeOnly(libs.r2dbc.h2)
+    runtimeOnly(libs.r2dbc.mariadb)
     runtimeOnly(libs.r2dbc.mysql)
+    runtimeOnly(libs.r2dbc.oracle)
+    runtimeOnly(libs.r2dbc.postgresql)
+    runtimeOnly(libs.r2dbc.mssql)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
