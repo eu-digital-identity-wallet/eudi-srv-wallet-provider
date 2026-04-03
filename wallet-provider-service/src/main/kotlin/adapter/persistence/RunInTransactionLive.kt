@@ -20,5 +20,8 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
 val RunInTransactionLive =
     object : RunInTransaction {
-        override suspend fun <T : Any> invoke(block: suspend () -> T): T = suspendTransaction { block() }
+        override suspend fun <T : Any> invoke(
+            readOnly: Boolean,
+            block: suspend () -> T,
+        ): T = suspendTransaction(readOnly = readOnly) { block() }
     }

@@ -15,10 +15,10 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.input.challenge
 
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
+import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
+import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.StoreActiveChallenge
 import java.security.SecureRandom
 import kotlin.random.asKotlinRandom
 import kotlin.time.Duration
@@ -32,18 +32,23 @@ class GenerateChallengeLive(
     private val length: Length,
     private val validity: PositiveDuration,
     private val runInTransaction: RunInTransaction,
-    private val storeActiveChallenge: StoreActiveChallenge,
+    private val challengeRepository: ChallengeRepository,
 ) : GenerateChallenge {
     private val secureRandom = SecureRandom().asKotlinRandom()
 
     override suspend operator fun invoke(): Challenge {
         val createdAt = clock.now()
         val expiresAt = createdAt + validity.value
-        val challenge = Challenge(secureRandom.nextBytes(length.value.toInt()))
-        runInTransaction {
-            storeActiveChallenge(challenge, createdAt = createdAt, expiresAt = expiresAt)
+        return Challenge(
+            secureRandom.nextBytes(length.value.toInt()),
+            createdAt = createdAt,
+            expiresAt = expiresAt,
+            false,
+        ).also {
+            runInTransaction {
+                challengeRepository.store(it)
+            }
         }
-        return challenge
     }
 }
 

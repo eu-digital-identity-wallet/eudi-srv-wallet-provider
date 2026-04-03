@@ -70,9 +70,8 @@ private class WalletProviderExtension :
                         database =
                             DatabaseConfiguration(
                                 url = database.r2dbcUrl.toNonBlankString(),
-                                user = database.username,
+                                username = database.username,
                                 password = Secret(database.password),
-                                driver = DatabaseConfiguration.Driver.MySQL,
                             ),
                         signingKey =
                             SigningKeyConfiguration(

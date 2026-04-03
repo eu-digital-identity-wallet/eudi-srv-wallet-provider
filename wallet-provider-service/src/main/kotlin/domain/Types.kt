@@ -76,25 +76,6 @@ typealias Name = NonBlankString
 
 typealias JwtType = NonBlankString
 
-@JvmInline
-@Serializable
-value class Challenge(
-    val value: Base64UrlSafeByteArray,
-) {
-    init {
-        require(value.size in MIN_LENGTH..MAX_LENGTH) {
-            "value must be between $MIN_LENGTH and $MAX_LENGTH bytes long"
-        }
-    }
-
-    override fun toString(): String = value.contentToString()
-
-    companion object {
-        const val MIN_LENGTH: Int = 32
-        const val MAX_LENGTH: Int = 128
-    }
-}
-
 typealias SecondsDuration =
     @Serializable(with = DurationSecondsSerializer::class)
     Duration

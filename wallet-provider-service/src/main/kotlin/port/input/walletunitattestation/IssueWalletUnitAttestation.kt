@@ -63,31 +63,65 @@ sealed interface WalletUnitAttestationIssuanceRequest {
 
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
         val keyAttestations: NonEmptyList<KeyAttestation>
-        val challenge: Challenge
+        val challenge: Base64UrlSafeByteArray
 
         @Serializable
         data class Android(
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
-            @Required override val challenge: Challenge,
+            @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
-        ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
+        ) : PlatformKeyAttestation<AndroidKeystoreAttestation> {
+            override fun equals(other: Any?): Boolean =
+                other is Android &&
+                    other.nonce == nonce &&
+                    other.keyAttestations == keyAttestations &&
+                    other.challenge.contentEquals(challenge) &&
+                    other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
+                    other.preferredTtl == preferredTtl
+
+            override fun hashCode(): Int {
+                var result = nonce?.hashCode() ?: 0
+                result = 31 * result + keyAttestations.hashCode()
+                result = 31 * result + challenge.contentHashCode()
+                result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
+                result = 31 * result + (preferredTtl?.hashCode() ?: 0)
+                return result
+            }
+        }
 
         @Serializable
         data class Ios(
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
             override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
-            @Required override val challenge: Challenge,
+            @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
-        ) : PlatformKeyAttestation<IosHomebrewAttestation>
+        ) : PlatformKeyAttestation<IosHomebrewAttestation> {
+            override fun equals(other: Any?): Boolean =
+                other is Ios &&
+                    other.nonce == nonce &&
+                    other.keyAttestations == keyAttestations &&
+                    other.challenge.contentEquals(challenge) &&
+                    other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
+                    other.preferredTtl == preferredTtl
+
+            override fun hashCode(): Int {
+                var result = nonce?.hashCode() ?: 0
+                result = 31 * result + keyAttestations.hashCode()
+                result = 31 * result + challenge.contentHashCode()
+                result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
+                result = 31 * result + (preferredTtl?.hashCode() ?: 0)
+                return result
+            }
+        }
     }
 
     @Serializable

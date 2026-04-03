@@ -15,61 +15,48 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge
 
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.IsChallengeActive
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.MarkChallengeInactive
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.StoreActiveChallenge
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.ForPrimaryDatabase
+import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
+import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
-import org.jetbrains.exposed.v1.core.vendors.ForUpdateOption
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.r2dbc.insert
-import org.jetbrains.exposed.v1.r2dbc.select
-import org.jetbrains.exposed.v1.r2dbc.update
+import org.jetbrains.exposed.v1.r2dbc.selectAll
 import kotlin.time.Instant
 
 object Challenges : ULongIdTable(name = "challenges", columnName = "id", sequenceName = "challenge_id") {
     val value: Column<ByteArray> = binary("value", Challenge.MAX_LENGTH).uniqueIndex("challenges_value_unique_idx")
     val createdAt: Column<Instant> = timestamp("created_at")
     val expiresAt: Column<Instant> = timestamp("expires_at")
-    val active: Column<Boolean> = bool("active")
-
-    init {
-        index("challenges_idx_1", false, createdAt, expiresAt, active)
-    }
+    val unused: Column<Boolean> = bool("unused")
 }
 
-val StoreActiveChallengeLive =
-    StoreActiveChallenge { challenge, createdAt, expiresAt ->
-        Challenges.insert {
-            it[value] = challenge.value
-            it[Challenges.createdAt] = createdAt
-            it[Challenges.expiresAt] = expiresAt
-            it[active] = true
+val ChallengeRepositoryLive =
+    object : ChallengeRepository {
+        override suspend fun store(challenge: Challenge) {
+            Challenges.insert {
+                it[value] = challenge.value
+                it[createdAt] = challenge.createdAt
+                it[expiresAt] = challenge.expiresAt
+                it[unused] = challenge.unused
+            }
         }
-    }
 
-val IsChallengeActiveLive =
-    IsChallengeActive { challenge, at ->
-        val activeChallengeId =
+        override suspend fun findByValueAndLock(value: ByteArray): Challenge? =
             Challenges
-                .select(Challenges.id)
-                .forUpdate(ForUpdateOption.ForUpdate)
-                .where {
-                    (Challenges.value eq challenge.value) and
-                        (Challenges.createdAt greaterEq at) and
-                        (Challenges.expiresAt less at) and
-                        (Challenges.active eq true)
-                }.map { it[Challenges.id] }
-                .firstOrNull()
-        null != activeChallengeId
-    }
-
-val MarkChallengeInactiveLive =
-    MarkChallengeInactive { challenge ->
-        Challenges.update({ Challenges.value eq challenge.value }) {
-            it[active] = false
-        }
+                .selectAll()
+                .forUpdate(ForPrimaryDatabase)
+                .where { Challenges.value.eq(value) }
+                .map {
+                    Challenge(
+                        it[Challenges.value],
+                        createdAt = it[Challenges.createdAt],
+                        expiresAt = it[Challenges.expiresAt],
+                        it[Challenges.unused],
+                    )
+                }.firstOrNull()
     }

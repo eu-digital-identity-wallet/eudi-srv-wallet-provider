@@ -16,5 +16,8 @@
 package eu.europa.ec.eudi.walletprovider.port.output.persistence
 
 interface RunInTransaction {
-    suspend operator fun <T : Any> invoke(block: suspend () -> T): T
+    suspend operator fun <T : Any> invoke(
+        readOnly: Boolean = false,
+        block: suspend () -> T,
+    ): T
 }

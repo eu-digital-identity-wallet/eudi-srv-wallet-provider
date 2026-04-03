@@ -21,7 +21,6 @@ import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.Makoto
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttestedKey
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
@@ -33,10 +32,10 @@ class MakotoValidateKeyAttestation(
 ) : ValidateKeyAttestation {
     override suspend fun invoke(
         unvalidatedKeyAttestation: Attestation,
-        challenge: Challenge,
+        challenge: ByteArray,
     ): Either<KeyAttestationValidationFailure, AttestedKey> =
         either {
-            val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge.value)
+            val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge)
 
             if (!verificationResult.isSuccess) {
                 val errorDetails = verificationResult.details as AttestationResult.Error
@@ -77,9 +76,9 @@ class MakotoValidateKeyAttestation(
 
 private fun MakotoAttestationService.debugInfo(
     unvalidatedKeyAttestation: Attestation,
-    challenge: Challenge,
+    challenge: ByteArray,
 ): String? =
     if (this !is Makoto)
         null
     else
-        collectDebugInfo(unvalidatedKeyAttestation, challenge.value).serializeCompact()
+        collectDebugInfo(unvalidatedKeyAttestation, challenge).serializeCompact()

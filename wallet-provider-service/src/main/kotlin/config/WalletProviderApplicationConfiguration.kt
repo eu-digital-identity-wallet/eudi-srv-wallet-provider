@@ -32,10 +32,8 @@ import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.IsChallengeActiveLive
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.MarkChallengeInactiveLive
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.StoreActiveChallengeLive
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
@@ -106,7 +104,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             length = config.challenge.length,
             validity = config.challenge.validity,
             runInTransaction = RunInTransactionLive,
-            storeActiveChallenge = StoreActiveChallengeLive,
+            challengeRepository = ChallengeRepositoryLive,
         )
 
     val validateChallenge =
@@ -119,8 +117,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
             is PlatformKeyAttestationValidationConfiguration.Enabled -> {
                 ValidateChallengeLive(
                     runInTransaction = RunInTransactionLive,
-                    isChallengeActive = IsChallengeActiveLive,
-                    markChallengeInactive = MarkChallengeInactiveLive,
+                    challengeRepository = ChallengeRepositoryLive,
                 )
             }
         }
@@ -239,29 +236,11 @@ private suspend fun configureDatabase(config: DatabaseConfiguration) {
     resourceScope.install({
         R2dbcDatabase.connect(
             url = config.url.value,
-            user = config.user.orEmpty(),
+            user = config.username.orEmpty(),
             password = config.password?.value.orEmpty(),
-            driver =
-                when (config.driver) {
-                    DatabaseConfiguration.Driver.H2 -> "h2"
-                    DatabaseConfiguration.Driver.MariaDB -> "mariadb"
-                    DatabaseConfiguration.Driver.MySQL -> "mysql"
-                    DatabaseConfiguration.Driver.Oracle -> "oracle"
-                    DatabaseConfiguration.Driver.PostgreSQL -> "postgresql"
-                    DatabaseConfiguration.Driver.MSSQL -> "sqlserver"
-                },
             databaseConfig =
                 R2dbcDatabaseConfig {
-                    defaultR2dbcIsolationLevel = IsolationLevel.SERIALIZABLE
-                    explicitDialect =
-                        when (config.driver) {
-                            DatabaseConfiguration.Driver.H2 -> H2Dialect()
-                            DatabaseConfiguration.Driver.MariaDB -> MariaDBDialect()
-                            DatabaseConfiguration.Driver.MySQL -> MysqlDialect()
-                            DatabaseConfiguration.Driver.Oracle -> OracleDialect()
-                            DatabaseConfiguration.Driver.PostgreSQL -> PostgreSQLDialect()
-                            DatabaseConfiguration.Driver.MSSQL -> SQLServerDialect()
-                        }
+                    defaultR2dbcIsolationLevel = IsolationLevel.REPEATABLE_READ
                 },
         )
     }) { database, _ -> TransactionManager.closeAndUnregister(database) }

@@ -61,19 +61,9 @@ data class ServerConfiguration(
 
 data class DatabaseConfiguration(
     val url: NonBlankString,
-    val user: String? = null,
+    val username: String? = null,
     val password: Secret? = null,
-    val driver: Driver,
-) {
-    enum class Driver {
-        H2,
-        MariaDB,
-        MySQL,
-        Oracle,
-        PostgreSQL,
-        MSSQL,
-    }
-}
+)
 
 @JvmInline
 value class Port(

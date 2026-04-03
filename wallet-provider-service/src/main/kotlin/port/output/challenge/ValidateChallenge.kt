@@ -18,18 +18,18 @@ package eu.europa.ec.eudi.walletprovider.port.output.challenge
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import arrow.core.right
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
+import eu.europa.ec.eudi.walletprovider.domain.challenge.isActive
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.IsChallengeActive
-import eu.europa.ec.eudi.walletprovider.port.output.persistence.challenge.MarkChallengeInactive
 import kotlin.time.Instant
 
 fun interface ValidateChallenge {
     suspend operator fun invoke(
-        challenge: Challenge,
+        value: ByteArray,
         at: Instant,
     ): Either<ChallengeValidationFailure, Unit>
 }
@@ -41,19 +41,25 @@ class ChallengeValidationFailure(
 
 class ValidateChallengeLive(
     private val runInTransaction: RunInTransaction,
-    private val isChallengeActive: IsChallengeActive,
-    private val markChallengeInactive: MarkChallengeInactive,
+    private val challengeRepository: ChallengeRepository,
 ) : ValidateChallenge {
     override suspend fun invoke(
-        challenge: Challenge,
+        value: ByteArray,
         at: Instant,
     ): Either<ChallengeValidationFailure, Unit> =
         either {
             runInTransaction {
-                ensure(isChallengeActive(challenge, at)) {
+                val challenge =
+                    ensureNotNull(challengeRepository.findByValueAndLock(value)) {
+                        ChallengeValidationFailure("Challenge is not valid.".toNonBlankString())
+                    }
+                ensure(challenge.unused) {
+                    ChallengeValidationFailure("Challenge has already been used.".toNonBlankString())
+                }
+                ensure(challenge.isActive(at)) {
                     ChallengeValidationFailure("Challenge is not active.".toNonBlankString())
                 }
-                markChallengeInactive(challenge)
+                challengeRepository.store(challenge.copy(unused = false))
             }
         }
 }
