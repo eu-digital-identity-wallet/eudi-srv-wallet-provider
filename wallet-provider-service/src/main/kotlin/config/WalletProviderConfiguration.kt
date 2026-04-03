@@ -39,7 +39,7 @@ import kotlin.time.Duration.Companion.seconds
 @Suppress("ktlint:standard:max-line-length")
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
-    val signingKey: SigningKeyKeystoreConfiguration,
+    val signingKey: SigningKeyConfiguration,
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: IssuerConfiguration = IssuerConfiguration(),
@@ -80,7 +80,7 @@ value class ZeroOrPositiveDuration(
     override fun toString(): String = value.toString()
 }
 
-data class SigningKeyKeystoreConfiguration(
+data class SigningKeyConfiguration(
     val keystoreFile: Path,
     val keystorePassword: Secret? = null,
     val keystoreType: NonBlankString = NonBlankString("JKS"),

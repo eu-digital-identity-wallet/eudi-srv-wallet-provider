@@ -18,7 +18,6 @@ package eu.europa.ec.eudi.walletprovider
 import arrow.fx.coroutines.resourceScope
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.config.*
-import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -47,10 +46,10 @@ fun runWalletProviderTestCase(
                 ),
             swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
             signingKey =
-                SigningKeyKeystoreConfiguration(
+                SigningKeyConfiguration(
                     keystoreFile = Path.of("src/test/resources/keystore.jks"),
                     keystorePassword = Secret("testKeystore"),
-                    keyAlias = NonBlankString("test-key"),
+                    keyAlias = "test-key".toNonBlankString(),
                     keyPassword = Secret("testKeystore"),
                     algorithm = SigningAlgorithm.ES256,
                 ),

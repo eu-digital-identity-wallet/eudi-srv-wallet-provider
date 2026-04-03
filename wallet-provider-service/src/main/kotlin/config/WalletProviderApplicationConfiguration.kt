@@ -216,15 +216,7 @@ private fun Application.configureServerPlugins(
     }
 }
 
-private fun generateRandomSigner(): Signer =
-    Signer
-        .Ephemeral {
-            ec {
-                curve = ECCurve.SECP_256_R_1
-            }
-        }.getOrThrow()
-
-private suspend fun loadSignerAndCertificateChainFromKeystore(config: SigningKeyKeystoreConfiguration): Pair<Signer, CertificateChain> {
+private suspend fun loadSignerAndCertificateChainFromKeystore(config: SigningKeyConfiguration): Pair<Signer, CertificateChain> {
     val keystore =
         resourceScope {
             val inputStream =
