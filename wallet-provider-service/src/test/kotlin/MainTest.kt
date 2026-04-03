@@ -15,9 +15,17 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.test.dispatcher.*
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
-class MainTest {
+class MainTest : WalletProviderTest() {
     @Test
-    fun `verify wallet provider application loads`() = runWalletProviderTestCase { }
+    fun `verify wallet provider application loads`(httpClient: HttpClient) =
+        runTestWithRealTime {
+            assertEquals(HttpStatusCode.OK, httpClient.get("/swagger").status)
+        }
 }
