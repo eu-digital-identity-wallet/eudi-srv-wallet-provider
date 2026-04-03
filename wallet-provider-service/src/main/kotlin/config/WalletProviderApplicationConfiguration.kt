@@ -85,11 +85,7 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
 
     configureServerPlugins(json, config.swaggerUi)
 
-    val (signer, certificateChain) =
-        when (val config = config.signingKey) {
-            SigningKeyConfiguration.GenerateRandom -> generateRandomSigner() to null
-            is SigningKeyConfiguration.LoadFromKeystore -> loadSignerAndCertificateChainFromKeystore(config)
-        }
+    val (signer, certificateChain) = loadSignerAndCertificateChainFromKeystore(config.signingKey)
 
     val generateChallenge =
         GenerateChallengeLive(
@@ -220,17 +216,7 @@ private fun Application.configureServerPlugins(
     }
 }
 
-private fun generateRandomSigner(): Signer =
-    Signer
-        .Ephemeral {
-            ec {
-                curve = ECCurve.SECP_256_R_1
-            }
-        }.getOrThrow()
-
-private suspend fun loadSignerAndCertificateChainFromKeystore(
-    config: SigningKeyConfiguration.LoadFromKeystore,
-): Pair<Signer, CertificateChain> {
+private suspend fun loadSignerAndCertificateChainFromKeystore(config: SigningKeyConfiguration): Pair<Signer, CertificateChain> {
     val keystore =
         resourceScope {
             val inputStream =

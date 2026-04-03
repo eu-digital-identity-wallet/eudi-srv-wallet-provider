@@ -219,8 +219,6 @@ Default value: `5 seconds`
 
 #### Attestation Signing Key Configuration
 
-By default, Wallet Provider uses an ephemeral EC Key on the `secp256r1` curve to sign Attestations using the `ECDSAwithSHA256` algorithm.
-
 To load a signing key and certificate from a Keystore, use the following environment variables:
 
 Variable: `SIGNINGKEY_KEYSTOREFILE`  
