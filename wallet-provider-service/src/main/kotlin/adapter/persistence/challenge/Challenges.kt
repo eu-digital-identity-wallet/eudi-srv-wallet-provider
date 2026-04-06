@@ -28,7 +28,7 @@ import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import kotlin.time.Instant
 
-object Challenges : ULongIdTable(name = "challenges", columnName = "id", sequenceName = "challenge_id") {
+object Challenges : ULongIdTable(name = "challenges", columnName = "id") {
     val value: Column<ByteArray> = binary("value", Challenge.MAX_LENGTH).uniqueIndex("challenges_value_unique_idx")
     val createdAt: Column<Instant> = timestamp("created_at")
     val expiresAt: Column<Instant> = timestamp("expires_at")

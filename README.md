@@ -223,7 +223,8 @@ Wallet Provider is compatible with a wide range of relational database systems.
 It uses [Exposed](https://www.jetbrains.com/exposed/) with [R2DBC](https://r2dbc.io/).  
 R2DBC drivers are included for all major relational database systems.  
 
-Currently, no migration scripts are provided. During startup, Wallet Provider checks the configured database and prints the required migrations.
+Migrations are provided for PostgreSQL and MySQL [here](schemas).   
+During startup, Wallet Provider checks the configured database and prints any migrations required to update the database schema.
 
 To configure the database, use the following environment variables:
 

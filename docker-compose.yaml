@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:18.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./schemas/postgresql:/docker-entrypoint-initdb.d:RO
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wallet-provider
+    ports:
+      - "5432:5432"
+  adminer:
+    image: adminer:5.4.2-standalone
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wallet-provider
+    ports:
+      - "9000:8080"
+
+networks:
+  wallet-provider:
+    name: wallet-provider
