@@ -15,7 +15,8 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge
 
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.ForPrimaryDatabase
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.PrimaryDatabase
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.forUpdateOption
 import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -49,7 +50,7 @@ val ChallengeRepositoryLive =
         override suspend fun findByValueAndLock(value: ByteArray): Challenge? =
             Challenges
                 .selectAll()
-                .forUpdate(ForPrimaryDatabase)
+                .forUpdate(PrimaryDatabase.forUpdateOption)
                 .where { Challenges.value.eq(value) }
                 .map {
                     Challenge(

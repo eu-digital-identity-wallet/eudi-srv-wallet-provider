@@ -15,19 +15,23 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.persistence
 
-import org.jetbrains.exposed.v1.core.vendors.*
-import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
+import org.jetbrains.exposed.v1.core.vendors.ForUpdateOption
+import org.jetbrains.exposed.v1.core.vendors.H2Dialect
+import org.jetbrains.exposed.v1.core.vendors.MariaDBDialect
+import org.jetbrains.exposed.v1.core.vendors.MysqlDialect
+import org.jetbrains.exposed.v1.core.vendors.OracleDialect
+import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
+import org.jetbrains.exposed.v1.core.vendors.SQLServerDialect
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 
-val ForPrimaryDatabase: ForUpdateOption
-    get() {
-        val database = checkNotNull(TransactionManager.primaryDatabase) { "No database connection has been registered" }
-        return when (val dialect = database.dialect) {
+val R2dbcDatabase.forUpdateOption: ForUpdateOption
+    get() =
+        when (dialect) {
             is H2Dialect -> ForUpdateOption.ForUpdate
-            is MariaDBDialect -> ForUpdateOption.MariaDB.LockInShareMode
+            is MariaDBDialect -> ForUpdateOption.ForUpdate
             is MysqlDialect -> ForUpdateOption.MySQL.ForUpdate(mode = ForUpdateOption.MySQL.MODE.NO_WAIT)
             is OracleDialect -> ForUpdateOption.Oracle.ForUpdateNoWait
             is PostgreSQLDialect -> ForUpdateOption.PostgreSQL.ForUpdate(mode = ForUpdateOption.PostgreSQL.MODE.NO_WAIT)
             is SQLServerDialect -> ForUpdateOption.ForUpdate
             else -> error("Unsupported database dialect: $dialect")
         }
-    }
