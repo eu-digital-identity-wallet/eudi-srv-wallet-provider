@@ -22,11 +22,11 @@ dependencies {
     implementation(enforcedPlatform(libs.arrow.bom))
     components.all<VirtualPlatformAlignmentRule> {
         val virtualPlatform = libs.bouncycastle.bom.get()
-        params(virtualPlatform.group, virtualPlatform.name)
+        params(virtualPlatform.group, virtualPlatform.name, emptyList<String>())
     }
     components.all<VirtualPlatformAlignmentRule> {
         val virtualPlatform = libs.hoplite.bom.get()
-        params(virtualPlatform.group, virtualPlatform.name)
+        params(virtualPlatform.group, virtualPlatform.name, emptyList<String>())
     }
     components.all<VirtualPlatformAlignmentRule> {
         val virtualPlatform = libs.indispensable.bom.get()
@@ -78,7 +78,7 @@ abstract class VirtualPlatformAlignmentRule
     constructor(
         private val group: String,
         private val artifact: String,
-        private val excluded: List<String> = emptyList(),
+        private val excluded: List<String>,
     ) : ComponentMetadataRule {
         override fun execute(context: ComponentMetadataContext) {
             context.details.run {
@@ -96,7 +96,6 @@ kotlin {
         freeCompilerArgs.addAll(
             "-Xjsr305=strict",
             "-Xconsistent-data-class-copy-visibility",
-            "-Xnested-type-aliases",
             "-Xcontext-parameters",
         )
         optIn.addAll(
