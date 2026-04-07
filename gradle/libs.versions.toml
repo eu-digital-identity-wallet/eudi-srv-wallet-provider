@@ -15,7 +15,7 @@ ktlint = "1.8.0"
 indispensable = "3.20.0"
 supreme = "0.12.0"
 jib = "3.5.2"
-kover = "0.9.4"
+kover = "0.9.8"
 dependency-check = "12.2.0"
 
 [libraries]
