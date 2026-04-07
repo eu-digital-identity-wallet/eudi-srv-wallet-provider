@@ -15,6 +15,7 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
+import arrow.AutoCloseImplementation
 import arrow.atomic.Atomic
 import arrow.atomic.update
 import arrow.core.mergeSuppressed
@@ -163,6 +164,7 @@ private class WalletProviderExtension :
         }
 }
 
+@OptIn(AutoCloseImplementation::class)
 private class ResourceScope : arrow.fx.coroutines.ResourceScope {
     private val finalizers: Atomic<List<suspend (ExitCase) -> Unit>> = Atomic(emptyList())
 
