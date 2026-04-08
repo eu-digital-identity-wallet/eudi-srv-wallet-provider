@@ -52,7 +52,7 @@ private val database by lazy {
 }
 
 private val MySQLContainer.r2dbcUrl: String
-    get() = "r2dbc:mysql://$host:$firstMappedPort/$databaseName"
+    get() = "r2dbc:pool:mysql://$host:$firstMappedPort/$databaseName"
 
 private val log = LoggerFactory.getLogger(WalletProviderExtension::class.java)
 

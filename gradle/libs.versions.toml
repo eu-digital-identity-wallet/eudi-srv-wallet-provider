@@ -24,8 +24,10 @@ r2dbc-mysql = "1.4.1"
 r2dbc-oracle = "1.3.0"
 r2dbc-postgresql = "1.1.1.RELEASE"
 r2dbc-mssql = "1.0.4.RELEASE"
+r2dbc-pool = "1.0.2.RELEASE"
 testcontainers = "2.0.4"
 jdbc-mysql = "9.6.0"
+reactor = "2025.0.4"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -76,9 +78,11 @@ r2dbc-mysql = { module = "io.asyncer:r2dbc-mysql", version.ref = "r2dbc-mysql" }
 r2dbc-oracle = { module = "com.oracle.database.r2dbc:oracle-r2dbc", version.ref = "r2dbc-oracle" }
 r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "r2dbc-postgresql" }
 r2dbc-mssql = { module = "io.r2dbc:r2dbc-mssql", version.ref = "r2dbc-mssql" }
+r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version.ref = "r2dbc-pool" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }
 jdbc-mysql = { module = "com.mysql:mysql-connector-j", version.ref = "jdbc-mysql" }
+reactor-bom = { module = "io.projectreactor:reactor-bom", version.ref = "reactor" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

@@ -239,9 +239,12 @@ Available drivers:
 * `mariadb`
 * `oracle`
 * `mssql`
+* `pool`
+
+Connection pooling can be configured using the [r2dbc-pool](https://github.com/r2dbc/r2dbc-pool) driver.
 
 Default value: N/A  
-Example value: `r2dbc:postgresql://localhost:5432/wallet-provider`  
+Example value: `r2dbc:pool:postgresql://localhost:5432/wallet-provider`  
 
 Variable: `DATABASE_USERNAME`   
 Description: Username of the database user.  

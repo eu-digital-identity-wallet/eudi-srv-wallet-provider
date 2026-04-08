@@ -37,6 +37,7 @@ dependencies {
         params(virtualPlatform.group, virtualPlatform.name, exclude)
     }
     implementation(enforcedPlatform(libs.exposed.bom))
+    implementation(enforcedPlatform(libs.reactor.bom))
     testImplementation(enforcedPlatform(libs.testcontainers.bom))
 
     implementation(libs.kotlin.stdlib)
@@ -81,6 +82,7 @@ dependencies {
     runtimeOnly(libs.r2dbc.oracle)
     runtimeOnly(libs.r2dbc.postgresql)
     runtimeOnly(libs.r2dbc.mssql)
+    runtimeOnly(libs.r2dbc.pool)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
