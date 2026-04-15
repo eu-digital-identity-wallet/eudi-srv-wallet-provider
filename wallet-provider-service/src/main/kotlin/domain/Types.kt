@@ -76,18 +76,6 @@ typealias Name = NonBlankString
 
 typealias JwtType = NonBlankString
 
-@JvmInline
-@Serializable
-value class Challenge(
-    val value: Base64UrlSafeByteArray,
-) {
-    init {
-        require(value.isNotEmpty()) { "value must not be empty" }
-    }
-
-    override fun toString(): String = value.contentToString()
-}
-
 typealias SecondsDuration =
     @Serializable(with = DurationSecondsSerializer::class)
     Duration

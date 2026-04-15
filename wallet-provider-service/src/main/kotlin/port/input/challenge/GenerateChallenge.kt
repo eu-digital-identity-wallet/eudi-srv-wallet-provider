@@ -15,15 +15,10 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.input.challenge
 
-import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
-import eu.europa.ec.eudi.walletprovider.domain.EpochSecondsInstant
-import eu.europa.ec.eudi.walletprovider.domain.RFC7519
+import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
+import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
-import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
-import kotlinx.serialization.Required
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
 import java.security.SecureRandom
 import kotlin.random.asKotlinRandom
 import kotlin.time.Duration
@@ -36,44 +31,24 @@ class GenerateChallengeLive(
     private val clock: Clock,
     private val length: Length,
     private val validity: PositiveDuration,
-    private val signJwt: SignJwt<ChallengeClaims>,
+    private val runInTransaction: RunInTransaction,
+    private val challengeRepository: ChallengeRepository,
 ) : GenerateChallenge {
     private val secureRandom = SecureRandom().asKotlinRandom()
 
     override suspend operator fun invoke(): Challenge {
-        val now = clock.now()
-        val expiresAt = now + validity.value
-        val challengeClaims =
-            ChallengeClaims(
-                challenge = secureRandom.nextBytes(length.value.toInt()),
-                notBefore = now,
-                expiresAt = expiresAt,
-            )
-        val challengeJwt = signJwt(challengeClaims)
-        return Challenge(challengeJwt.serialize().encodeToByteArray())
-    }
-
-    companion object {
-        const val CHALLENGE_JWT_TYPE = "challenge+jwt"
-    }
-
-    @Serializable
-    data class ChallengeClaims(
-        @Required @SerialName(CHALLENGE) val challenge: Base64UrlSafeByteArray,
-        @Required @SerialName(RFC7519.NOT_BEFORE) val notBefore: EpochSecondsInstant,
-        @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
-    ) {
-        companion object {
-            const val CHALLENGE: String = "challenge"
+        val createdAt = clock.now()
+        val expiresAt = createdAt + validity.value
+        return Challenge(
+            secureRandom.nextBytes(length.value.toInt()),
+            createdAt = createdAt,
+            expiresAt = expiresAt,
+            false,
+        ).also {
+            runInTransaction {
+                challengeRepository.store(it)
+            }
         }
-
-        override fun equals(other: Any?): Boolean =
-            other is ChallengeClaims &&
-                challenge.contentEquals(other.challenge) &&
-                notBefore == other.notBefore &&
-                expiresAt == other.expiresAt
-
-        override fun hashCode(): Int = 31 * (31 * challenge.contentHashCode() + notBefore.hashCode()) + expiresAt.hashCode()
     }
 }
 
@@ -82,7 +57,9 @@ value class Length(
     val value: UInt,
 ) {
     init {
-        require(value > 0u) { "value must be greater than 0" }
+        require(value.toInt() in Challenge.MIN_LENGTH..Challenge.MAX_LENGTH) {
+            "value must be between ${Challenge.MIN_LENGTH} and ${Challenge.MAX_LENGTH}"
+        }
     }
 
     override fun toString(): String = value.toString()

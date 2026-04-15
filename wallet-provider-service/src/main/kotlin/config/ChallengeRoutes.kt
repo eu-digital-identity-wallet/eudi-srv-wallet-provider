@@ -15,12 +15,14 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
+import eu.europa.ec.eudi.walletprovider.domain.Base64UrlSafeByteArray
+import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallenge
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 
@@ -41,5 +43,11 @@ fun Application.configureChallengeRoutes(generateChallenge: GenerateChallenge) {
 
 @Serializable
 private data class ChallengeResponse(
-    val challenge: Challenge,
-)
+    @Required val challenge: Base64UrlSafeByteArray,
+) {
+    constructor(challenge: Challenge) : this(challenge.value)
+
+    override fun equals(other: Any?): Boolean = other is ChallengeResponse && other.challenge.contentEquals(challenge)
+
+    override fun hashCode(): Int = challenge.contentHashCode()
+}

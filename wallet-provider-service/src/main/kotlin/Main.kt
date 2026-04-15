@@ -19,7 +19,10 @@ import arrow.continuations.SuspendApp
 import arrow.continuations.ktor.server
 import arrow.fx.coroutines.resourceScope
 import com.sksamuel.hoplite.ConfigLoader
-import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.config.Base64UrlSafeByteArrayDecoder
+import eu.europa.ec.eudi.walletprovider.config.CertificationInformationDecoder
+import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
+import eu.europa.ec.eudi.walletprovider.config.configureWalletProviderApplication
 import io.ktor.server.cio.*
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking

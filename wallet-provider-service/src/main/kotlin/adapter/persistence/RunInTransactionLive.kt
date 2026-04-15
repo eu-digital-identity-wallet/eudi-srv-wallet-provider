@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider
+package eu.europa.ec.eudi.walletprovider.adapter.persistence
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.test.dispatcher.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
-class MainTest : WalletProviderTest() {
-    @Test
-    fun `verify wallet provider application loads`(httpClient: HttpClient) =
-        runTestWithRealTime {
-            assertEquals(HttpStatusCode.OK, httpClient.get("/swagger").status)
-        }
-}
+val RunInTransactionLive =
+    object : RunInTransaction {
+        override suspend fun <T : Any> invoke(
+            readOnly: Boolean,
+            block: suspend () -> T,
+        ): T = suspendTransaction(readOnly = readOnly) { block() }
+    }

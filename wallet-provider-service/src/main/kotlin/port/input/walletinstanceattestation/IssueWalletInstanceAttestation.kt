@@ -35,7 +35,6 @@ import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAt
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 fun interface IssueWalletInstanceAttestation {
@@ -50,27 +49,57 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
 
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletInstanceAttestationIssuanceRequest {
         val keyAttestation: KeyAttestation
-        val challenge: Challenge
+        val challenge: Base64UrlSafeByteArray
 
         @Serializable
         data class Android(
             @Required override val keyAttestation: AndroidKeystoreAttestation,
-            @Required override val challenge: Challenge,
+            @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             override val walletMetadata: WalletMetadata? = null,
-        ) : PlatformKeyAttestation<AndroidKeystoreAttestation>
+        ) : PlatformKeyAttestation<AndroidKeystoreAttestation> {
+            override fun equals(other: Any?): Boolean =
+                other is Android &&
+                    other.keyAttestation == keyAttestation &&
+                    other.challenge.contentEquals(challenge) &&
+                    other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
+                    other.walletMetadata == walletMetadata
+
+            override fun hashCode(): Int {
+                var result = keyAttestation.hashCode()
+                result = 31 * result + challenge.contentHashCode()
+                result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
+                result = 31 * result + (walletMetadata?.hashCode() ?: 0)
+                return result
+            }
+        }
 
         @Serializable
         data class Ios(
             @Required override val keyAttestation: IosHomebrewAttestation,
-            @Required override val challenge: Challenge,
+            @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             override val walletMetadata: WalletMetadata? = null,
-        ) : PlatformKeyAttestation<IosHomebrewAttestation>
+        ) : PlatformKeyAttestation<IosHomebrewAttestation> {
+            override fun equals(other: Any?): Boolean =
+                other is Ios &&
+                    other.keyAttestation == keyAttestation &&
+                    other.challenge.contentEquals(challenge) &&
+                    other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
+                    other.walletMetadata == walletMetadata
+
+            override fun hashCode(): Int {
+                var result = keyAttestation.hashCode()
+                result = 31 * result + challenge.contentHashCode()
+                result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
+                result = 31 * result + (walletMetadata?.hashCode() ?: 0)
+                return result
+            }
+        }
     }
 
     @Serializable

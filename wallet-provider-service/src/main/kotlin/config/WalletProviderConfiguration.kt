@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.seconds
 @Suppress("ktlint:standard:max-line-length")
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
+    val database: DatabaseConfiguration,
     val signingKey: SigningKeyConfiguration,
     val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
@@ -56,6 +57,12 @@ data class ServerConfiguration(
     val preWait: ZeroOrPositiveDuration = ZeroOrPositiveDuration(30.seconds),
     val grace: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.seconds),
     val timeout: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.seconds),
+)
+
+data class DatabaseConfiguration(
+    val url: NonBlankString,
+    val username: String? = null,
+    val password: Secret? = null,
 )
 
 @JvmInline
