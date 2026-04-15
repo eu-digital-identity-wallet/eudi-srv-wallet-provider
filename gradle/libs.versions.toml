@@ -2,7 +2,7 @@
 java = "25"
 kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.7.1"
 ktor = "3.4.2"
 slf4j = "2.0.17"
@@ -12,8 +12,8 @@ warden-makoto = "1.0.0-RC7"
 hoplite = "3.0.0.RC3"
 spotless = "8.4.0"
 ktlint = "1.8.0"
-indispensable = "3.20.0"
-supreme = "0.12.0"
+indispensable = "3.21.0"
+supreme = "0.13.0"
 jib = "3.5.2"
 kover = "0.9.8"
 dependency-check = "12.2.0"
@@ -63,7 +63,6 @@ bouncycastle-bom = { module = "org.bouncycastle:bcbom" }
 warden-makoto = { module = "at.asitplus.warden:makoto", version.ref = "warden-makoto" }
 hoplite-bom = { module = "com.sksamuel.hoplite:hoplite-bom" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
-indispensable-bom = { module = "at.asitplus.signum:indispensable-bom" }
 indispensable-josef = { module = "at.asitplus.signum:indispensable-josef", version.ref = "indispensable" }
 supreme = { module = "at.asitplus.signum:supreme", version.ref = "supreme" }
 exposed-bom = { module = "org.jetbrains.exposed:exposed-bom", version.ref = "exposed" }

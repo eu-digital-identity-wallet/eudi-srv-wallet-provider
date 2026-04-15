@@ -22,19 +22,11 @@ dependencies {
     implementation(enforcedPlatform(libs.arrow.bom))
     components.all<VirtualPlatformAlignmentRule> {
         val virtualPlatform = libs.bouncycastle.bom.get()
-        params(virtualPlatform.group, virtualPlatform.name, emptyList<String>())
+        params(virtualPlatform.group, virtualPlatform.name)
     }
     components.all<VirtualPlatformAlignmentRule> {
         val virtualPlatform = libs.hoplite.bom.get()
-        params(virtualPlatform.group, virtualPlatform.name, emptyList<String>())
-    }
-    components.all<VirtualPlatformAlignmentRule> {
-        val virtualPlatform = libs.indispensable.bom.get()
-        val exclude =
-            listOf(
-                libs.supreme.get().name,
-            )
-        params(virtualPlatform.group, virtualPlatform.name, exclude)
+        params(virtualPlatform.group, virtualPlatform.name)
     }
     implementation(enforcedPlatform(libs.exposed.bom))
     implementation(enforcedPlatform(libs.reactor.bom))
@@ -96,11 +88,10 @@ abstract class VirtualPlatformAlignmentRule
     constructor(
         private val group: String,
         private val artifact: String,
-        private val excluded: List<String>,
     ) : ComponentMetadataRule {
         override fun execute(context: ComponentMetadataContext) {
             context.details.run {
-                if (group == id.group && id.name !in excluded) {
+                if (group == id.group) {
                     belongsTo("$group:$artifact:${id.version}", true)
                 }
             }
