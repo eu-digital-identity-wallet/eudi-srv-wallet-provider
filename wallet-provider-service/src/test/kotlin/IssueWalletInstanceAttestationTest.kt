@@ -22,31 +22,33 @@ import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletI
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestationClaims
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletMetadata
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceRequest.Jwk
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.test.dispatcher.*
 import kotlinx.coroutines.test.TestResult
 import kotlinx.serialization.json.*
 import kotlin.test.*
 
-class IssueWalletInstanceAttestationTest {
+class IssueWalletInstanceAttestationTest : WalletProviderTest() {
     @Test
-    fun `wallet instance attestation includes wallet metadata when provided as object`() {
+    fun `wallet instance attestation includes wallet metadata when provided as object`(httpClient: HttpClient) {
         val walletMetadata =
             buildJsonObject {
                 put("device_id", "ABC123")
                 put("app_version", "1.2.3")
             }
 
-        runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
     }
 
     @Test
-    fun `wallet instance attestation includes wallet metadata when provided as array`() {
+    fun `wallet instance attestation includes wallet metadata when provided as array`(httpClient: HttpClient) {
         val walletMetadata =
             buildJsonArray {
                 add("tag1")
@@ -54,35 +56,35 @@ class IssueWalletInstanceAttestationTest {
                 add("tag3")
             }
 
-        runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
     }
 
     @Test
-    fun `wallet instance attestation includes wallet metadata when provided as primitive`() {
+    fun `wallet instance attestation includes wallet metadata when provided as primitive`(httpClient: HttpClient) {
         val walletMetadata = JsonPrimitive("simple-string-value")
 
-        runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
     }
 
     @Test
-    fun `wallet instance attestation works without wallet metadata for backward compatibility`() {
-        runWalletInstanceAttestationTestCase(null) {
+    fun `wallet instance attestation works without wallet metadata for backward compatibility`(httpClient: HttpClient) {
+        httpClient.runWalletInstanceAttestationTestCase(null) {
             assertNull(it.payload.walletMetadata)
         }
     }
 }
 
-private fun runWalletInstanceAttestationTestCase(
+private fun HttpClient.runWalletInstanceAttestationTestCase(
     walletMetadata: WalletMetadata?,
     assertions: suspend (WalletInstanceAttestation) -> Unit,
 ): TestResult =
-    runWalletProviderTestCase {
+    runTestWithRealTime {
         val request =
             Jwk(
                 jwk =
@@ -95,14 +97,13 @@ private fun runWalletInstanceAttestationTestCase(
             )
 
         val response =
-            client
-                .post("/wallet-instance-attestation/jwk") {
-                    expectSuccess = true
+            post("/wallet-instance-attestation/jwk") {
+                expectSuccess = true
 
-                    contentType(ContentType.Application.Json)
-                    accept(ContentType.Application.Json)
-                    setBody(request)
-                }.body<JsonObject>()
+                contentType(ContentType.Application.Json)
+                accept(ContentType.Application.Json)
+                setBody(request)
+            }.body<JsonObject>()
 
         val serializedWalletInstanceAttestation = assertIs<JsonPrimitive>(response["walletInstanceAttestation"]).content
         val walletInstanceAttestation =

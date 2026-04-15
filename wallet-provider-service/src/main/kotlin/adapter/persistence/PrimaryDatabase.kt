@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider
+package eu.europa.ec.eudi.walletprovider.adapter.persistence
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.test.dispatcher.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 
-class MainTest : WalletProviderTest() {
-    @Test
-    fun `verify wallet provider application loads`(httpClient: HttpClient) =
-        runTestWithRealTime {
-            assertEquals(HttpStatusCode.OK, httpClient.get("/swagger").status)
-        }
-}
+val PrimaryDatabase: R2dbcDatabase
+    get() = checkNotNull(TransactionManager.primaryDatabase) { "No database connection has been registered" }

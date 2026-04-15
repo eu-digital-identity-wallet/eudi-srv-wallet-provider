@@ -217,6 +217,43 @@ Variable: `SERVER_TIMEOUT`
 Description: Period after which the server forcibly shuts down.  
 Default value: `5 seconds`  
 
+### Database Configuration
+
+Wallet Provider is compatible with a wide range of relational database systems.   
+It uses [Exposed](https://www.jetbrains.com/exposed/) with [R2DBC](https://r2dbc.io/).  
+R2DBC drivers are included for all major relational database systems.  
+
+Migrations are provided for PostgreSQL and MySQL [here](schemas).   
+During startup, Wallet Provider checks the configured database and prints any migrations required to update the database schema.
+
+To configure the database, use the following environment variables:
+
+Variable: `DATABASE_URL`  
+Description: R2DBC URL used to connect to the database.  
+Allowed protocols: `r2dbc`  
+
+Available drivers:
+* `h2`
+* `postgresql`
+* `mysql`
+* `mariadb`
+* `oracle`
+* `mssql`
+* `pool`
+
+Connection pooling can be configured using the [r2dbc-pool](https://github.com/r2dbc/r2dbc-pool) driver.
+
+Default value: N/A  
+Example value: `r2dbc:pool:postgresql://localhost:5432/wallet-provider`  
+
+Variable: `DATABASE_USERNAME`   
+Description: Username of the database user.  
+Default value: N/A
+
+Variable: `DATABASE_PASSWORD`   
+Description: Password of the database user.  
+Default value: N/A
+
 #### Attestation Signing Key Configuration
 
 To load a signing key and certificate from a Keystore, use the following environment variables:

@@ -18,19 +18,18 @@ package eu.europa.ec.eudi.walletprovider.port.output.challenge
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import arrow.core.right
-import eu.europa.ec.eudi.walletprovider.domain.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.RFC7519
+import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
+import eu.europa.ec.eudi.walletprovider.domain.challenge.isActive
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
-import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
-import eu.europa.ec.eudi.walletprovider.port.output.jose.JwtSignatureValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.jose.ValidateJwtSignature
+import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
 import kotlin.time.Instant
 
 fun interface ValidateChallenge {
     suspend operator fun invoke(
-        challenge: Challenge,
+        value: ByteArray,
         at: Instant,
     ): Either<ChallengeValidationFailure, Unit>
 }
@@ -41,48 +40,27 @@ class ChallengeValidationFailure(
 )
 
 class ValidateChallengeLive(
-    private val validateJwtSignature: ValidateJwtSignature<GenerateChallengeLive.ChallengeClaims>,
+    private val runInTransaction: RunInTransaction,
+    private val challengeRepository: ChallengeRepository,
 ) : ValidateChallenge {
     override suspend fun invoke(
-        challenge: Challenge,
+        value: ByteArray,
         at: Instant,
     ): Either<ChallengeValidationFailure, Unit> =
         either {
-            validateJwtSignature(challenge.value.decodeToString()).fold(
-                ifLeft = {
-                    val (error, cause) =
-                        when (it) {
-                            is JwtSignatureValidationFailure.InvalidSignature -> {
-                                "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
-                            }
-
-                            is JwtSignatureValidationFailure.UnparsableJwt -> {
-                                "Challenge is not valid: ${it.error}".toNonBlankString() to it.cause
-                            }
-                        }
-                    raise(ChallengeValidationFailure(error, cause))
-                },
-                ifRight = { challengeJwt ->
-                    ensure(challengeJwt.header.type == GenerateChallengeLive.CHALLENGE_JWT_TYPE) {
-                        ChallengeValidationFailure(
-                            (
-                                "Challenge is not valid, contains invalid `${RFC7519.TYPE}`. " +
-                                    "Expected: '${GenerateChallengeLive.CHALLENGE_JWT_TYPE}', " +
-                                    "found: '${challengeJwt.header.type ?: ""}'."
-                            ).toNonBlankString(),
-                        )
+            runInTransaction {
+                val challenge =
+                    ensureNotNull(challengeRepository.findByValueAndLock(value)) {
+                        ChallengeValidationFailure("Challenge is not valid.".toNonBlankString())
                     }
-
-                    val challengeClaims = challengeJwt.payload
-                    ensure(challengeClaims.notBefore <= at) {
-                        ChallengeValidationFailure("Challenge is not active yet.".toNonBlankString())
-                    }
-
-                    ensure(at < challengeClaims.expiresAt) {
-                        ChallengeValidationFailure("Challenge is expired.".toNonBlankString())
-                    }
-                },
-            )
+                ensure(challenge.unused) {
+                    ChallengeValidationFailure("Challenge has already been used.".toNonBlankString())
+                }
+                ensure(challenge.isActive(at)) {
+                    ChallengeValidationFailure("Challenge is not active.".toNonBlankString())
+                }
+                challengeRepository.store(challenge.copy(unused = false))
+            }
         }
 }
 
