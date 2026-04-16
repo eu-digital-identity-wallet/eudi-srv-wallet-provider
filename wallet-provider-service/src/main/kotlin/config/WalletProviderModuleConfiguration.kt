@@ -188,12 +188,10 @@ private fun Application.configureServerPlugins(
     install(XForwardedHeaders)
     install(ForwardedHeaders)
 
-    if (swaggerUiConfiguration is SwaggerUiConfiguration.Enabled) {
-        routing {
-            swaggerUI(path = swaggerUiConfiguration.path.value, swaggerFile = swaggerUiConfiguration.swaggerFile.value)
-            get("/") {
-                call.respondRedirect(swaggerUiConfiguration.path.value)
-            }
+    routing {
+        swaggerUI(path = swaggerUiConfiguration.path.value, swaggerFile = "openapi/openapi.json")
+        get("/") {
+            call.respondRedirect(swaggerUiConfiguration.path.value)
         }
     }
 }
