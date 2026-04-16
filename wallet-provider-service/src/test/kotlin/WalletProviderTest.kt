@@ -123,53 +123,7 @@ private class WalletProviderExtension :
             val clock = Clock.System
             val database = runBlocking { context(resourceScope) { config.database.connect() } }
             val (signer, certificateChain) = runBlocking { config.signingKey.load() }
-
-            val httpClient =
-                run {
-                    val engine =
-                        MockEngine { request ->
-                            when (request.url.toString()) {
-                                config.tokenStatusListService.serviceUrl.toExternalForm() -> {
-                                    assertEquals(HttpMethod.Post, request.method)
-                                    assertEquals(ContentType.Application.Json.toString(), request.headers[HttpHeaders.Accept])
-                                    assertEquals(config.tokenStatusListService.apiKey.value, request.headers["X-API-Key"])
-
-                                    val form = assertIs<FormDataContent>(request.body).formData
-                                    assertEquals("FC", form["country"])
-                                    assertEquals(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE, form["doctype"])
-                                    assertNotNull(form["expiry_date"])
-
-                                    respond(
-                                        content =
-                                            json.encodeToString(
-                                                Status(
-                                                    StatusListToken(
-                                                        5u,
-                                                        URI.create("https://status.example.com/lists/10"),
-                                                    ),
-                                                ),
-                                            ),
-                                        status = HttpStatusCode.OK,
-                                        headers =
-                                            headersOf(
-                                                HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
-                                            ),
-                                    )
-                                }
-
-                                else -> {
-                                    fail("Unexpected request: ${request.url}")
-                                }
-                            }
-                        }
-                    resourceScope.install(
-                        HttpClient(engine) {
-                            install(ClientContentNegotiation) {
-                                json(json)
-                            }
-                        },
-                    )
-                }
+            val httpClient = context(resourceScope) { createMockHttpClient(config, json) }
 
             TestApplication {
                 application {
@@ -257,6 +211,52 @@ private class ResourceScope : arrow.fx.coroutines.ResourceScope {
                 }?.let { throw it }
         }
     }
+}
+
+context(resources: ResourceScope)
+private fun createMockHttpClient(
+    config: WalletProviderConfiguration,
+    json: Json,
+): HttpClient {
+    val engine =
+        MockEngine { request ->
+            when (request.url.toString()) {
+                config.tokenStatusListService.serviceUrl.toExternalForm() -> {
+                    assertEquals(HttpMethod.Post, request.method)
+                    assertEquals(ContentType.Application.Json.toString(), request.headers[HttpHeaders.Accept])
+                    assertEquals(config.tokenStatusListService.apiKey.value, request.headers["X-API-Key"])
+
+                    val form = assertIs<FormDataContent>(request.body).formData
+                    assertEquals("FC", form["country"])
+                    assertEquals(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE, form["doctype"])
+                    assertNotNull(form["expiry_date"])
+
+                    respond(
+                        content =
+                            json.encodeToString(
+                                Status(StatusListToken(5u, URI.create("https://status.example.com/lists/10"))),
+                            ),
+                        status = HttpStatusCode.OK,
+                        headers =
+                            headersOf(
+                                HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
+                            ),
+                    )
+                }
+
+                else -> {
+                    fail("Unexpected request: ${request.url}")
+                }
+            }
+        }
+
+    return resources.install(
+        HttpClient(engine) {
+            install(ClientContentNegotiation) {
+                json(json)
+            }
+        },
+    )
 }
 
 @ExtendWith(WalletProviderExtension::class)

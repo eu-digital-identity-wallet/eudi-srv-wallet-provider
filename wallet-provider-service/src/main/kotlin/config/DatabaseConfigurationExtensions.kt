@@ -16,7 +16,6 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.fx.coroutines.ResourceScope
-import arrow.fx.coroutines.resource.context.install
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import io.r2dbc.spi.IsolationLevel
 import org.jetbrains.exposed.v1.migration.r2dbc.MigrationUtils
@@ -25,10 +24,10 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
-context(_: ResourceScope)
+context(resources: ResourceScope)
 internal suspend fun DatabaseConfiguration.connect(): R2dbcDatabase {
     val database =
-        install({
+        resources.install({
             R2dbcDatabase.connect(
                 url = url.value,
                 user = username.orEmpty(),
