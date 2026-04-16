@@ -106,6 +106,18 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                     }
                 }
             }
+
+            is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType -> {
+                "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                    "Attested Key Type is not supported: ${failure.type.name}" to
+                    null
+            }
+
+            is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve -> {
+                "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                    "Attested Key Curve is not supported: ${failure.curve.name}" to
+                    null
+            }
         }
 
     warn(error, cause)
@@ -134,6 +146,12 @@ private enum class WalletInstanceAttestationError {
 
     @SerialName("unsupported_attested_key")
     UnsupportedAttestedKey,
+
+    @SerialName("unsupported_attested_key_type")
+    UnsupportedAttestedKeyType,
+
+    @SerialName("unsupported_attested_key_curve")
+    UnsupportedAttestedKeyCurve,
 }
 
 @Serializable
@@ -156,5 +174,13 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
                 is KeyAttestationValidationFailure.InvalidKeyAttestation -> WalletInstanceAttestationError.InvalidKeyAttestation
                 is KeyAttestationValidationFailure.UnsupportedAttestedKey -> WalletInstanceAttestationError.UnsupportedAttestedKey
             }
+        }
+
+        is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType -> {
+            WalletInstanceAttestationError.UnsupportedAttestedKeyType
+        }
+
+        is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve -> {
+            WalletInstanceAttestationError.UnsupportedAttestedKeyCurve
         }
     }.let { WalletInstanceAttestationErrorResponse(it) }

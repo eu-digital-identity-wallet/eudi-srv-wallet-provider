@@ -479,7 +479,9 @@
           "unsupported_signing_algorithms",
           "invalid_challenge",
           "invalid_key_attestation",
-          "unsupported_attested_key"
+          "unsupported_attested_key",
+          "unsupported_attested_key_type",
+          "unsupported_attested_key_curve"
         ]
       },
       "WalletInstanceAttestationErrorResponse": {

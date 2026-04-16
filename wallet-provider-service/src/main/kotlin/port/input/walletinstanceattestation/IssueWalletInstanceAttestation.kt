@@ -22,6 +22,7 @@ import arrow.core.raise.ensure
 import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
@@ -124,6 +125,14 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
     class InvalidKeyAttestation(
         val error: KeyAttestationValidationFailure,
     ) : WalletInstanceAttestationIssuanceFailure
+
+    data class UnsupportedAttestedKeyType(
+        val type: JwkType,
+    ) : WalletInstanceAttestationIssuanceFailure
+
+    data class UnsupportedAttestedKeyCurve(
+        val curve: ECCurve,
+    ) : WalletInstanceAttestationIssuanceFailure
 }
 
 @JvmInline
@@ -189,6 +198,16 @@ class IssueWalletInstanceAttestationLive(
                         request.jwk
                     }
                 }
+
+            val attestedKeyType = checkNotNull(attestedKey.type) { "Attested Key is missing `kty` claim" }
+            ensure(JwkType.EC == attestedKeyType) {
+                WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType(attestedKeyType)
+            }
+
+            val attestedKeyCurve = checkNotNull(attestedKey.curve) { "Attested Key is missing `crv` claim" }
+            ensure(attestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
+                WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve(attestedKeyCurve)
+            }
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity.value
