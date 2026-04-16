@@ -447,7 +447,7 @@ Description: Optional Wallet Link that can be included in the Wallet Instance At
 Default value: N/A  
 
 Variable: `WALLETINSTANCEATTESTATION_WALLETVERSION`  
-Description: Optional Wallet Version that can be included in the Wallet Instance Attestations.  
+Description: Wallet Version that will be included in the Wallet Instance Attestations.  
 Default value: N/A
 
 Variable: `WALLETINSTANCEATTESTATION_WALLETCERTIFICATIONINFORMATION`  
