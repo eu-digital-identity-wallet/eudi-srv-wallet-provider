@@ -15,6 +15,7 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.input.challenge
 
+import eu.europa.ec.eudi.walletprovider.domain.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -60,17 +61,6 @@ value class Length(
         require(value.toInt() in Challenge.MIN_LENGTH..Challenge.MAX_LENGTH) {
             "value must be between ${Challenge.MIN_LENGTH} and ${Challenge.MAX_LENGTH}"
         }
-    }
-
-    override fun toString(): String = value.toString()
-}
-
-@JvmInline
-value class PositiveDuration(
-    val value: Duration,
-) {
-    init {
-        require(value.isPositive()) { "value must be positive" }
     }
 
     override fun toString(): String = value.toString()

@@ -103,6 +103,14 @@ fun Application.configureWalletProviderModule(
     val makotoAttestationService = createMakotoAttestationService(config, clock)
     val validateKeyAttestation = MakotoValidateKeyAttestation(makotoAttestationService)
 
+    val generateStatusListToken =
+        TokenStatusListServiceGenerateStatusListToken(
+            httpClient,
+            Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
+            ApiKey(config.tokenStatusListService.apiKey.value),
+            clock,
+        )
+
     val issueWalletInstanceAttestation =
         IssueWalletInstanceAttestationLive(
             clock,
@@ -111,28 +119,18 @@ fun Application.configureWalletProviderModule(
             config.walletInstanceAttestation.validity,
             issuer = config.issuer.publicUrl,
             clientId = config.clientId,
-            config.walletInstanceAttestation.walletName,
+            walletName = config.walletInstanceAttestation.walletName,
             config.walletInstanceAttestation.walletLink,
-            GeneralInformation(
-                provider = config.walletInformation.generalInformation.provider,
-                id = config.walletInformation.generalInformation.id,
-                version = config.walletInformation.generalInformation.version,
-                certification = config.walletInformation.generalInformation.certification,
-            ),
+            walletVersion = config.walletInstanceAttestation.walletVersion,
+            config.walletInstanceAttestation.walletCertificationInformation,
+            config.walletInstanceAttestation.clientStatusValidity,
+            generateStatusListToken,
             SignumSignJwt(
                 signer,
                 certificateChain,
                 JwtType(AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE),
                 json,
             ),
-        )
-
-    val generateStatusListToken =
-        TokenStatusListServiceGenerateStatusListToken(
-            httpClient,
-            Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
-            ApiKey(config.tokenStatusListService.apiKey.value),
-            clock,
         )
 
     val issueWalletUnitAttestation =

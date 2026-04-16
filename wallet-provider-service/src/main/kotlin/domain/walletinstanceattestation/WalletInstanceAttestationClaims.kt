@@ -19,6 +19,7 @@ import at.asitplus.signum.indispensable.josef.ConfirmationClaim
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -33,20 +34,25 @@ data class WalletInstanceAttestationClaims(
     @Required @SerialName(RFC7800.CONFIRMATION) val confirmation: ConfirmationClaim,
     @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant? = null,
     @SerialName(RFC7519.NOT_BEFORE) val notBefore: EpochSecondsInstant? = null,
-    @SerialName(OpenId4VCISpec.WALLET_NAME) val walletName: WalletName? = null,
+    @Required @SerialName(OpenId4VCISpec.WALLET_NAME) val walletName: WalletName,
     @SerialName(OpenId4VCISpec.WALLET_LINK) val walletLink: WalletLink? = null,
     @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
-    @Required @SerialName(ARF.EUDI_WALLET_INFORMATION) val walletInformation: WalletInformation,
+    @Required @SerialName(TS3.WALLET_VERSION) val walletVersion: WalletVersion,
+    @Required @SerialName(TS3.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val walletSolutionCertificationInformation:
+        CertificationInformation,
+    @Required @SerialName(TS3.CLIENT_STATUS) val clientStatus: ClientStatus,
     @SerialName(CustomFields.WALLET_METADATA) val walletMetadata: WalletMetadata? = null,
-) {
-    @Serializable
-    data class WalletInformation(
-        @Required @SerialName(ARF.GENERAL_INFORMATION) val generalInformation: GeneralInformation,
-    )
-}
+)
+
+@Serializable
+data class ClientStatus(
+    @Required @SerialName(TokenStatusListSpec.STATUS) val status: Status,
+    @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
+)
 
 typealias WalletName = NonBlankString
 typealias WalletLink = StringUrl
+typealias WalletVersion = NonBlankString
 
 /**
  * Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation.

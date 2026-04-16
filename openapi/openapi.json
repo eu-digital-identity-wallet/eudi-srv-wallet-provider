@@ -481,7 +481,8 @@
           "invalid_key_attestation",
           "unsupported_attested_key",
           "unsupported_attested_key_type",
-          "unsupported_attested_key_curve"
+          "unsupported_attested_key_curve",
+          "status_list_token_generation_failure"
         ]
       },
       "WalletInstanceAttestationErrorResponse": {

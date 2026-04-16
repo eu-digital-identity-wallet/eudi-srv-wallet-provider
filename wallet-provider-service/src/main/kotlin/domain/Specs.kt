@@ -47,7 +47,6 @@ object ARF {
     const val WALLET_PROVIDER_NAME: String = "wallet_provider_name"
     const val WALLET_SOLUTION_ID: String = "wallet_solution_id"
     const val WALLET_SOLUTION_VERSION: String = "wallet_solution_version"
-    const val WALLET_SOLUTION_CERTIFICATION_INFORMATION: String = "wallet_solution_certification_information"
     val MIN_WALLET_UNIT_ATTESTATION_VALIDITY: Duration = 31.days
     val MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY: Duration = 24.hours
 
@@ -107,4 +106,10 @@ object RFC9728 {
  */
 object CustomFields {
     const val WALLET_METADATA: String = "wallet_metadata"
+}
+
+object TS3 {
+    const val WALLET_VERSION: String = "wallet_version"
+    const val WALLET_SOLUTION_CERTIFICATION_INFORMATION: String = "wallet_solution_certification_information"
+    const val CLIENT_STATUS: String = "client_status"
 }

@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.raise.context.bind
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.serialization.NonEmptyListSerializer
@@ -27,12 +28,16 @@ import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
+import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
+import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
@@ -133,6 +138,10 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
     data class UnsupportedAttestedKeyCurve(
         val curve: ECCurve,
     ) : WalletInstanceAttestationIssuanceFailure
+
+    class StatusListTokenGenerationFailure(
+        val error: eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure,
+    ) : WalletInstanceAttestationIssuanceFailure
 }
 
 @JvmInline
@@ -160,9 +169,12 @@ class IssueWalletInstanceAttestationLive(
     private val validity: WalletInstanceAttestationValidity,
     private val issuer: Issuer,
     private val clientId: ClientId,
-    private val walletName: WalletName?,
+    private val walletName: WalletName,
     private val walletLink: WalletLink?,
-    private val generalInformation: GeneralInformation,
+    private val walletVersion: WalletVersion,
+    private val walletSolutionCertificationInformation: CertificationInformation,
+    private val clientStatusValidity: PositiveDuration,
+    private val generateStatusListToken: GenerateStatusListToken,
     private val signJwt: SignJwt<WalletInstanceAttestationClaims>,
 ) : IssueWalletInstanceAttestation {
     override suspend fun invoke(
@@ -211,6 +223,16 @@ class IssueWalletInstanceAttestationLive(
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity.value
+            val clientStatus =
+                run {
+                    val clientStatusExpiresAt = issuedAt + clientStatusValidity.value
+                    val statusListToken =
+                        generateStatusListToken(clientStatusExpiresAt)
+                            .mapLeft { WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure(it) }
+                            .bind()
+                    ClientStatus(Status(statusListToken), clientStatusExpiresAt)
+                }
+
             val walletInstanceAttestation =
                 WalletInstanceAttestationClaims(
                     issuer,
@@ -219,10 +241,12 @@ class IssueWalletInstanceAttestationLive(
                     ConfirmationClaim(jsonWebKey = attestedKey),
                     issuedAt = issuedAt,
                     notBefore = issuedAt,
-                    walletName,
+                    walletName = walletName,
                     walletLink,
                     null,
-                    WalletInstanceAttestationClaims.WalletInformation(generalInformation),
+                    walletVersion = walletVersion,
+                    walletSolutionCertificationInformation,
+                    clientStatus,
                     request.walletMetadata,
                 )
 

@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.domain.walletinformation
 
 import eu.europa.ec.eudi.walletprovider.domain.ARF
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.TS3
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -29,7 +30,7 @@ data class GeneralInformation(
     @Required @SerialName(ARF.WALLET_PROVIDER_NAME) val provider: WalletProviderName,
     @Required @SerialName(ARF.WALLET_SOLUTION_ID) val id: SolutionId,
     @Required @SerialName(ARF.WALLET_SOLUTION_VERSION) val version: SolutionVersion,
-    @Required @SerialName(ARF.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
+    @Required @SerialName(TS3.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
 )
 
 typealias WalletProviderName = NonBlankString
