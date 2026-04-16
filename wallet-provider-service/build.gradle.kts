@@ -112,6 +112,7 @@ kotlin {
             "kotlin.io.encoding.ExperimentalEncodingApi",
             "kotlin.time.ExperimentalTime",
             "at.asitplus.attestation.DisabledAttestation",
+            "kotlin.uuid.ExperimentalUuidApi",
         )
     }
 

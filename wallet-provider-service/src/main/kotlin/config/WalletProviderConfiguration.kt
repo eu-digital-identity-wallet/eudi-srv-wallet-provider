@@ -48,7 +48,7 @@ data class WalletProviderConfiguration(
     val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
-    val tokenStatusListService: TokenStatusListServiceConfiguration? = null,
+    val tokenStatusListService: TokenStatusListServiceConfiguration,
     val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration.Enabled(),
 )
 

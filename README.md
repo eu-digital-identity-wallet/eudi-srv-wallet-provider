@@ -481,11 +481,11 @@ Default value: N/A
 
 ### Token Status List Service Configuration
 
-Wallet Provider optionally integrates with [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py),
+Wallet Provider integrates with [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py),
 to include Status List Tokens based on [Token Status List draft12](https://www.ietf.org/archive/id/draft-ietf-oauth-status-list-12.html) in
 issued Wallet Instance Attestations.
 
-To enable this integration, use the following environment variables:
+To configure this integration, use the following environment variables:
 
 Variable: `TOKENSTATUSLISTSERVICE_SERVICEURL`  
 Description: URL of the **take** operation of [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py).  

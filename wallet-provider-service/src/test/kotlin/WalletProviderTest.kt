@@ -24,11 +24,16 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
+import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.NonCancellable
@@ -41,7 +46,11 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.junit.jupiter.api.extension.*
 import org.slf4j.LoggerFactory
 import org.testcontainers.mysql.MySQLContainer
+import java.net.URI
 import java.nio.file.Path
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.fail
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
@@ -103,6 +112,11 @@ private class WalletProviderExtension :
                                 CertificationInformation(JsonPrimitive("ARF")),
                             ),
                         ),
+                    tokenStatusListService =
+                        TokenStatusListServiceConfiguration(
+                            serviceUrl = URI.create("https://status.example.com/create").toURL(),
+                            apiKey = Secret("API-KEY"),
+                        ),
                     swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
                 )
 
@@ -114,7 +128,39 @@ private class WalletProviderExtension :
                 run {
                     val engine =
                         MockEngine { request ->
-                            fail("Unexpected request: ${request.url}")
+                            when (request.url.toString()) {
+                                config.tokenStatusListService.serviceUrl.toExternalForm() -> {
+                                    assertEquals(HttpMethod.Post, request.method)
+                                    assertEquals(ContentType.Application.Json.toString(), request.headers[HttpHeaders.Accept])
+                                    assertEquals(config.tokenStatusListService.apiKey.value, request.headers["X-API-Key"])
+
+                                    val form = assertIs<FormDataContent>(request.body).formData
+                                    assertEquals("FC", form["country"])
+                                    assertEquals(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE, form["doctype"])
+                                    assertNotNull(form["expiry_date"])
+
+                                    respond(
+                                        content =
+                                            json.encodeToString(
+                                                Status(
+                                                    StatusListToken(
+                                                        5u,
+                                                        URI.create("https://status.example.com/lists/10"),
+                                                    ),
+                                                ),
+                                            ),
+                                        status = HttpStatusCode.OK,
+                                        headers =
+                                            headersOf(
+                                                HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
+                                            ),
+                                    )
+                                }
+
+                                else -> {
+                                    fail("Unexpected request: ${request.url}")
+                                }
+                            }
                         }
                     resourceScope.install(
                         HttpClient(engine) {
@@ -127,7 +173,7 @@ private class WalletProviderExtension :
 
             TestApplication {
                 application {
-                    configureWalletProviderApplicationModule(
+                    configureWalletProviderModule(
                         config,
                         clock,
                         json,

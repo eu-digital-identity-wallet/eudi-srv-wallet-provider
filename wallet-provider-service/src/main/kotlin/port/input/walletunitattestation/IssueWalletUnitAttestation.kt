@@ -188,7 +188,7 @@ class IssueWalletUnitAttestationLive(
     private val validateChallenge: ValidateChallenge,
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
-    private val generateStatusListToken: GenerateStatusListToken?,
+    private val generateStatusListToken: GenerateStatusListToken,
     private val issuer: Issuer,
     private val clientId: ClientId,
     private val keyStorage: NonEmptyList<AttackPotentialResistance>?,
@@ -248,10 +248,9 @@ class IssueWalletUnitAttestationLive(
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity
             val statusListToken =
-                generateStatusListToken
-                    ?.invoke(expiresAt)
-                    ?.mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
-                    ?.bind()
+                generateStatusListToken(expiresAt)
+                    .mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
+                    .bind()
 
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
@@ -264,7 +263,7 @@ class IssueWalletUnitAttestationLive(
                     userAuthentication = userAuthentication,
                     certification,
                     request.nonce,
-                    statusListToken?.let { Status(it) },
+                    Status(statusListToken),
                     WalletUnitAttestationClaims.WalletInformation(
                         generalInformation,
                         walletSecureCryptographicDeviceInformation,

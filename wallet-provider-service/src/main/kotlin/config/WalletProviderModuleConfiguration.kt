@@ -61,9 +61,9 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.slf4j.LoggerFactory
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
-private val logger = LoggerFactory.getLogger("WalletProviderApplicationModule")
+private val logger = LoggerFactory.getLogger("WalletProviderModule")
 
-fun Application.configureWalletProviderApplicationModule(
+fun Application.configureWalletProviderModule(
     config: WalletProviderConfiguration,
     clock: Clock,
     json: Json,
@@ -128,14 +128,12 @@ fun Application.configureWalletProviderApplicationModule(
         )
 
     val generateStatusListToken =
-        config.tokenStatusListService?.let {
-            TokenStatusListServiceGenerateStatusListToken(
-                httpClient,
-                Url(it.serviceUrl.toExternalForm()),
-                ApiKey(it.apiKey.value),
-                clock,
-            )
-        }
+        TokenStatusListServiceGenerateStatusListToken(
+            httpClient,
+            Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
+            ApiKey(config.tokenStatusListService.apiKey.value),
+            clock,
+        )
 
     val issueWalletUnitAttestation =
         IssueWalletUnitAttestationLive(

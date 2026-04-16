@@ -68,7 +68,7 @@ object WalletProviderApplication {
                     grace = config.server.grace.value,
                     timeout = config.server.timeout.value,
                 ) {
-                    configureWalletProviderApplicationModule(
+                    configureWalletProviderModule(
                         config,
                         clock,
                         json,
