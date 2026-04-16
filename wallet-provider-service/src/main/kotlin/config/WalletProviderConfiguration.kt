@@ -49,7 +49,7 @@ data class WalletProviderConfiguration(
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
     val tokenStatusListService: TokenStatusListServiceConfiguration,
-    val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration.Enabled(),
+    val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration(),
 )
 
 data class ServerConfiguration(
@@ -259,14 +259,9 @@ data class IssuerConfiguration(
     val name: Name = Name("Wallet Provider"),
 )
 
-sealed interface SwaggerUiConfiguration {
-    data object Disabled : SwaggerUiConfiguration
-
-    data class Enabled(
-        val path: NonBlankString = "/swagger".toNonBlankString(),
-        val swaggerFile: NonBlankString = "openapi/openapi.json".toNonBlankString(),
-    ) : SwaggerUiConfiguration
-}
+data class SwaggerUiConfiguration(
+    val path: NonBlankString = "/swagger".toNonBlankString(),
+)
 
 enum class SigningAlgorithm {
     ES256,

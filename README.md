@@ -499,13 +499,7 @@ Wallet Provider exposes an OpenAPI specification of its endpoints using Swagger 
 
 Variable: `SWAGGERUI_PATH`  
 Description: The path at which Swagger UI is exposed.      
-Default value: `/swagger`  
-
-Variable: `SWAGGERUI_SWAGGERFILE`  
-Description: The location of the OpenAPI specification file to serve.      
-Default value: `openapi/openapi.json`  
-
-To disable Swagger UI, set the environment variable `SWAGGERUI` to `Disabled`.  
+Default value: `/swagger`
 
 ### Duration formats
 

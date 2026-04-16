@@ -117,7 +117,6 @@ private class WalletProviderExtension :
                             serviceUrl = URI.create("https://status.example.com/create").toURL(),
                             apiKey = Secret("API-KEY"),
                         ),
-                    swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
                 )
 
             val clock = Clock.System

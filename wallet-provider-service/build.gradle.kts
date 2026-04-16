@@ -123,20 +123,6 @@ kotlin {
     }
 }
 
-val copyOpenApiSpecification =
-    tasks.register<Copy>("copyOpenApiSpecification") {
-        val processResources = tasks.processResources.get()
-        dependsOn(processResources)
-
-        from(rootProject.layout.projectDirectory.dir("openapi"))
-        include("openapi.json")
-        into(processResources.destinationDir)
-    }
-
-tasks.classes {
-    dependsOn(copyOpenApiSpecification)
-}
-
 spotless {
     kotlin {
         ktlint(libs.versions.ktlint.get())
@@ -161,7 +147,7 @@ jib {
 
     container {
         labels =
-            buildMap<String, String> {
+            buildMap {
                 fun fromEnvironmentVariable(
                     variable: String,
                     label: String,
