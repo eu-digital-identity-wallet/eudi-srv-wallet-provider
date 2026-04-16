@@ -18,6 +18,9 @@ package eu.europa.ec.eudi.walletprovider
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
+import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
+import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
+import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestationClaims
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletMetadata
@@ -31,6 +34,8 @@ import io.ktor.test.dispatcher.*
 import kotlinx.coroutines.test.TestResult
 import kotlinx.serialization.json.*
 import kotlin.test.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 class IssueWalletInstanceAttestationTest : WalletProviderTest() {
     @Test
@@ -41,7 +46,7 @@ class IssueWalletInstanceAttestationTest : WalletProviderTest() {
                 put("app_version", "1.2.3")
             }
 
-        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata = walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
@@ -56,7 +61,7 @@ class IssueWalletInstanceAttestationTest : WalletProviderTest() {
                 add("tag3")
             }
 
-        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata = walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
@@ -66,22 +71,66 @@ class IssueWalletInstanceAttestationTest : WalletProviderTest() {
     fun `wallet instance attestation includes wallet metadata when provided as primitive`(httpClient: HttpClient) {
         val walletMetadata = JsonPrimitive("simple-string-value")
 
-        httpClient.runWalletInstanceAttestationTestCase(walletMetadata) {
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata = walletMetadata) {
             val signedWalletMetadata = assertNotNull(it.payload.walletMetadata)
             assertEquals(walletMetadata, signedWalletMetadata)
         }
     }
 
     @Test
-    fun `wallet instance attestation works without wallet metadata for backward compatibility`(httpClient: HttpClient) {
-        httpClient.runWalletInstanceAttestationTestCase(null) {
+    fun `wallet instance attestation works without wallet metadata for backward compatibility`(httpClient: HttpClient) =
+        httpClient.runWalletInstanceAttestationTestCase(walletMetadata = null) {
             assertNull(it.payload.walletMetadata)
+        }
+
+    @Test
+    fun `wallet instance attestation uses configured client status validity when no preference is provided`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) = httpClient.runWalletInstanceAttestationTestCase {
+        val now = clock.now()
+        val clientStatusValidity: Duration = it.payload.clientStatus.expiresAt - now
+        assertTrue(clientStatusValidity <= config.walletInstanceAttestation.clientStatusValidity.value)
+    }
+
+    @Test
+    fun `wallet instance attestation uses configured client status validity when preference is less than configured`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) {
+        val preferredClientStatusPeriod = config.walletInstanceAttestation.clientStatusValidity.value - 5.days
+        check(preferredClientStatusPeriod.isPositive()) { "preferredClientStatusPeriod can't be negative" }
+
+        httpClient.runWalletInstanceAttestationTestCase(preferredClientStatusPeriod = preferredClientStatusPeriod) {
+            val now = clock.now()
+            val clientStatusValidity: Duration = it.payload.clientStatus.expiresAt - now
+            assertTrue(clientStatusValidity > preferredClientStatusPeriod)
+            assertTrue(clientStatusValidity <= config.walletInstanceAttestation.clientStatusValidity.value)
+        }
+    }
+
+    @Test
+    fun `wallet instance attestation uses preferred client status validity when preference is more than configured`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) {
+        val preferredClientStatusPeriod = config.walletInstanceAttestation.clientStatusValidity.value + 5.days
+
+        httpClient.runWalletInstanceAttestationTestCase(preferredClientStatusPeriod = preferredClientStatusPeriod) {
+            val now = clock.now()
+            val clientStatusValidity: Duration = it.payload.clientStatus.expiresAt - now
+            assertTrue(clientStatusValidity <= preferredClientStatusPeriod)
+            assertTrue(clientStatusValidity > config.walletInstanceAttestation.clientStatusValidity.value)
         }
     }
 }
 
 private fun HttpClient.runWalletInstanceAttestationTestCase(
-    walletMetadata: WalletMetadata?,
+    walletMetadata: WalletMetadata? = null,
+    preferredClientStatusPeriod: SecondsDuration? = null,
     assertions: suspend (WalletInstanceAttestation) -> Unit,
 ): TestResult =
     runTestWithRealTime {
@@ -94,6 +143,7 @@ private fun HttpClient.runWalletInstanceAttestationTestCase(
                         }
                     }.getOrThrow().publicKey.toJsonWebKey(),
                 walletMetadata = walletMetadata,
+                preferredClientStatusPeriod = preferredClientStatusPeriod,
             )
 
         val response =

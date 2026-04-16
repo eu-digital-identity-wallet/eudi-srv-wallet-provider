@@ -52,6 +52,7 @@ fun interface IssueWalletInstanceAttestation {
 sealed interface WalletInstanceAttestationIssuanceRequest {
     val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>?
     val walletMetadata: WalletMetadata?
+    val preferredClientStatusPeriod: SecondsDuration?
 
     sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletInstanceAttestationIssuanceRequest {
         val keyAttestation: KeyAttestation
@@ -65,19 +66,22 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             override val walletMetadata: WalletMetadata? = null,
+            override val preferredClientStatusPeriod: SecondsDuration? = null,
         ) : PlatformKeyAttestation<AndroidKeystoreAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Android &&
                     other.keyAttestation == keyAttestation &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
-                    other.walletMetadata == walletMetadata
+                    other.walletMetadata == walletMetadata &&
+                    other.preferredClientStatusPeriod == preferredClientStatusPeriod
 
             override fun hashCode(): Int {
                 var result = keyAttestation.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (walletMetadata?.hashCode() ?: 0)
+                result = 31 * result + (preferredClientStatusPeriod?.hashCode() ?: 0)
                 return result
             }
         }
@@ -90,19 +94,22 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             override val walletMetadata: WalletMetadata? = null,
+            override val preferredClientStatusPeriod: SecondsDuration? = null,
         ) : PlatformKeyAttestation<IosHomebrewAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Ios &&
                     other.keyAttestation == keyAttestation &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
-                    other.walletMetadata == walletMetadata
+                    other.walletMetadata == walletMetadata &&
+                    other.preferredClientStatusPeriod == preferredClientStatusPeriod
 
             override fun hashCode(): Int {
                 var result = keyAttestation.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (walletMetadata?.hashCode() ?: 0)
+                result = 31 * result + (preferredClientStatusPeriod?.hashCode() ?: 0)
                 return result
             }
         }
@@ -113,6 +120,7 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
         val jwk: JsonWebKey,
         @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         override val walletMetadata: WalletMetadata? = null,
+        override val preferredClientStatusPeriod: SecondsDuration? = null,
     ) : WalletInstanceAttestationIssuanceRequest
 }
 
@@ -225,7 +233,8 @@ class IssueWalletInstanceAttestationLive(
             val expiresAt = issuedAt + validity.value
             val clientStatus =
                 run {
-                    val clientStatusExpiresAt = issuedAt + clientStatusValidity.value
+                    val clientStatusPeriod = maxOf(request.preferredClientStatusPeriod ?: Duration.ZERO, clientStatusValidity.value)
+                    val clientStatusExpiresAt = issuedAt + clientStatusPeriod
                     val statusListToken =
                         generateStatusListToken(clientStatusExpiresAt)
                             .mapLeft { WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure(it) }
