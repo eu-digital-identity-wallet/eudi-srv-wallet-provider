@@ -24,7 +24,6 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
-import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
@@ -82,56 +81,57 @@ private class WalletProviderExtension :
             prettyPrint = true
         }
 
-    private val testApplication: TestApplication =
-        run {
-            val config =
-                WalletProviderConfiguration(
-                    database =
-                        DatabaseConfiguration(
-                            url = database.r2dbcUrl.toNonBlankString(),
-                            username = database.username,
-                            password = Secret(database.password),
+    private val config =
+        WalletProviderConfiguration(
+            database =
+                DatabaseConfiguration(
+                    url = database.r2dbcUrl.toNonBlankString(),
+                    username = database.username,
+                    password = Secret(database.password),
+                ),
+            signingKey =
+                SigningKeyConfiguration(
+                    keystoreFile = Path.of("src/test/resources/keystore.jks"),
+                    keystorePassword = Secret("testKeystore"),
+                    keyAlias = "test-key".toNonBlankString(),
+                    keyPassword = Secret("testKeystore"),
+                    algorithm = SigningAlgorithm.ES256,
+                ),
+            walletInformation =
+                WalletInformationConfiguration(
+                    GeneralInformationConfiguration(
+                        provider = WalletProviderName("Wallet Provider"),
+                        id = SolutionId("EUDI Wallet"),
+                        version = SolutionVersion("1.0.0"),
+                        certification = CertificationInformation(JsonPrimitive("ARF")),
+                    ),
+                    WalletSecureCryptographicDeviceInformationConfiguration(
+                        WalletSecureCryptographicDeviceType.LocalNative,
+                        CertificationInformation(JsonPrimitive("ARF")),
+                    ),
+                ),
+            walletInstanceAttestation =
+                WalletInstanceAttestationConfiguration(
+                    walletName = "EUDI Wallet".toNonBlankString(),
+                    walletVersion = "1.0.0".toNonBlankString(),
+                    walletCertificationInformation =
+                        CertificationInformation(
+                            JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
                         ),
-                    signingKey =
-                        SigningKeyConfiguration(
-                            keystoreFile = Path.of("src/test/resources/keystore.jks"),
-                            keystorePassword = Secret("testKeystore"),
-                            keyAlias = "test-key".toNonBlankString(),
-                            keyPassword = Secret("testKeystore"),
-                            algorithm = SigningAlgorithm.ES256,
-                        ),
-                    walletInformation =
-                        WalletInformationConfiguration(
-                            GeneralInformationConfiguration(
-                                provider = WalletProviderName("Wallet Provider"),
-                                id = SolutionId("EUDI Wallet"),
-                                version = SolutionVersion("1.0.0"),
-                                certification = CertificationInformation(JsonPrimitive("ARF")),
-                            ),
-                            WalletSecureCryptographicDeviceInformationConfiguration(
-                                WalletSecureCryptographicDeviceType.LocalNative,
-                                CertificationInformation(JsonPrimitive("ARF")),
-                            ),
-                        ),
-                    walletInstanceAttestation =
-                        WalletInstanceAttestationConfiguration(
-                            walletName = "EUDI Wallet".toNonBlankString(),
-                            walletVersion = "1.0.0".toNonBlankString(),
-                            walletCertificationInformation =
-                                CertificationInformation(
-                                    JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
-                                ),
-                        ),
-                    tokenStatusListService =
-                        TokenStatusListServiceConfiguration(
-                            serviceUrl = URI.create("https://status.example.com/create").toURL(),
-                            apiKey = Secret("API-KEY"),
-                        ),
-                )
+                ),
+            tokenStatusListService =
+                TokenStatusListServiceConfiguration(
+                    serviceUrl = URI.create("https://status.example.com/create").toURL(),
+                    apiKey = Secret("API-KEY"),
+                ),
+        )
 
-            val clock = Clock.System
-            val database = runBlocking { context(resources) { config.database.connect() } }
-            val (signer, certificateChain) = runBlocking { config.signingKey.load() }
+    private val clock = Clock.System
+
+    private val testApplication: TestApplication =
+        runBlocking {
+            val database = context(resources) { config.database.connect() }
+            val (signer, certificateChain) = config.signingKey.load()
             val httpClient = context(resources) { createMockHttpClient(config, json) }
 
             TestApplication {
@@ -190,7 +190,9 @@ private class WalletProviderExtension :
         extensionContext: ExtensionContext,
     ): Boolean =
         arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) ||
-            HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type)
+            HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) ||
+            WalletProviderConfiguration::class.java.isAssignableFrom(parameterContext.parameter.type) ||
+            Clock::class.java.isAssignableFrom(parameterContext.parameter.type)
 
     override fun resolveParameter(
         parameterContext: ParameterContext,
@@ -199,6 +201,8 @@ private class WalletProviderExtension :
         when {
             arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resources
             HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) -> httpClient
+            WalletProviderConfiguration::class.java.isAssignableFrom(parameterContext.parameter.type) -> config
+            Clock::class.java.isAssignableFrom(parameterContext.parameter.type) -> clock
             else -> throw ParameterResolutionException("Unsupported parameter type: ${parameterContext.parameter.type}")
         }
 }

@@ -369,6 +369,16 @@
                 "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
               }
             ]
+          },
+          "preferredClientStatusPeriod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
+              }
+            ]
           }
         },
         "required": [
@@ -420,6 +430,16 @@
                 "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
               }
             ]
+          },
+          "preferredClientStatusPeriod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
+              }
+            ]
           }
         },
         "required": [
@@ -452,6 +472,16 @@
               },
               {
                 "description": "Custom metadata provided by the Wallet to be included in the issued Wallet Instance Attestation"
+              }
+            ]
+          },
+          "preferredClientStatusPeriod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
               }
             ]
           }
