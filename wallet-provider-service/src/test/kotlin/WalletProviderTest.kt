@@ -24,10 +24,11 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.*
-import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.engine.mock.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.NonCancellable
@@ -41,6 +42,8 @@ import org.junit.jupiter.api.extension.*
 import org.slf4j.LoggerFactory
 import org.testcontainers.mysql.MySQLContainer
 import java.nio.file.Path
+import kotlin.test.fail
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val database by lazy {
     MySQLContainer("mysql:8.4.8")
@@ -63,44 +66,76 @@ private class WalletProviderExtension :
     ParameterResolver {
     private val resourceScope = ResourceScope()
 
-    private val testApplication =
-        with(resourceScope) {
-            TestApplication {
-                val config =
-                    WalletProviderConfiguration(
-                        database =
-                            DatabaseConfiguration(
-                                url = database.r2dbcUrl.toNonBlankString(),
-                                username = database.username,
-                                password = Secret(database.password),
-                            ),
-                        signingKey =
-                            SigningKeyConfiguration(
-                                keystoreFile = Path.of("src/test/resources/keystore.jks"),
-                                keystorePassword = Secret("testKeystore"),
-                                keyAlias = "test-key".toNonBlankString(),
-                                keyPassword = Secret("testKeystore"),
-                                algorithm = SigningAlgorithm.ES256,
-                            ),
-                        walletInformation =
-                            WalletInformationConfiguration(
-                                GeneralInformationConfiguration(
-                                    provider = WalletProviderName("Wallet Provider"),
-                                    id = SolutionId("EUDI Wallet"),
-                                    version = SolutionVersion("1.0.0"),
-                                    certification = CertificationInformation(JsonPrimitive("ARF")),
-                                ),
-                                WalletSecureCryptographicDeviceInformationConfiguration(
-                                    WalletSecureCryptographicDeviceType.LocalNative,
-                                    CertificationInformation(JsonPrimitive("ARF")),
-                                ),
-                            ),
-                        swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
-                    )
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        }
 
+    private val testApplication: TestApplication =
+        run {
+            val config =
+                WalletProviderConfiguration(
+                    database =
+                        DatabaseConfiguration(
+                            url = database.r2dbcUrl.toNonBlankString(),
+                            username = database.username,
+                            password = Secret(database.password),
+                        ),
+                    signingKey =
+                        SigningKeyConfiguration(
+                            keystoreFile = Path.of("src/test/resources/keystore.jks"),
+                            keystorePassword = Secret("testKeystore"),
+                            keyAlias = "test-key".toNonBlankString(),
+                            keyPassword = Secret("testKeystore"),
+                            algorithm = SigningAlgorithm.ES256,
+                        ),
+                    walletInformation =
+                        WalletInformationConfiguration(
+                            GeneralInformationConfiguration(
+                                provider = WalletProviderName("Wallet Provider"),
+                                id = SolutionId("EUDI Wallet"),
+                                version = SolutionVersion("1.0.0"),
+                                certification = CertificationInformation(JsonPrimitive("ARF")),
+                            ),
+                            WalletSecureCryptographicDeviceInformationConfiguration(
+                                WalletSecureCryptographicDeviceType.LocalNative,
+                                CertificationInformation(JsonPrimitive("ARF")),
+                            ),
+                        ),
+                    swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
+                )
+
+            val clock = Clock.System
+            val database = runBlocking { context(resourceScope) { config.database.connect() } }
+            val (signer, certificateChain) = runBlocking { config.signingKey.load() }
+
+            val httpClient =
+                run {
+                    val engine =
+                        MockEngine { request ->
+                            fail("Unexpected request: ${request.url}")
+                        }
+                    resourceScope.install(
+                        HttpClient(engine) {
+                            install(ClientContentNegotiation) {
+                                json(json)
+                            }
+                        },
+                    )
+                }
+
+            TestApplication {
                 application {
-                    check(database.isRunning) { "Database is not running" }
-                    configureWalletProviderApplication(config)
+                    configureWalletProviderApplicationModule(
+                        config,
+                        clock,
+                        json,
+                        database,
+                        signer,
+                        certificateChain,
+                        httpClient,
+                    )
                 }
             }
         }
@@ -114,13 +149,8 @@ private class WalletProviderExtension :
             httpClient =
                 resourceScope.install(
                     testApplication.createClient {
-                        install(ContentNegotiation) {
-                            json(
-                                Json {
-                                    ignoreUnknownKeys = true
-                                    prettyPrint = true
-                                },
-                            )
+                        install(ClientContentNegotiation) {
+                            json(json)
                         }
                     },
                 )

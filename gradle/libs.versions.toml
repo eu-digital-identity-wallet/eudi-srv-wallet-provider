@@ -50,6 +50,7 @@ ktor-server-swagger = { module = "io.ktor:ktor-server-swagger" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host" }
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
 slf4j-bom = { module = "org.slf4j:slf4j-bom", version.ref = "slf4j" }
 slf4j-api = { module = "org.slf4j:slf4j-api" }

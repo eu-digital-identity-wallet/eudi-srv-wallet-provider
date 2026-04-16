@@ -81,6 +81,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.testcontainers.mysql)
     testRuntimeOnly(libs.jdbc.mysql)
+    testImplementation(libs.ktor.client.mock)
 }
 
 abstract class VirtualPlatformAlignmentRule
