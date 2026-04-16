@@ -73,7 +73,7 @@ private class WalletProviderExtension :
     BeforeEachCallback,
     AfterAllCallback,
     ParameterResolver {
-    private val resourceScope = ResourceScope()
+    private val resources = ResourceScope()
 
     private val json =
         Json {
@@ -121,9 +121,9 @@ private class WalletProviderExtension :
                 )
 
             val clock = Clock.System
-            val database = runBlocking { context(resourceScope) { config.database.connect() } }
+            val database = runBlocking { context(resources) { config.database.connect() } }
             val (signer, certificateChain) = runBlocking { config.signingKey.load() }
-            val httpClient = context(resourceScope) { createMockHttpClient(config, json) }
+            val httpClient = context(resources) { createMockHttpClient(config, json) }
 
             TestApplication {
                 application {
@@ -147,7 +147,7 @@ private class WalletProviderExtension :
         runBlocking {
             testApplication.start()
             httpClient =
-                resourceScope.install(
+                resources.install(
                     testApplication.createClient {
                         install(ClientContentNegotiation) {
                             json(json)
@@ -171,7 +171,7 @@ private class WalletProviderExtension :
         runBlocking {
             withContext(NonCancellable) {
                 testApplication.stop()
-                resourceScope.releaseAll()
+                resources.releaseAll()
             }
         }
     }
@@ -188,7 +188,7 @@ private class WalletProviderExtension :
         extensionContext: ExtensionContext,
     ): Any =
         when {
-            arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resourceScope
+            arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resources
             HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) -> httpClient
             else -> throw ParameterResolutionException("Unsupported parameter type: ${parameterContext.parameter.type}")
         }
