@@ -20,6 +20,7 @@ import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.Iss
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -118,6 +119,15 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                     "Attested Key Curve is not supported: ${failure.curve.name}" to
                     null
             }
+
+            is WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+                when (failure.error) {
+                    is StatusListTokenGenerationFailure.Unexpected -> {
+                        "WalletInstanceAttestationIssuanceRequest failed, unable to generate Status List Token" to
+                            failure.error.cause
+                    }
+                }
+            }
         }
 
     warn(error, cause)
@@ -152,6 +162,9 @@ private enum class WalletInstanceAttestationError {
 
     @SerialName("unsupported_attested_key_curve")
     UnsupportedAttestedKeyCurve,
+
+    @SerialName("status_list_token_generation_failure")
+    StatusListTokenGenerationFailure,
 }
 
 @Serializable
@@ -182,5 +195,9 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
 
         is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve -> {
             WalletInstanceAttestationError.UnsupportedAttestedKeyCurve
+        }
+
+        is WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+            WalletInstanceAttestationError.StatusListTokenGenerationFailure
         }
     }.let { WalletInstanceAttestationErrorResponse(it) }

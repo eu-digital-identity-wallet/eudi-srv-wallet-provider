@@ -79,3 +79,14 @@ typealias JwtType = NonBlankString
 typealias SecondsDuration =
     @Serializable(with = DurationSecondsSerializer::class)
     Duration
+
+@JvmInline
+value class PositiveDuration(
+    val value: Duration,
+) {
+    init {
+        require(value.isPositive()) { "value must be positive" }
+    }
+
+    override fun toString(): String = value.toString()
+}

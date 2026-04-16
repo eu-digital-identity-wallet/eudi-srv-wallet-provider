@@ -443,8 +443,20 @@ Description: Wallet Name that will be included in the Wallet Instance Attestatio
 Default value: N/A  
 
 Variable: `WALLETINSTANCEATTESTATION_WALLETLINK`  
-Description: Wallet Link that will be included in the Wallet Instance Attestations.  
+Description: Optional Wallet Link that can be included in the Wallet Instance Attestations.  
 Default value: N/A  
+
+Variable: `WALLETINSTANCEATTESTATION_WALLETVERSION`  
+Description: Wallet Version that will be included in the Wallet Instance Attestations.  
+Default value: N/A
+
+Variable: `WALLETINSTANCEATTESTATION_WALLETCERTIFICATIONINFORMATION`  
+Description: Wallet Certification Information that will be included in the Wallet Instance Attestations.  
+Default value: N/A
+
+Variable: `WALLETINSTANCEATTESTATION_CLIENTSTATUSVALIDITY`  
+Description: Duration a Client Status of a Wallet Instance Attestation is valid for.  
+Default value: `90 days`
 
 ### Wallet Unit Attestation Configuration
 

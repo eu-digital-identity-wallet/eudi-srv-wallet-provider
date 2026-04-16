@@ -24,15 +24,16 @@ import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
+import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
-import eu.europa.ec.eudi.walletprovider.port.input.challenge.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
 import kotlin.io.encoding.Base64
 import kotlin.reflect.KType
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -46,7 +47,7 @@ data class WalletProviderConfiguration(
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInformation: WalletInformationConfiguration,
-    val walletInstanceAttestation: WalletInstanceAttestationConfiguration = WalletInstanceAttestationConfiguration(),
+    val walletInstanceAttestation: WalletInstanceAttestationConfiguration,
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
     val tokenStatusListService: TokenStatusListServiceConfiguration,
     val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration(),
@@ -231,8 +232,11 @@ data class WalletSecureCryptographicDeviceInformationConfiguration(
 
 data class WalletInstanceAttestationConfiguration(
     val validity: WalletInstanceAttestationValidity = WalletInstanceAttestationValidity.Default,
-    val walletName: WalletName? = null,
+    val walletName: WalletName,
     val walletLink: WalletLink? = null,
+    val walletVersion: WalletVersion,
+    val walletCertificationInformation: CertificationInformation,
+    val clientStatusValidity: PositiveDuration = PositiveDuration(90.days),
 )
 
 data class WalletUnitAttestationConfiguration(

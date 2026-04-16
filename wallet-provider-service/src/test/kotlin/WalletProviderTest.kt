@@ -24,6 +24,7 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
@@ -111,6 +112,15 @@ private class WalletProviderExtension :
                                 WalletSecureCryptographicDeviceType.LocalNative,
                                 CertificationInformation(JsonPrimitive("ARF")),
                             ),
+                        ),
+                    walletInstanceAttestation =
+                        WalletInstanceAttestationConfiguration(
+                            walletName = "EUDI Wallet".toNonBlankString(),
+                            walletVersion = "1.0.0".toNonBlankString(),
+                            walletCertificationInformation =
+                                CertificationInformation(
+                                    JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
+                                ),
                         ),
                     tokenStatusListService =
                         TokenStatusListServiceConfiguration(
