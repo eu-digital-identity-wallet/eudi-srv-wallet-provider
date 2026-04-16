@@ -24,10 +24,16 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
+import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.*
-import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.NonCancellable
@@ -40,7 +46,13 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.junit.jupiter.api.extension.*
 import org.slf4j.LoggerFactory
 import org.testcontainers.mysql.MySQLContainer
+import java.net.URI
 import java.nio.file.Path
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.fail
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val database by lazy {
     MySQLContainer("mysql:8.4.8")
@@ -61,46 +73,69 @@ private class WalletProviderExtension :
     BeforeEachCallback,
     AfterAllCallback,
     ParameterResolver {
-    private val resourceScope = ResourceScope()
+    private val resources = ResourceScope()
 
-    private val testApplication =
-        with(resourceScope) {
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        }
+
+    private val testApplication: TestApplication =
+        run {
+            val config =
+                WalletProviderConfiguration(
+                    database =
+                        DatabaseConfiguration(
+                            url = database.r2dbcUrl.toNonBlankString(),
+                            username = database.username,
+                            password = Secret(database.password),
+                        ),
+                    signingKey =
+                        SigningKeyConfiguration(
+                            keystoreFile = Path.of("src/test/resources/keystore.jks"),
+                            keystorePassword = Secret("testKeystore"),
+                            keyAlias = "test-key".toNonBlankString(),
+                            keyPassword = Secret("testKeystore"),
+                            algorithm = SigningAlgorithm.ES256,
+                        ),
+                    walletInformation =
+                        WalletInformationConfiguration(
+                            GeneralInformationConfiguration(
+                                provider = WalletProviderName("Wallet Provider"),
+                                id = SolutionId("EUDI Wallet"),
+                                version = SolutionVersion("1.0.0"),
+                                certification = CertificationInformation(JsonPrimitive("ARF")),
+                            ),
+                            WalletSecureCryptographicDeviceInformationConfiguration(
+                                WalletSecureCryptographicDeviceType.LocalNative,
+                                CertificationInformation(JsonPrimitive("ARF")),
+                            ),
+                        ),
+                    tokenStatusListService =
+                        TokenStatusListServiceConfiguration(
+                            serviceUrl = URI.create("https://status.example.com/create").toURL(),
+                            apiKey = Secret("API-KEY"),
+                        ),
+                    swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
+                )
+
+            val clock = Clock.System
+            val database = runBlocking { context(resources) { config.database.connect() } }
+            val (signer, certificateChain) = runBlocking { config.signingKey.load() }
+            val httpClient = context(resources) { createMockHttpClient(config, json) }
+
             TestApplication {
-                val config =
-                    WalletProviderConfiguration(
-                        database =
-                            DatabaseConfiguration(
-                                url = database.r2dbcUrl.toNonBlankString(),
-                                username = database.username,
-                                password = Secret(database.password),
-                            ),
-                        signingKey =
-                            SigningKeyConfiguration(
-                                keystoreFile = Path.of("src/test/resources/keystore.jks"),
-                                keystorePassword = Secret("testKeystore"),
-                                keyAlias = "test-key".toNonBlankString(),
-                                keyPassword = Secret("testKeystore"),
-                                algorithm = SigningAlgorithm.ES256,
-                            ),
-                        walletInformation =
-                            WalletInformationConfiguration(
-                                GeneralInformationConfiguration(
-                                    provider = WalletProviderName("Wallet Provider"),
-                                    id = SolutionId("EUDI Wallet"),
-                                    version = SolutionVersion("1.0.0"),
-                                    certification = CertificationInformation(JsonPrimitive("ARF")),
-                                ),
-                                WalletSecureCryptographicDeviceInformationConfiguration(
-                                    WalletSecureCryptographicDeviceType.LocalNative,
-                                    CertificationInformation(JsonPrimitive("ARF")),
-                                ),
-                            ),
-                        swaggerUi = SwaggerUiConfiguration.Enabled(swaggerFile = "../openapi/openapi.json".toNonBlankString()),
-                    )
-
                 application {
-                    check(database.isRunning) { "Database is not running" }
-                    configureWalletProviderApplication(config)
+                    configureWalletProviderModule(
+                        config,
+                        clock,
+                        json,
+                        database,
+                        signer,
+                        certificateChain,
+                        httpClient,
+                    )
                 }
             }
         }
@@ -112,15 +147,10 @@ private class WalletProviderExtension :
         runBlocking {
             testApplication.start()
             httpClient =
-                resourceScope.install(
+                resources.install(
                     testApplication.createClient {
-                        install(ContentNegotiation) {
-                            json(
-                                Json {
-                                    ignoreUnknownKeys = true
-                                    prettyPrint = true
-                                },
-                            )
+                        install(ClientContentNegotiation) {
+                            json(json)
                         }
                     },
                 )
@@ -141,7 +171,7 @@ private class WalletProviderExtension :
         runBlocking {
             withContext(NonCancellable) {
                 testApplication.stop()
-                resourceScope.releaseAll()
+                resources.releaseAll()
             }
         }
     }
@@ -158,7 +188,7 @@ private class WalletProviderExtension :
         extensionContext: ExtensionContext,
     ): Any =
         when {
-            arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resourceScope
+            arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resources
             HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) -> httpClient
             else -> throw ParameterResolutionException("Unsupported parameter type: ${parameterContext.parameter.type}")
         }
@@ -181,6 +211,52 @@ private class ResourceScope : arrow.fx.coroutines.ResourceScope {
                 }?.let { throw it }
         }
     }
+}
+
+context(resources: ResourceScope)
+private fun createMockHttpClient(
+    config: WalletProviderConfiguration,
+    json: Json,
+): HttpClient {
+    val engine =
+        MockEngine { request ->
+            when (request.url.toString()) {
+                config.tokenStatusListService.serviceUrl.toExternalForm() -> {
+                    assertEquals(HttpMethod.Post, request.method)
+                    assertEquals(ContentType.Application.Json.toString(), request.headers[HttpHeaders.Accept])
+                    assertEquals(config.tokenStatusListService.apiKey.value, request.headers["X-API-Key"])
+
+                    val form = assertIs<FormDataContent>(request.body).formData
+                    assertEquals("FC", form["country"])
+                    assertEquals(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE, form["doctype"])
+                    assertNotNull(form["expiry_date"])
+
+                    respond(
+                        content =
+                            json.encodeToString(
+                                Status(StatusListToken(5u, URI.create("https://status.example.com/lists/10"))),
+                            ),
+                        status = HttpStatusCode.OK,
+                        headers =
+                            headersOf(
+                                HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
+                            ),
+                    )
+                }
+
+                else -> {
+                    fail("Unexpected request: ${request.url}")
+                }
+            }
+        }
+
+    return resources.install(
+        HttpClient(engine) {
+            install(ClientContentNegotiation) {
+                json(json)
+            }
+        },
+    )
 }
 
 @ExtendWith(WalletProviderExtension::class)

@@ -15,44 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
-import arrow.continuations.SuspendApp
-import arrow.continuations.ktor.server
-import arrow.fx.coroutines.resourceScope
-import com.sksamuel.hoplite.ConfigLoader
-import eu.europa.ec.eudi.walletprovider.config.Base64UrlSafeByteArrayDecoder
-import eu.europa.ec.eudi.walletprovider.config.CertificationInformationDecoder
-import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
-import eu.europa.ec.eudi.walletprovider.config.configureWalletProviderApplication
-import io.ktor.server.cio.*
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.runBlocking
+import eu.europa.ec.eudi.walletprovider.config.WalletProviderApplication
 
-fun main() =
-    SuspendApp {
-        System.setProperty("io.ktor.server.engine.ShutdownHook", "false")
-
-        val config =
-            ConfigLoader
-                .builder()
-                .addDecoder(Base64UrlSafeByteArrayDecoder())
-                .addDecoder(CertificationInformationDecoder())
-                .build()
-                .loadConfigOrThrow<WalletProviderConfiguration>()
-
-        resourceScope {
-            server(
-                CIO,
-                port =
-                    config.server.port.value
-                        .toInt(),
-                preWait = config.server.preWait.value,
-                grace = config.server.grace.value,
-                timeout = config.server.timeout.value,
-            ) {
-                runBlocking {
-                    configureWalletProviderApplication(config)
-                }
-            }
-            awaitCancellation()
-        }
-    }
+fun main() = WalletProviderApplication.run()

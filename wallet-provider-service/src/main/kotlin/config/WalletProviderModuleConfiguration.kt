@@ -16,24 +16,16 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.toNonEmptyListOrNull
-import arrow.fx.coroutines.ResourceScope
-import arrow.fx.coroutines.resourceScope
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.supreme.os.JKSProvider
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
@@ -63,40 +55,26 @@ import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.r2dbc.spi.IsolationLevel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.vendors.*
-import org.jetbrains.exposed.v1.migration.r2dbc.MigrationUtils
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
-import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
-import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.slf4j.LoggerFactory
-import java.nio.file.Files
-import java.nio.file.StandardOpenOption
-import java.security.KeyStore
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
-private val logger = LoggerFactory.getLogger("WalletProviderApplication")
+private val logger = LoggerFactory.getLogger("WalletProviderModule")
 
-context(resourceScope: ResourceScope)
-suspend fun Application.configureWalletProviderApplication(config: WalletProviderConfiguration) {
+fun Application.configureWalletProviderModule(
+    config: WalletProviderConfiguration,
+    clock: Clock,
+    json: Json,
+    database: R2dbcDatabase,
+    signer: Signer,
+    certificateChain: CertificateChain,
+    httpClient: HttpClient,
+) {
     logger.info("Configuring Wallet Provider Application using: {}", config)
 
-    val clock = Clock.System
-    val json =
-        Json {
-            ignoreUnknownKeys = true
-            prettyPrint = true
-        }
-
     configureServerPlugins(json, config.swaggerUi)
-
-    configureDatabase(config.database)
-
-    val (signer, certificateChain) = loadSignerAndCertificateChainFromKeystore(config.signingKey)
 
     val generateChallenge =
         GenerateChallengeLive(
@@ -150,23 +128,12 @@ suspend fun Application.configureWalletProviderApplication(config: WalletProvide
         )
 
     val generateStatusListToken =
-        config.tokenStatusListService?.let {
-            val httpClient =
-                resourceScope.install(
-                    HttpClient(CIO) {
-                        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-                            json(json)
-                        }
-                    },
-                )
-
-            TokenStatusListServiceGenerateStatusListToken(
-                httpClient,
-                Url(it.serviceUrl.toExternalForm()),
-                ApiKey(it.apiKey.value),
-                clock,
-            )
-        }
+        TokenStatusListServiceGenerateStatusListToken(
+            httpClient,
+            Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
+            ApiKey(config.tokenStatusListService.apiKey.value),
+            clock,
+        )
 
     val issueWalletUnitAttestation =
         IssueWalletUnitAttestationLive(
@@ -230,94 +197,6 @@ private fun Application.configureServerPlugins(
         }
     }
 }
-
-context(resourceScope: ResourceScope)
-private suspend fun configureDatabase(config: DatabaseConfiguration) {
-    resourceScope.install({
-        R2dbcDatabase.connect(
-            url = config.url.value,
-            user = config.username.orEmpty(),
-            password = config.password?.value.orEmpty(),
-            databaseConfig =
-                R2dbcDatabaseConfig {
-                    defaultR2dbcIsolationLevel = IsolationLevel.REPEATABLE_READ
-                },
-        )
-    }) { database, _ -> TransactionManager.closeAndUnregister(database) }
-
-    val migrations =
-        suspendTransaction {
-            MigrationUtils.statementsRequiredForDatabaseMigration(
-                Challenges,
-                withLogs = true,
-            )
-        }
-    check(migrations.isEmpty()) {
-        "Database is not up to date. The following migration are required: \n\t${migrations.joinToString(separator = "\n\t") { "'$it'" }}"
-    }
-}
-
-private suspend fun loadSignerAndCertificateChainFromKeystore(config: SigningKeyConfiguration): Pair<Signer, CertificateChain> {
-    val keystore =
-        resourceScope {
-            val inputStream =
-                install(
-                    withContext(Dispatchers.IO) {
-                        Files.newInputStream(config.keystoreFile, StandardOpenOption.READ)
-                    },
-                )
-            KeyStore
-                .getInstance(config.keystoreType.value)
-                .apply {
-                    load(inputStream, config.keystorePassword?.value?.toCharArray())
-                }
-        }
-
-    val keystoreProvider =
-        JKSProvider {
-            withBackingObject {
-                store = keystore
-            }
-        }.getOrThrow()
-    val (digest, curve) =
-        when (config.algorithm) {
-            SigningAlgorithm.ES256 -> Digest.SHA256 to ECCurve.SECP_256_R_1
-            SigningAlgorithm.ES384 -> Digest.SHA384 to ECCurve.SECP_384_R_1
-            SigningAlgorithm.ES512 -> Digest.SHA512 to ECCurve.SECP_521_R_1
-        }
-    val signer =
-        keystoreProvider
-            .getSignerForKey(config.keyAlias.value) {
-                ec {
-                    this.digest = digest
-                }
-                privateKeyPassword = config.keyPassword?.value?.toCharArray()
-            }.getOrThrow()
-
-    val publicKey = signer.publicKey
-    require(publicKey is CryptoPublicKey.EC) {
-        "Signing key must be an EC key"
-    }
-    require(curve == publicKey.curve) {
-        "Signing key must be on curve: ${curve.name}"
-    }
-
-    val certificateChain: CertificateChain =
-        keystore
-            .getCertificateChain(config.keyAlias.value)
-            .map {
-                X509Certificate.decodeFromDer(it.encoded)
-            }.dropRootCaIfNeeded()
-    return signer to certificateChain
-}
-
-private fun CertificateChain.dropRootCaIfNeeded(): CertificateChain =
-    if (size > 1 && last().isSelfSigned())
-        dropLast(1)
-    else
-        this
-
-private fun X509Certificate.isSelfSigned(): Boolean = tbsCertificate.issuerName == tbsCertificate.subjectName
 
 private fun createMakotoAttestationService(
     config: WalletProviderConfiguration,
