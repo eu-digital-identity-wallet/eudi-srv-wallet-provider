@@ -47,7 +47,7 @@ data class WalletProviderConfiguration(
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration,
-    val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
+    val walletUnitAttestation: WalletUnitAttestationConfiguration,
     val tokenStatusListService: TokenStatusListServiceConfiguration,
     val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration(),
 )
@@ -225,7 +225,7 @@ data class WalletUnitAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
     val keyStorage: List<AttackPotentialResistance>? = null,
     val userAuthentication: List<AttackPotentialResistance>? = null,
-    val certification: StringUrl = StringUri.create("https://todochange.com/example").toURL(),
+    val certification: StringUrl,
 ) {
     data class ValidityConfiguration(
         val minimum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY,
@@ -241,7 +241,7 @@ data class TokenStatusListServiceConfiguration(
 )
 
 data class IssuerConfiguration(
-    val publicUrl: Issuer = Issuer.create("http://localhost:8085"),
+    val publicUrl: Issuer = Issuer.create("http://localhost:8080"),
     val name: Name = Name("Wallet Provider"),
 )
 

@@ -25,6 +25,7 @@ import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.StringUri
 import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
@@ -105,6 +106,10 @@ private class WalletProviderExtension :
                         CertificationInformation(
                             JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
                         ),
+                ),
+            walletUnitAttestation =
+                WalletUnitAttestationConfiguration(
+                    certification = StringUri.create("https://example.org/certification").toURL(),
                 ),
             tokenStatusListService =
                 TokenStatusListServiceConfiguration(
