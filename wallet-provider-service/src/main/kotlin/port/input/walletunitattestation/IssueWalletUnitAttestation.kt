@@ -33,8 +33,6 @@ import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.Nonce
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestation
@@ -189,13 +187,9 @@ class IssueWalletUnitAttestationLive(
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
     private val generateStatusListToken: GenerateStatusListToken,
-    private val issuer: Issuer,
-    private val clientId: ClientId,
-    private val keyStorage: NonEmptyList<AttackPotentialResistance>?,
-    private val userAuthentication: NonEmptyList<AttackPotentialResistance>?,
-    private val certification: StringUrl?,
-    private val generalInformation: GeneralInformation,
-    private val walletSecureCryptographicDeviceInformation: WalletSecureCryptographicDeviceInformation,
+    private val keyStorage: NonEmptyList<AttackPotentialResistance>,
+    private val userAuthentication: NonEmptyList<AttackPotentialResistance>,
+    private val certification: StringUrl,
     private val signJwt: SignJwt<WalletUnitAttestationClaims>,
 ) : IssueWalletUnitAttestation {
     override suspend fun invoke(
@@ -251,11 +245,11 @@ class IssueWalletUnitAttestationLive(
                 generateStatusListToken(expiresAt)
                     .mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
                     .bind()
+            val status = Status(statusListToken)
+            val keyStorageStatus = WalletUnitAttestationClaims.KeyStorageStatus(status, expiresAt)
 
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
-                    issuer,
-                    clientId,
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
                     attestedKeys,
@@ -263,11 +257,7 @@ class IssueWalletUnitAttestationLive(
                     userAuthentication = userAuthentication,
                     certification,
                     request.nonce,
-                    Status(statusListToken),
-                    WalletUnitAttestationClaims.WalletInformation(
-                        generalInformation,
-                        walletSecureCryptographicDeviceInformation,
-                    ),
+                    keyStorageStatus,
                 )
 
             signJwt(walletUnitAttestation)

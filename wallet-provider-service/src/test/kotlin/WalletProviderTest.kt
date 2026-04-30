@@ -97,19 +97,6 @@ private class WalletProviderExtension :
                     keyPassword = Secret("testKeystore"),
                     algorithm = SigningAlgorithm.ES256,
                 ),
-            walletInformation =
-                WalletInformationConfiguration(
-                    GeneralInformationConfiguration(
-                        provider = WalletProviderName("Wallet Provider"),
-                        id = SolutionId("EUDI Wallet"),
-                        version = SolutionVersion("1.0.0"),
-                        certification = CertificationInformation(JsonPrimitive("ARF")),
-                    ),
-                    WalletSecureCryptographicDeviceInformationConfiguration(
-                        WalletSecureCryptographicDeviceType.LocalNative,
-                        CertificationInformation(JsonPrimitive("ARF")),
-                    ),
-                ),
             walletInstanceAttestation =
                 WalletInstanceAttestationConfiguration(
                     walletName = "EUDI Wallet".toNonBlankString(),

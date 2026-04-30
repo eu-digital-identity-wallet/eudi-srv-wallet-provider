@@ -39,7 +39,7 @@ class IssueWalletUnitAttestationTest : WalletProviderTest() {
     @Test
     fun `wallet unit attestation always contains status`(httpClient: HttpClient) {
         httpClient.runWalletUnitAttestationTestCase {
-            assertNotNull(it.payload.status)
+            assertNotNull(it.payload.keyStorageStatus.status)
         }
     }
 

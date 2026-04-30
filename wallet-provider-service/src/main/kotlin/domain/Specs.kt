@@ -41,9 +41,6 @@ object RFC7800 {
 }
 
 object ARF {
-    const val EUDI_WALLET_INFORMATION: String = "eudi_wallet_info"
-
-    const val GENERAL_INFORMATION: String = "general_info"
     const val WALLET_PROVIDER_NAME: String = "wallet_provider_name"
     const val WALLET_SOLUTION_ID: String = "wallet_solution_id"
     const val WALLET_SOLUTION_VERSION: String = "wallet_solution_version"

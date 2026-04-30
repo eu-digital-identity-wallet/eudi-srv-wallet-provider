@@ -46,7 +46,6 @@ data class WalletProviderConfiguration(
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
-    val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration,
     val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
     val tokenStatusListService: TokenStatusListServiceConfiguration,
@@ -189,17 +188,6 @@ class Base64UrlSafeByteArrayDecoder : Decoder<Base64UrlSafeByteArray> {
         }
 }
 
-data class WalletInformationConfiguration(
-    val generalInformation: GeneralInformationConfiguration,
-    val walletSecureCryptographicDeviceInformation: WalletSecureCryptographicDeviceInformationConfiguration,
-)
-
-data class GeneralInformationConfiguration(
-    val provider: WalletProviderName,
-    val id: SolutionId,
-    val version: SolutionVersion,
-    val certification: CertificationInformation,
-)
 
 class CertificationInformationDecoder : Decoder<CertificationInformation> {
     override fun supports(type: KType): Boolean = type.classifier == CertificationInformation::class
@@ -225,10 +213,6 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
         }
 }
 
-data class WalletSecureCryptographicDeviceInformationConfiguration(
-    val type: WalletSecureCryptographicDeviceType? = null,
-    val certification: CertificationInformation,
-)
 
 data class WalletInstanceAttestationConfiguration(
     val validity: WalletInstanceAttestationValidity = WalletInstanceAttestationValidity.Default,
@@ -243,7 +227,7 @@ data class WalletUnitAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
     val keyStorage: List<AttackPotentialResistance>? = null,
     val userAuthentication: List<AttackPotentialResistance>? = null,
-    val certification: StringUrl? = null,
+    val certification: StringUrl = StringUri.create("https://todochange.com/example").toURL(),
 ) {
     data class ValidityConfiguration(
         val minimum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY,
@@ -259,7 +243,7 @@ data class TokenStatusListServiceConfiguration(
 )
 
 data class IssuerConfiguration(
-    val publicUrl: Issuer = Issuer.create("http://localhost:8080"),
+    val publicUrl: Issuer = Issuer.create("http://localhost:8085"),
     val name: Name = Name("Wallet Provider"),
 )
 

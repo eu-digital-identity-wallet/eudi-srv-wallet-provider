@@ -25,17 +25,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
-@Serializable
-data class GeneralInformation(
-    @Required @SerialName(ARF.WALLET_PROVIDER_NAME) val provider: WalletProviderName,
-    @Required @SerialName(ARF.WALLET_SOLUTION_ID) val id: SolutionId,
-    @Required @SerialName(ARF.WALLET_SOLUTION_VERSION) val version: SolutionVersion,
-    @Required @SerialName(TS3.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
-)
 
-typealias WalletProviderName = NonBlankString
-typealias SolutionId = NonBlankString
-typealias SolutionVersion = NonBlankString
 
 @JvmInline
 @Serializable
@@ -48,12 +38,6 @@ value class CertificationInformation(
 
     override fun toString(): String = value.toString()
 }
-
-@Serializable
-data class WalletSecureCryptographicDeviceInformation(
-    @SerialName(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE) val type: WalletSecureCryptographicDeviceType? = null,
-    @Required @SerialName(ARF.WALLET_SECURE_CRYPTOGRAPHIC_CERTIFICATION_INFORMATION) val certification: CertificationInformation,
-)
 
 @JvmInline
 @Serializable
