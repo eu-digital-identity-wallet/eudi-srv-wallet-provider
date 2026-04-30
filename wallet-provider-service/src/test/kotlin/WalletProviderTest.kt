@@ -25,11 +25,11 @@ import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.forms.*

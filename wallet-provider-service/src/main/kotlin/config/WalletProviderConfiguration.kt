@@ -21,7 +21,7 @@ import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
+import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
@@ -188,7 +188,6 @@ class Base64UrlSafeByteArrayDecoder : Decoder<Base64UrlSafeByteArray> {
         }
 }
 
-
 class CertificationInformationDecoder : Decoder<CertificationInformation> {
     override fun supports(type: KType): Boolean = type.classifier == CertificationInformation::class
 
@@ -212,7 +211,6 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
             }
         }
 }
-
 
 data class WalletInstanceAttestationConfiguration(
     val validity: WalletInstanceAttestationValidity = WalletInstanceAttestationValidity.Default,
