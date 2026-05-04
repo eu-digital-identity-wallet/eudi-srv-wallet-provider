@@ -22,9 +22,9 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
-import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
+import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
