@@ -21,19 +21,19 @@ import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.Makoto
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttestedKey
+import eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation.PlatformAttestedKey
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
-class MakotoValidateKeyAttestation(
+class MakotoValidatePlatformKeyAttestation(
     private val makotoAttestationService: MakotoAttestationService,
-) : ValidateKeyAttestation {
+) : ValidatePlatformKeyAttestation {
     override suspend fun invoke(
         unvalidatedKeyAttestation: Attestation,
         challenge: ByteArray,
-    ): Either<KeyAttestationValidationFailure, AttestedKey> =
+    ): Either<PlatformKeyAttestationValidationFailure, PlatformAttestedKey> =
         either {
             val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge)
 
@@ -49,8 +49,8 @@ class MakotoValidateKeyAttestation(
                             }
                     }.toNonBlankString()
                 raise(
-                    KeyAttestationValidationFailure
-                        .InvalidKeyAttestation(
+                    PlatformKeyAttestationValidationFailure
+                        .InvalidPlatformKeyAttestation(
                             error,
                             errorDetails.cause,
                         ),
@@ -63,14 +63,14 @@ class MakotoValidateKeyAttestation(
                     .toCryptoPublicKey()
                     .getOrElse {
                         raise(
-                            KeyAttestationValidationFailure.UnsupportedAttestedKey(
+                            PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey(
                                 "Attested PublicKey is not supported".toNonBlankString(),
                                 it,
                             ),
                         )
                     }
 
-            AttestedKey(cryptoPublicKey, verificationResult.details)
+            PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
         }
 }
 

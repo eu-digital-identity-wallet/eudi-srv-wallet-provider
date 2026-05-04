@@ -19,7 +19,7 @@ import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletI
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceRequest
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -92,31 +92,31 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                     failure.cause
             }
 
-            is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation -> {
-                when (val keyAttestationFailure = failure.error) {
-                    is KeyAttestationValidationFailure.InvalidKeyAttestation -> {
+            is WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation -> {
+                when (val platformKeyAttestationFailure = failure.error) {
+                    is PlatformKeyAttestationValidationFailure.InvalidPlatformKeyAttestation -> {
                         "WalletInstanceAttestationIssuanceRequest validation failed, " +
-                            "Key Attestation is not valid: ${keyAttestationFailure.error}" to
-                            keyAttestationFailure.cause
+                            "Platform Key Attestation is not valid: ${platformKeyAttestationFailure.error}" to
+                            platformKeyAttestationFailure.cause
                     }
 
-                    is KeyAttestationValidationFailure.UnsupportedAttestedKey -> {
+                    is PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey -> {
                         "WalletInstanceAttestationIssuanceRequest validation failed, " +
-                            "Key Attestation contains an unsupported PublicKey: ${keyAttestationFailure.error}" to
-                            keyAttestationFailure.cause
+                            "Platform Key Attestation contains an unsupported PublicKey: ${platformKeyAttestationFailure.error}" to
+                            platformKeyAttestationFailure.cause
                     }
                 }
             }
 
-            is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType -> {
+            is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
                 "WalletInstanceAttestationIssuanceRequest validation failed, " +
-                    "Attested Key Type is not supported: ${failure.type.name}" to
+                    "Platform Attested Key Type is not supported: ${failure.type.name}" to
                     null
             }
 
-            is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve -> {
+            is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
                 "WalletInstanceAttestationIssuanceRequest validation failed, " +
-                    "Attested Key Curve is not supported: ${failure.curve.name}" to
+                    "Platform Attested Key Curve is not supported: ${failure.curve.name}" to
                     null
             }
 
@@ -151,17 +151,17 @@ private enum class WalletInstanceAttestationError {
     @SerialName("invalid_challenge")
     InvalidChallenge,
 
-    @SerialName("invalid_key_attestation")
-    InvalidKeyAttestation,
+    @SerialName("invalid_platform_key_attestation")
+    InvalidPlatformKeyAttestation,
 
-    @SerialName("unsupported_attested_key")
-    UnsupportedAttestedKey,
+    @SerialName("unsupported_platform_attested_key")
+    UnsupportedPlatformAttestedKey,
 
-    @SerialName("unsupported_attested_key_type")
-    UnsupportedAttestedKeyType,
+    @SerialName("unsupported_platform_attested_key_type")
+    UnsupportedPlatformAttestedKeyType,
 
-    @SerialName("unsupported_attested_key_curve")
-    UnsupportedAttestedKeyCurve,
+    @SerialName("unsupported_platform_attested_key_curve")
+    UnsupportedPlatformAttestedKeyCurve,
 
     @SerialName("status_list_token_generation_failure")
     StatusListTokenGenerationFailure,
@@ -182,19 +182,24 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
             WalletInstanceAttestationError.InvalidChallenge
         }
 
-        is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation -> {
+        is WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation -> {
             when (error) {
-                is KeyAttestationValidationFailure.InvalidKeyAttestation -> WalletInstanceAttestationError.InvalidKeyAttestation
-                is KeyAttestationValidationFailure.UnsupportedAttestedKey -> WalletInstanceAttestationError.UnsupportedAttestedKey
+                is PlatformKeyAttestationValidationFailure.InvalidPlatformKeyAttestation -> {
+                    WalletInstanceAttestationError.InvalidPlatformKeyAttestation
+                }
+
+                is PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey -> {
+                    WalletInstanceAttestationError.UnsupportedPlatformAttestedKey
+                }
             }
         }
 
-        is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType -> {
-            WalletInstanceAttestationError.UnsupportedAttestedKeyType
+        is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
+            WalletInstanceAttestationError.UnsupportedPlatformAttestedKeyType
         }
 
-        is WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve -> {
-            WalletInstanceAttestationError.UnsupportedAttestedKeyCurve
+        is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
+            WalletInstanceAttestationError.UnsupportedPlatformAttestedKeyCurve
         }
 
         is WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {

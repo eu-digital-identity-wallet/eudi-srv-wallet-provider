@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.port.output.keyattestation
+package eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation
 
 import arrow.core.Either
 import at.asitplus.attestation.AttestationException
 import at.asitplus.signum.indispensable.Attestation
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttestedKey
+import eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation.PlatformAttestedKey
 
-fun interface ValidateKeyAttestation {
+fun interface ValidatePlatformKeyAttestation {
     suspend operator fun invoke(
         unvalidatedKeyAttestation: Attestation,
         challenge: ByteArray,
-    ): Either<KeyAttestationValidationFailure, AttestedKey>
+    ): Either<PlatformKeyAttestationValidationFailure, PlatformAttestedKey>
 }
 
-sealed interface KeyAttestationValidationFailure {
-    class InvalidKeyAttestation(
+sealed interface PlatformKeyAttestationValidationFailure {
+    class InvalidPlatformKeyAttestation(
         val error: NonBlankString,
         val cause: AttestationException? = null,
-    ) : KeyAttestationValidationFailure
+    ) : PlatformKeyAttestationValidationFailure
 
-    class UnsupportedAttestedKey(
+    class UnsupportedPlatformAttestedKey(
         val error: NonBlankString,
         val cause: Throwable? = null,
-    ) : KeyAttestationValidationFailure
+    ) : PlatformKeyAttestationValidationFailure
 }
