@@ -292,7 +292,7 @@ By default, Wallet Provider performs no validation of platform Key Attestations.
 
 To enable platform Key Attestation validation, use the following environment variables:
 
-#### Android Key Attestation
+#### Android Platform Key Attestation
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ENABLED`   
 Description: Whether Android platform Key Attestations are enabled or not.  
@@ -327,29 +327,29 @@ Description: Tolerance added to the verification date.
 Default value: `0 seconds`  
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_HARDWAREATTESTATIONENABLED`  
-Description: Whether **hardware** Key Attestations are accepted.  
+Description: Whether **hardware** platform Key Attestations are accepted.  
 Default value: `true`  
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_SOFTWAREATTESTATIONENABLED`  
-Description: Whether **software** Key Attestations are accepted.  
+Description: Whether **software** platform Key Attestations are accepted.  
 Default value: `false`  
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_SUPREMEPARSERENABLED`  
 Description: Whether to enable the Android platform Key Attestation parser provided by Warden Supreme.  
 Default value: `false`
 
-**Validity of Key Attestation**
+**Validity of platform Key Attestation**
 
-By default, Wallet Provider validates the creation time of the Key Attestation using a default skew of `5 minutes`. You can modify the `skew` using
+By default, Wallet Provider validates the creation time of the platform Key Attestation using a default skew of `5 minutes`. You can modify the `skew` using
 the following environment variable:
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
-Description: How far in the past, the creation date of a Key Attestation can be.  
+Description: How far in the past, the creation date of a platform Key Attestation can be.  
 Default value: `5 minutes`  
 
 To disable this check, set the environment variable `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY` to `Disabled`.
 
-##### iOS Key Attestation
+##### iOS Platform Key Attestation
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ENABLED`   
 Description: Whether iOS platform Key Attestations are enabled or not.  
@@ -371,7 +371,7 @@ Allowed values:
 * `Sandbox`
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
-Description: How far in the past, the creation date of a Key Attestation can be.  
+Description: How far in the past, the creation date of a platform Key Attestation can be.  
 Default value: `5 minutes`  
 
 ### Challenge Configuration
