@@ -44,6 +44,7 @@ import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -162,8 +163,8 @@ sealed interface WalletUnitAttestationIssuanceFailure {
 
     data object NonUniquePlatformAttestedKeys : WalletUnitAttestationIssuanceFailure
 
-    class StatusListTokenGenerationFailure(
-        val error: eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure,
+    class KeyStorageStatusGenerationFailure(
+        val error: StatusListTokenGenerationFailure,
     ) : WalletUnitAttestationIssuanceFailure
 }
 
@@ -243,12 +244,15 @@ class IssueWalletUnitAttestationLive(
 
             val issuedAt = clock.now()
             val expiresAt = issuedAt + validity
-            val statusListToken =
-                generateStatusListToken(expiresAt)
-                    .mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
-                    .bind()
-            val status = Status(statusListToken)
-            val keyStorageStatus = KeyStorageStatus(status, expiresAt)
+            val keyStorageStatus =
+                run {
+                    val statusListToken =
+                        generateStatusListToken(expiresAt)
+                            .mapLeft { error -> WalletUnitAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
+                            .bind()
+                    val status = Status(statusListToken)
+                    KeyStorageStatus(status, expiresAt)
+                }
 
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
