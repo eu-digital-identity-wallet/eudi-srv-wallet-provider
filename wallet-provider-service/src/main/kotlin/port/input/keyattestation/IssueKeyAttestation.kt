@@ -171,8 +171,8 @@ value class KeyAttestationValidity(
     val value: ClosedRange<Duration>,
 ) {
     init {
-        require(value.start.isPositive() && value.start >= ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY) {
-            "minimum value must be greater than ${ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY}"
+        require(value.start.isPositive() && value.start >= ARF.MIN_KEY_ATTESTATION_VALIDITY) {
+            "minimum value must be greater than ${ARF.MIN_KEY_ATTESTATION_VALIDITY}"
         }
         require(value.start < value.endInclusive) {
             "maximum value must be greater than minimum value"
