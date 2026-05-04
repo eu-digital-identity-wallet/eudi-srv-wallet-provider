@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
@@ -34,6 +35,7 @@ import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
+import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.KeyStorageStatus
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.Nonce
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestation
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestationClaims
@@ -187,8 +189,6 @@ class IssueWalletUnitAttestationLive(
     private val validateKeyAttestation: ValidateKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
     private val generateStatusListToken: GenerateStatusListToken,
-    private val keyStorage: NonEmptyList<AttackPotentialResistance>,
-    private val userAuthentication: NonEmptyList<AttackPotentialResistance>,
     private val certification: StringUrl,
     private val signJwt: SignJwt<WalletUnitAttestationClaims>,
 ) : IssueWalletUnitAttestation {
@@ -246,18 +246,18 @@ class IssueWalletUnitAttestationLive(
                     .mapLeft { error -> WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure(error) }
                     .bind()
             val status = Status(statusListToken)
-            val keyStorageStatus = WalletUnitAttestationClaims.KeyStorageStatus(status, expiresAt)
+            val keyStorageStatus = KeyStorageStatus(status, expiresAt)
 
             val walletUnitAttestation =
                 WalletUnitAttestationClaims(
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
                     attestedKeys,
-                    keyStorage = keyStorage,
-                    userAuthentication = userAuthentication,
+                    keyStorage = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
+                    userAuthentication = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
                     certification,
                     request.nonce,
-                    keyStorageStatus,
+                    keyStorageStatus = keyStorageStatus,
                 )
 
             signJwt(walletUnitAttestation)

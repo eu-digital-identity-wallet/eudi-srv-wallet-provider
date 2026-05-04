@@ -24,9 +24,9 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
-import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status

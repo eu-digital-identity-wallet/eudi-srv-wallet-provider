@@ -26,7 +26,6 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*

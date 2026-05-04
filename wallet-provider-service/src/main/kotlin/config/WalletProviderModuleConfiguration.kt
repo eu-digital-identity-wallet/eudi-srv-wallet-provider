@@ -15,10 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
-import arrow.core.NonEmptyList
-import arrow.core.nonEmptyListOf
-import arrow.core.toNonEmptyListOrNull
-import arrow.core.toNonEmptySetOrThrow
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
@@ -37,7 +33,6 @@ import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
@@ -142,14 +137,6 @@ fun Application.configureWalletProviderModule(
             validateKeyAttestation = validateKeyAttestation,
             validity = WalletUnitAttestationValidity(config.walletUnitAttestation.validity.closedRange),
             generateStatusListToken = generateStatusListToken,
-            keyStorage =
-                config.walletUnitAttestation.keyStorage?.toNonEmptyListOrNull() ?: nonEmptyListOf(
-                    AttackPotentialResistance.Iso18045High,
-                ),
-            userAuthentication =
-                config.walletUnitAttestation.userAuthentication?.toNonEmptyListOrNull() ?: nonEmptyListOf(
-                    AttackPotentialResistance.Iso18045High,
-                ),
             certification = config.walletUnitAttestation.certification,
             signJwt =
                 SignumSignJwt(

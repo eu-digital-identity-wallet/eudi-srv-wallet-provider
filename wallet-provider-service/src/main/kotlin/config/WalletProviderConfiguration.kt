@@ -21,11 +21,9 @@ import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.certificationinformation.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
@@ -223,8 +221,6 @@ data class WalletInstanceAttestationConfiguration(
 
 data class WalletUnitAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
-    val keyStorage: List<AttackPotentialResistance>? = null,
-    val userAuthentication: List<AttackPotentialResistance>? = null,
     val certification: StringUrl,
 ) {
     data class ValidityConfiguration(

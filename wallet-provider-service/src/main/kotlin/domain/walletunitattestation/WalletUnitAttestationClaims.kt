@@ -28,7 +28,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WalletUnitAttestationClaims(
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
-    @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
+    @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
     val attestedKeys: NonEmptyList<JsonWebKey>,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
@@ -37,20 +37,20 @@ data class WalletUnitAttestationClaims(
     val userAuthentication: NonEmptyList<AttackPotentialResistance>,
     @Required @SerialName(OpenId4VCISpec.CERTIFICATION) val certification: StringUrl,
     @SerialName(OpenId4VCISpec.NONCE) val nonce: Nonce? = null,
-//    @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
-    @Required @SerialName("key_storage_status")
+    @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
+    @Required @SerialName(TS3.KEY_STORAGE_STATUS)
     val keyStorageStatus: KeyStorageStatus,
-) {
-    @Serializable
-    data class KeyStorageStatus(
-        @Required
-        @SerialName(TokenStatusListSpec.STATUS)
-        val status: Status,
-        @Required
-        @SerialName(RFC7519.EXPIRES_AT)
-        val exp: EpochSecondsInstant,
-    )
-}
+)
+
+@Serializable
+data class KeyStorageStatus(
+    @Required
+    @SerialName(TokenStatusListSpec.STATUS)
+    val status: Status,
+    @Required
+    @SerialName(RFC7519.EXPIRES_AT)
+    val exp: EpochSecondsInstant,
+)
 
 @JvmInline
 @Serializable

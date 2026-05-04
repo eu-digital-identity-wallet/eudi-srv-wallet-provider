@@ -437,27 +437,9 @@ Variable: `WALLETAUNITATTESTATION_VALIDITY_MAXIMUM`
 Description: Maximum duration a Wallet Unit Attestations is valid for.    
 Default value: `62 days`  
 
-Variable: `WALLETUNITATTESTATION_KEYSTORAGE_XX`  
-Description: Case sensitive strings that assert the attack potential resistance of the key storage component and its keys attested.  
-Default value: N/A  
-Examples:
-* `iso_18045_high`
-* `iso_18045_moderate`
-* `iso_18045_enhanced-basic`
-* `iso_18045_basic`  
-
 Variable: `WALLETUNITATTESTATION_CERTIFICATION`
 Description: URL that links to the certification of the key storage component.  
 Default value: N/A
-
-Variable: `WALLETUNITATTESTATION_USERAUTHENTICATION_XX`  
-Description: Case sensitive strings that assert the attack potential resistance of the user authentication methods allowed to access the private keys from the attested_keys.  
-Default value: N/A  
-Examples:
-* `iso_18045_high`
-* `iso_18045_moderate`
-* `iso_18045_enhanced-basic`
-* `iso_18045_basic`
 
 Variable: `WALLETUNITATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  
