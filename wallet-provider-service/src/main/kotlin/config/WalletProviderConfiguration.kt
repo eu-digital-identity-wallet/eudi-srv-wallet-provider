@@ -224,8 +224,8 @@ data class KeyAttestationConfiguration(
     val certification: StringUrl,
 ) {
     data class ValidityConfiguration(
-        val minimum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY,
-        val maximum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY * 2,
+        val minimum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY,
+        val maximum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY * 2,
     ) {
         val closedRange: ClosedRange<Duration> = minimum..maximum
     }
