@@ -567,12 +567,12 @@
       "KeyAttestationResponse": {
         "type": "object",
         "properties": {
-          "KeyAttestation": {
+          "keyAttestation": {
             "type": "string"
           }
         },
         "required": [
-          "KeyAttestation"
+          "keyAttestation"
         ],
         "additionalProperties": false
       },
@@ -595,7 +595,7 @@
           "errors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WalletInstanceAttestationError"
+              "$ref": "#/components/schemas/KeyAttestationError"
             },
             "minItems": 1,
             "uniqueItems": true
