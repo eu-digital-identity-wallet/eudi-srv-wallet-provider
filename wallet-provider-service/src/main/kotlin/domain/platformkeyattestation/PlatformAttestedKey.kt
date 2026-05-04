@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.domain.keyattestation
+package eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.signum.indispensable.CryptoPublicKey
 
-data class AttestedKey(
+data class PlatformAttestedKey(
     val publicKey: CryptoPublicKey,
     val attestationResult: AttestationResult,
 ) {

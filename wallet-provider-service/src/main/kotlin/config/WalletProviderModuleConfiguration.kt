@@ -22,9 +22,9 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
-import eu.europa.ec.eudi.walletprovider.adapter.keyattestation.MakotoValidateKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
+import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
@@ -98,7 +98,7 @@ fun Application.configureWalletProviderModule(
         }
 
     val makotoAttestationService = createMakotoAttestationService(config, clock)
-    val validateKeyAttestation = MakotoValidateKeyAttestation(makotoAttestationService)
+    val validatePlatformKeyAttestation = MakotoValidatePlatformKeyAttestation(makotoAttestationService)
 
     val generateStatusListToken =
         TokenStatusListServiceGenerateStatusListToken(
@@ -112,7 +112,7 @@ fun Application.configureWalletProviderModule(
         IssueWalletInstanceAttestationLive(
             clock,
             validateChallenge,
-            validateKeyAttestation,
+            validatePlatformKeyAttestation,
             config.walletInstanceAttestation.validity,
             issuer = config.issuer.publicUrl,
             clientId = config.clientId,
@@ -134,7 +134,7 @@ fun Application.configureWalletProviderModule(
         IssueWalletUnitAttestationLive(
             clock = clock,
             validateChallenge = validateChallenge,
-            validateKeyAttestation = validateKeyAttestation,
+            validatePlatformKeyAttestation = validatePlatformKeyAttestation,
             validity = WalletUnitAttestationValidity(config.walletUnitAttestation.validity.closedRange),
             generateStatusListToken = generateStatusListToken,
             certification = config.walletUnitAttestation.certification,

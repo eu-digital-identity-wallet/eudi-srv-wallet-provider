@@ -347,7 +347,7 @@
       "AndroidPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "keyAttestation": {
+          "platformKeyAttestation": {
             "$ref": "#/components/schemas/AndroidKeystoreAttestation"
           },
           "challenge": {
@@ -382,7 +382,7 @@
           }
         },
         "required": [
-          "keyAttestation",
+          "platformKeyAttestation",
           "challenge"
         ],
         "additionalProperties": false
@@ -408,7 +408,7 @@
       "IosPlatformKeyAttestationWalletInstanceAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
-          "keyAttestation": {
+          "platformKeyAttestation": {
             "$ref": "#/components/schemas/IosHomebrewAttestation"
           },
           "challenge": {
@@ -443,7 +443,7 @@
           }
         },
         "required": [
-          "keyAttestation",
+          "platformKeyAttestation",
           "challenge"
         ],
         "additionalProperties": false
@@ -508,10 +508,10 @@
         "enum": [
           "unsupported_signing_algorithms",
           "invalid_challenge",
-          "invalid_key_attestation",
-          "unsupported_attested_key",
-          "unsupported_attested_key_type",
-          "unsupported_attested_key_curve",
+          "invalid_platform_key_attestation",
+          "unsupported_platform_attested_key",
+          "unsupported_platform_attested_key_type",
+          "unsupported_platform_attested_key_curve",
           "status_list_token_generation_failure"
         ]
       },
@@ -536,7 +536,7 @@
           "nonce": {
             "$ref": "#/components/schemas/Nonce"
           },
-          "keyAttestations": {
+          "platformKeyAttestations": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AndroidKeystoreAttestation"
@@ -559,7 +559,7 @@
           }
         },
         "required": [
-          "keyAttestations",
+          "platformKeyAttestations",
           "challenge"
         ],
         "additionalProperties": false
@@ -582,10 +582,10 @@
           "unsupported_signing_algorithms",
           "invalid_preferred_ttl",
           "invalid_challenge",
-          "invalid_key_attestation",
-          "unsupported_attested_key",
-          "no_attested_keys",
-          "non_unique_attested_keys",
+          "invalid_platform_key_attestation",
+          "unsupported_platform_attested_key",
+          "no_platform_attested_keys",
+          "non_unique_platform_attested_keys",
           "status_list_token_generation_failure",
         ]
       },
@@ -612,7 +612,7 @@
           "nonce": {
             "$ref": "#/components/schemas/Nonce"
           },
-          "keyAttestations": {
+          "platformKeyAttestations": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IosHomebrewAttestation"
@@ -635,7 +635,7 @@
           }
         },
         "required": [
-          "keyAttestations",
+          "platformKeyAttestations",
           "challenge"
         ],
         "additionalProperties": false

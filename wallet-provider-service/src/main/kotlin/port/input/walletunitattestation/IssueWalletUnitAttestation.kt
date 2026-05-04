@@ -41,8 +41,8 @@ import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitA
 import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestationClaims
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Required
@@ -61,15 +61,15 @@ sealed interface WalletUnitAttestationIssuanceRequest {
     val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>?
     val preferredTtl: SecondsDuration?
 
-    sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
-        val keyAttestations: NonEmptyList<KeyAttestation>
+    sealed interface PlatformKeyAttestation<out PlatformKeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
+        val platformKeyAttestations: NonEmptyList<PlatformKeyAttestation>
         val challenge: Base64UrlSafeByteArray
 
         @Serializable
         data class Android(
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
-            override val keyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
+            override val platformKeyAttestations: NonEmptyList<AndroidKeystoreAttestation>,
             @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
@@ -79,14 +79,14 @@ sealed interface WalletUnitAttestationIssuanceRequest {
             override fun equals(other: Any?): Boolean =
                 other is Android &&
                     other.nonce == nonce &&
-                    other.keyAttestations == keyAttestations &&
+                    other.platformKeyAttestations == platformKeyAttestations &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
                     other.preferredTtl == preferredTtl
 
             override fun hashCode(): Int {
                 var result = nonce?.hashCode() ?: 0
-                result = 31 * result + keyAttestations.hashCode()
+                result = 31 * result + platformKeyAttestations.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (preferredTtl?.hashCode() ?: 0)
@@ -98,7 +98,7 @@ sealed interface WalletUnitAttestationIssuanceRequest {
         data class Ios(
             override val nonce: Nonce? = null,
             @Required @Serializable(with = NonEmptyListSerializer::class)
-            override val keyAttestations: NonEmptyList<IosHomebrewAttestation>,
+            override val platformKeyAttestations: NonEmptyList<IosHomebrewAttestation>,
             @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
@@ -108,14 +108,14 @@ sealed interface WalletUnitAttestationIssuanceRequest {
             override fun equals(other: Any?): Boolean =
                 other is Ios &&
                     other.nonce == nonce &&
-                    other.keyAttestations == keyAttestations &&
+                    other.platformKeyAttestations == platformKeyAttestations &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
                     other.preferredTtl == preferredTtl
 
             override fun hashCode(): Int {
                 var result = nonce?.hashCode() ?: 0
-                result = 31 * result + keyAttestations.hashCode()
+                result = 31 * result + platformKeyAttestations.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (preferredTtl?.hashCode() ?: 0)
@@ -154,13 +154,13 @@ sealed interface WalletUnitAttestationIssuanceFailure {
         val cause: Throwable? = null,
     ) : WalletUnitAttestationIssuanceFailure
 
-    class InvalidKeyAttestations(
-        val errors: NonEmptyList<KeyAttestationValidationFailure>,
+    class InvalidPlatformKeyAttestations(
+        val errors: NonEmptyList<PlatformKeyAttestationValidationFailure>,
     ) : WalletUnitAttestationIssuanceFailure
 
-    data object NoAttestedKeys : WalletUnitAttestationIssuanceFailure
+    data object NoPlatformAttestedKeys : WalletUnitAttestationIssuanceFailure
 
-    data object NonUniqueAttestedKeys : WalletUnitAttestationIssuanceFailure
+    data object NonUniquePlatformAttestedKeys : WalletUnitAttestationIssuanceFailure
 
     class StatusListTokenGenerationFailure(
         val error: eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure,
@@ -186,7 +186,7 @@ value class WalletUnitAttestationValidity(
 class IssueWalletUnitAttestationLive(
     private val clock: Clock,
     private val validateChallenge: ValidateChallenge,
-    private val validateKeyAttestation: ValidateKeyAttestation,
+    private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
     private val validity: WalletUnitAttestationValidity,
     private val generateStatusListToken: GenerateStatusListToken,
     private val certification: StringUrl,
@@ -204,16 +204,16 @@ class IssueWalletUnitAttestationLive(
                 }
             }
 
-            val attestedKeys =
+            val platformAttestedKeys =
                 when (request) {
                     is WalletUnitAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
                         validateChallenge(request.challenge, clock.now())
                             .mapLeft { WalletUnitAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
                             .bind()
 
-                        request.keyAttestations
-                            .parMapOrAccumulate(Dispatchers.Default, 4) { validateKeyAttestation(it, request.challenge).bind() }
-                            .mapLeft { errors -> WalletUnitAttestationIssuanceFailure.InvalidKeyAttestations(errors) }
+                        request.platformKeyAttestations
+                            .parMapOrAccumulate(Dispatchers.Default, 4) { validatePlatformKeyAttestation(it, request.challenge).bind() }
+                            .mapLeft { errors -> WalletUnitAttestationIssuanceFailure.InvalidPlatformKeyAttestations(errors) }
                             .bind()
                             .map { it.publicKey.toJsonWebKey() }
                             .toNonEmptyListOrNull()
@@ -224,8 +224,10 @@ class IssueWalletUnitAttestationLive(
                     }
                 }
 
-            ensureNotNull(attestedKeys) { WalletUnitAttestationIssuanceFailure.NoAttestedKeys }
-            ensure(attestedKeys.distinct().size == attestedKeys.size) { WalletUnitAttestationIssuanceFailure.NonUniqueAttestedKeys }
+            ensureNotNull(platformAttestedKeys) { WalletUnitAttestationIssuanceFailure.NoPlatformAttestedKeys }
+            ensure(platformAttestedKeys.distinct().size == platformAttestedKeys.size) {
+                WalletUnitAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
+            }
 
             val validity =
                 request.preferredTtl?.let {
@@ -252,7 +254,7 @@ class IssueWalletUnitAttestationLive(
                 WalletUnitAttestationClaims(
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
-                    attestedKeys,
+                    platformAttestedKeys,
                     keyStorage = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
                     userAuthentication = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
                     certification,

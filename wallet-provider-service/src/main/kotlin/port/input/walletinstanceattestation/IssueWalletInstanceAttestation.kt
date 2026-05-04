@@ -31,8 +31,8 @@ import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.ValidateKeyAttestation
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
@@ -50,13 +50,13 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
     val walletMetadata: WalletMetadata?
     val preferredClientStatusPeriod: SecondsDuration?
 
-    sealed interface PlatformKeyAttestation<out KeyAttestation : Attestation> : WalletInstanceAttestationIssuanceRequest {
-        val keyAttestation: KeyAttestation
+    sealed interface PlatformKeyAttestation<out PlatformKeyAttestation : Attestation> : WalletInstanceAttestationIssuanceRequest {
+        val platformKeyAttestation: PlatformKeyAttestation
         val challenge: Base64UrlSafeByteArray
 
         @Serializable
         data class Android(
-            @Required override val keyAttestation: AndroidKeystoreAttestation,
+            @Required override val platformKeyAttestation: AndroidKeystoreAttestation,
             @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
@@ -66,14 +66,14 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
         ) : PlatformKeyAttestation<AndroidKeystoreAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Android &&
-                    other.keyAttestation == keyAttestation &&
+                    other.platformKeyAttestation == platformKeyAttestation &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
                     other.walletMetadata == walletMetadata &&
                     other.preferredClientStatusPeriod == preferredClientStatusPeriod
 
             override fun hashCode(): Int {
-                var result = keyAttestation.hashCode()
+                var result = platformKeyAttestation.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (walletMetadata?.hashCode() ?: 0)
@@ -84,7 +84,7 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
 
         @Serializable
         data class Ios(
-            @Required override val keyAttestation: IosHomebrewAttestation,
+            @Required override val platformKeyAttestation: IosHomebrewAttestation,
             @Required override val challenge: Base64UrlSafeByteArray,
             @Serializable(
                 with = NonEmptyListSerializer::class,
@@ -94,14 +94,14 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
         ) : PlatformKeyAttestation<IosHomebrewAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Ios &&
-                    other.keyAttestation == keyAttestation &&
+                    other.platformKeyAttestation == platformKeyAttestation &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
                     other.walletMetadata == walletMetadata &&
                     other.preferredClientStatusPeriod == preferredClientStatusPeriod
 
             override fun hashCode(): Int {
-                var result = keyAttestation.hashCode()
+                var result = platformKeyAttestation.hashCode()
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (walletMetadata?.hashCode() ?: 0)
@@ -131,15 +131,15 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
         val cause: Throwable? = null,
     ) : WalletInstanceAttestationIssuanceFailure
 
-    class InvalidKeyAttestation(
-        val error: KeyAttestationValidationFailure,
+    class InvalidPlatformKeyAttestation(
+        val error: PlatformKeyAttestationValidationFailure,
     ) : WalletInstanceAttestationIssuanceFailure
 
-    data class UnsupportedAttestedKeyType(
+    data class UnsupportedPlatformAttestedKeyType(
         val type: JwkType,
     ) : WalletInstanceAttestationIssuanceFailure
 
-    data class UnsupportedAttestedKeyCurve(
+    data class UnsupportedPlatformAttestedKeyCurve(
         val curve: ECCurve,
     ) : WalletInstanceAttestationIssuanceFailure
 
@@ -169,7 +169,7 @@ value class WalletInstanceAttestationValidity(
 class IssueWalletInstanceAttestationLive(
     private val clock: Clock,
     private val validateChallenge: ValidateChallenge,
-    private val validateKeyAttestation: ValidateKeyAttestation,
+    private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
     private val validity: WalletInstanceAttestationValidity,
     private val issuer: Issuer,
     private val clientId: ClientId,
@@ -196,15 +196,15 @@ class IssueWalletInstanceAttestationLive(
                 }
             }
 
-            val attestedKey =
+            val platformAttestedKey =
                 when (request) {
                     is WalletInstanceAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
                         validateChallenge(request.challenge, clock.now())
                             .mapLeft { WalletInstanceAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
                             .bind()
 
-                        validateKeyAttestation(request.keyAttestation, request.challenge)
-                            .mapLeft { WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation(it) }
+                        validatePlatformKeyAttestation(request.platformKeyAttestation, request.challenge)
+                            .mapLeft { WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation(it) }
                             .bind()
                             .publicKey
                             .toJsonWebKey()
@@ -215,14 +215,14 @@ class IssueWalletInstanceAttestationLive(
                     }
                 }
 
-            val attestedKeyType = checkNotNull(attestedKey.type) { "Attested Key is missing `kty` claim" }
-            ensure(JwkType.EC == attestedKeyType) {
-                WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyType(attestedKeyType)
+            val platformAttestedKeyType = checkNotNull(platformAttestedKey.type) { "Platform Attested Key is missing `kty` claim" }
+            ensure(JwkType.EC == platformAttestedKeyType) {
+                WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType(platformAttestedKeyType)
             }
 
-            val attestedKeyCurve = checkNotNull(attestedKey.curve) { "Attested Key is missing `crv` claim" }
-            ensure(attestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
-                WalletInstanceAttestationIssuanceFailure.UnsupportedAttestedKeyCurve(attestedKeyCurve)
+            val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
+            ensure(platformAttestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
+                WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
             }
 
             val issuedAt = clock.now()
@@ -243,7 +243,7 @@ class IssueWalletInstanceAttestationLive(
                     issuer,
                     clientId,
                     expiresAt = expiresAt,
-                    ConfirmationClaim(jsonWebKey = attestedKey),
+                    ConfirmationClaim(jsonWebKey = platformAttestedKey),
                     issuedAt = issuedAt,
                     notBefore = issuedAt,
                     walletName = walletName,
