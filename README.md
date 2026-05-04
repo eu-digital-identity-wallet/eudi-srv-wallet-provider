@@ -56,11 +56,7 @@ The service supports issuance of:
 1. Wallet Instance Attestations
 2. Key Attestations
 
-per [Specification of Key Attestations (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).
-
-The following deviations apply:
-
-1. Key Attestations do not use any revocation mechanism
+per [Specification of Wallet Unit Attestation (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).  
 
 ### Issuance of Wallet Instance Attestation
 
