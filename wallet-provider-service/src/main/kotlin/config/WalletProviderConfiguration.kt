@@ -221,6 +221,7 @@ data class WalletInstanceAttestationConfiguration(
 
 data class KeyAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
+    val keyStorageStatusValidity: PositiveDuration,
     val certification: StringUrl,
 ) {
     data class ValidityConfiguration(

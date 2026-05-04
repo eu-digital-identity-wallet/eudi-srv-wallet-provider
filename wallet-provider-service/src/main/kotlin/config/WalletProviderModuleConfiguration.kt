@@ -145,6 +145,7 @@ fun Application.configureWalletProviderModule(
                     JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
                     json,
                 ),
+            preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity.value,
         )
 
     configureChallengeRoutes(generateChallenge)

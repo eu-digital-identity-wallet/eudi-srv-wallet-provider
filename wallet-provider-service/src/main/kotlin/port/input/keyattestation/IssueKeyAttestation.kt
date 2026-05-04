@@ -59,6 +59,7 @@ sealed interface KeyAttestationIssuanceRequest {
     val nonce: Nonce?
     val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>?
     val preferredTtl: SecondsDuration?
+    val preferredKeyStorageStatusPeriod: SecondsDuration?
 
     sealed interface PlatformKeyAttestation<out PlatformKeyAttestation : Attestation> : KeyAttestationIssuanceRequest {
         val platformKeyAttestations: NonEmptyList<PlatformKeyAttestation>
@@ -74,6 +75,7 @@ sealed interface KeyAttestationIssuanceRequest {
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
+            override val preferredKeyStorageStatusPeriod: SecondsDuration? = null,
         ) : PlatformKeyAttestation<AndroidKeystoreAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Android &&
@@ -81,7 +83,8 @@ sealed interface KeyAttestationIssuanceRequest {
                     other.platformKeyAttestations == platformKeyAttestations &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
-                    other.preferredTtl == preferredTtl
+                    other.preferredTtl == preferredTtl &&
+                    other.preferredKeyStorageStatusPeriod == preferredKeyStorageStatusPeriod
 
             override fun hashCode(): Int {
                 var result = nonce?.hashCode() ?: 0
@@ -89,6 +92,7 @@ sealed interface KeyAttestationIssuanceRequest {
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (preferredTtl?.hashCode() ?: 0)
+                result = 31 * result + (preferredKeyStorageStatusPeriod?.hashCode() ?: 0)
                 return result
             }
         }
@@ -103,6 +107,7 @@ sealed interface KeyAttestationIssuanceRequest {
                 with = NonEmptyListSerializer::class,
             ) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
             @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
+            override val preferredKeyStorageStatusPeriod: SecondsDuration? = null,
         ) : PlatformKeyAttestation<IosHomebrewAttestation> {
             override fun equals(other: Any?): Boolean =
                 other is Ios &&
@@ -110,7 +115,8 @@ sealed interface KeyAttestationIssuanceRequest {
                     other.platformKeyAttestations == platformKeyAttestations &&
                     other.challenge.contentEquals(challenge) &&
                     other.supportedSigningAlgorithms == supportedSigningAlgorithms &&
-                    other.preferredTtl == preferredTtl
+                    other.preferredTtl == preferredTtl &&
+                    other.preferredKeyStorageStatusPeriod == preferredKeyStorageStatusPeriod
 
             override fun hashCode(): Int {
                 var result = nonce?.hashCode() ?: 0
@@ -118,6 +124,7 @@ sealed interface KeyAttestationIssuanceRequest {
                 result = 31 * result + challenge.contentHashCode()
                 result = 31 * result + (supportedSigningAlgorithms?.hashCode() ?: 0)
                 result = 31 * result + (preferredTtl?.hashCode() ?: 0)
+                result = 31 * result + (preferredKeyStorageStatusPeriod?.hashCode() ?: 0)
                 return result
             }
         }
@@ -129,6 +136,7 @@ sealed interface KeyAttestationIssuanceRequest {
         val jwkSet: JsonWebKeySet,
         @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
+        override val preferredKeyStorageStatusPeriod: SecondsDuration? = null,
     ) : KeyAttestationIssuanceRequest {
         init {
             require(jwkSet.keys.isNotEmpty()) { "jwkSet must not be empty" }
@@ -190,6 +198,7 @@ class IssueKeyAttestationLive(
     private val generateStatusListToken: GenerateStatusListToken,
     private val certification: StringUrl,
     private val signJwt: SignJwt<KeyAttestationClaims>,
+    private val preferredKeyStorageStatusPeriod: SecondsDuration,
 ) : IssueKeyAttestation {
     override suspend fun invoke(request: KeyAttestationIssuanceRequest): Either<KeyAttestationIssuanceFailure, KeyAttestation> =
         either {
@@ -242,12 +251,17 @@ class IssueKeyAttestationLive(
             val expiresAt = issuedAt + validity
             val keyStorageStatus =
                 run {
+                    val keyStorageStatusExp =
+                        request.preferredKeyStorageStatusPeriod?.let {
+                            issuedAt + it
+                        } ?: (issuedAt + preferredKeyStorageStatusPeriod)
+
                     val statusListToken =
-                        generateStatusListToken(expiresAt)
+                        generateStatusListToken(keyStorageStatusExp)
                             .mapLeft { error -> KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
                             .bind()
                     val status = Status(statusListToken)
-                    KeyStorageStatus(status, expiresAt)
+                    KeyStorageStatus(status, keyStorageStatusExp)
                 }
 
             val keyAttestation =

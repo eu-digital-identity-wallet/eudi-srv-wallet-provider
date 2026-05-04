@@ -435,7 +435,11 @@ Default value: `62 days`
 
 Variable: `KEYATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  
-Default value: N/A
+Default value: N/A  
+
+Variable: `KEYATTESTATION_KEYSTORAGESTATUSVALIDITY`  
+Description: Duration a Key Storage Status is valid for.  
+Default value: N/A    
 
 ### Token Status List Service Configuration
 

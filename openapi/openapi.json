@@ -556,6 +556,9 @@
           },
           "preferred_ttl": {
             "$ref": "#/components/schemas/SecondsDuration"
+          },
+          "preferredKeyStorageStatusPeriod": {
+            "$ref": "#/components/schemas/SecondsDuration"
           }
         },
         "required": [
@@ -632,6 +635,9 @@
           },
           "preferred_ttl": {
             "$ref": "#/components/schemas/SecondsDuration"
+          },
+          "preferredKeyStorageStatusPeriod": {
+            "$ref": "#/components/schemas/SecondsDuration"
           }
         },
         "required": [
@@ -674,6 +680,9 @@
             "minItems": 1
           },
           "preferred_ttl": {
+            "$ref": "#/components/schemas/SecondsDuration"
+          },
+          "preferredKeyStorageStatusPeriod": {
             "$ref": "#/components/schemas/SecondsDuration"
           }
         },
