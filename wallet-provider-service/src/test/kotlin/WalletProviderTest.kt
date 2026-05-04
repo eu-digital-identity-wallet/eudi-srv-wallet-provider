@@ -107,8 +107,8 @@ private class WalletProviderExtension :
                             JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
                         ),
                 ),
-            walletUnitAttestation =
-                WalletUnitAttestationConfiguration(
+            keyAttestation =
+                KeyAttestationConfiguration(
                     certification = StringUri.create("https://example.org/certification").toURL(),
                 ),
             tokenStatusListService =

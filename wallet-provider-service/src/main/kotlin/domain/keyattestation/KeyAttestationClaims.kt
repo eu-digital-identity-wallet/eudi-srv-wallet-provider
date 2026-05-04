@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.domain.walletunitattestation
+package eu.europa.ec.eudi.walletprovider.domain.keyattestation
 
 import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
@@ -26,7 +26,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WalletUnitAttestationClaims(
+data class KeyAttestationClaims(
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
@@ -75,4 +75,4 @@ value class AttackPotentialResistance(
 
 typealias Nonce = String
 
-typealias WalletUnitAttestation = JwsSigned<WalletUnitAttestationClaims>
+typealias KeyAttestation = JwsSigned<KeyAttestationClaims>

@@ -34,9 +34,9 @@ import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
+import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestationLive
+import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationValidity
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
-import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
-import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationValidity
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
 import io.ktor.client.*
@@ -130,14 +130,14 @@ fun Application.configureWalletProviderModule(
             ),
         )
 
-    val issueWalletUnitAttestation =
-        IssueWalletUnitAttestationLive(
+    val issueKeyAttestation =
+        IssueKeyAttestationLive(
             clock = clock,
             validateChallenge = validateChallenge,
             validatePlatformKeyAttestation = validatePlatformKeyAttestation,
-            validity = WalletUnitAttestationValidity(config.walletUnitAttestation.validity.closedRange),
+            validity = KeyAttestationValidity(config.keyAttestation.validity.closedRange),
             generateStatusListToken = generateStatusListToken,
-            certification = config.walletUnitAttestation.certification,
+            certification = config.keyAttestation.certification,
             signJwt =
                 SignumSignJwt(
                     signer,
@@ -149,7 +149,7 @@ fun Application.configureWalletProviderModule(
 
     configureChallengeRoutes(generateChallenge)
     configureWalletInstanceAttestationRoutes(issueWalletInstanceAttestation)
-    configureWalletUnitAttestationRoutes(issueWalletUnitAttestation)
+    configureKeyAttestationRoutes(issueKeyAttestation)
     configureMetadataRoutes(config.issuer.publicUrl, config.issuer.name, signer, certificateChain)
 }
 
