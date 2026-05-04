@@ -37,13 +37,6 @@ import kotlin.uuid.Uuid
 
 class IssueWalletUnitAttestationTest : WalletProviderTest() {
     @Test
-    fun `wallet unit attestation always contains status`(httpClient: HttpClient) {
-        httpClient.runWalletUnitAttestationTestCase {
-            assertNotNull(it.payload.status)
-        }
-    }
-
-    @Test
     fun `wallet unit attestation contains nonce when provided`(httpClient: HttpClient) {
         httpClient.runWalletUnitAttestationTestCase {
             assertNull(it.payload.nonce)

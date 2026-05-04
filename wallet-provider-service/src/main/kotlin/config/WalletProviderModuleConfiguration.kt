@@ -15,7 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
-import arrow.core.toNonEmptyListOrNull
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
@@ -34,8 +33,6 @@ import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.IssueWalletUnitAttestationLive
@@ -135,32 +132,19 @@ fun Application.configureWalletProviderModule(
 
     val issueWalletUnitAttestation =
         IssueWalletUnitAttestationLive(
-            clock,
-            validateChallenge,
-            validateKeyAttestation,
-            WalletUnitAttestationValidity(config.walletUnitAttestation.validity.closedRange),
-            generateStatusListToken,
-            issuer = config.issuer.publicUrl,
-            clientId = config.clientId,
-            keyStorage = config.walletUnitAttestation.keyStorage?.toNonEmptyListOrNull(),
-            userAuthentication = config.walletUnitAttestation.userAuthentication?.toNonEmptyListOrNull(),
-            config.walletUnitAttestation.certification,
-            GeneralInformation(
-                provider = config.walletInformation.generalInformation.provider,
-                id = config.walletInformation.generalInformation.id,
-                version = config.walletInformation.generalInformation.version,
-                certification = config.walletInformation.generalInformation.certification,
-            ),
-            WalletSecureCryptographicDeviceInformation(
-                config.walletInformation.walletSecureCryptographicDeviceInformation.type,
-                config.walletInformation.walletSecureCryptographicDeviceInformation.certification,
-            ),
-            SignumSignJwt(
-                signer,
-                certificateChain,
-                JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
-                json,
-            ),
+            clock = clock,
+            validateChallenge = validateChallenge,
+            validateKeyAttestation = validateKeyAttestation,
+            validity = WalletUnitAttestationValidity(config.walletUnitAttestation.validity.closedRange),
+            generateStatusListToken = generateStatusListToken,
+            certification = config.walletUnitAttestation.certification,
+            signJwt =
+                SignumSignJwt(
+                    signer,
+                    certificateChain,
+                    JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
+                    json,
+                ),
         )
 
     configureChallengeRoutes(generateChallenge)

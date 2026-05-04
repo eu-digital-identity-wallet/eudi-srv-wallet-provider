@@ -21,36 +21,36 @@ import at.asitplus.signum.indispensable.josef.JsonWebKey
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.WalletSecureCryptographicDeviceInformation
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class WalletUnitAttestationClaims(
-    @Required @SerialName(RFC7519.ISSUER) val issuer: Issuer,
-    @Required @SerialName(RFC7519.SUBJECT) val subject: ClientId,
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
-    @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant? = null,
+    @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
     val attestedKeys: NonEmptyList<JsonWebKey>,
-    @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
-    val keyStorage: NonEmptyList<AttackPotentialResistance>? = null,
-    @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.USER_AUTHENTICATION)
-    val userAuthentication: NonEmptyList<AttackPotentialResistance>? = null,
-    @SerialName(OpenId4VCISpec.CERTIFICATION) val certification: StringUrl? = null,
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
+    val keyStorage: NonEmptyList<AttackPotentialResistance>,
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.USER_AUTHENTICATION)
+    val userAuthentication: NonEmptyList<AttackPotentialResistance>,
+    @Required @SerialName(OpenId4VCISpec.CERTIFICATION) val certification: StringUrl,
     @SerialName(OpenId4VCISpec.NONCE) val nonce: Nonce? = null,
     @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
-    @Required @SerialName(ARF.EUDI_WALLET_INFORMATION) val walletInformation: WalletInformation,
-) {
-    @Serializable
-    data class WalletInformation(
-        @Required @SerialName(ARF.GENERAL_INFORMATION) val generalInformation: GeneralInformation,
-        @Required @SerialName(ARF.WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_INFORMATION)
-        val walletSecureCryptographicDeviceInformation: WalletSecureCryptographicDeviceInformation,
-    )
-}
+    @Required @SerialName(TS3.KEY_STORAGE_STATUS)
+    val keyStorageStatus: KeyStorageStatus,
+)
+
+@Serializable
+data class KeyStorageStatus(
+    @Required
+    @SerialName(TokenStatusListSpec.STATUS)
+    val status: Status,
+    @Required
+    @SerialName(RFC7519.EXPIRES_AT)
+    val exp: EpochSecondsInstant,
+)
 
 @JvmInline
 @Serializable

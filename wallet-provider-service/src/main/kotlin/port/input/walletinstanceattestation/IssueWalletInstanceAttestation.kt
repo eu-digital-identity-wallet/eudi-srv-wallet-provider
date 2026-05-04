@@ -17,7 +17,6 @@ package eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
-import arrow.core.raise.context.bind
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.serialization.NonEmptyListSerializer
@@ -29,10 +28,7 @@ import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
-import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.keyattestation.KeyAttestationValidationFailure

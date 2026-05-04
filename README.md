@@ -400,38 +400,6 @@ Variable: `CLIENTID`
 Description: The Id of the OAuth2.0 Client the Wallet is using.   
 Default value: `wallet-dev`  
 
-### Wallet Information Configuration
-
-Variable: `WALLETINFORMATION_GENERALINFORMATION_PROVIDER`  
-Description: Name of Wallet Provider, as listed on the Trusted List of Wallet Providers.  
-Default value: N/A
-
-Variable: `WALLETINFORMATION_GENERALINFORMATION_ID`  
-Description: Identifier of the Wallet Solution, as listed on the Trusted List of Wallet Providers.  
-Default value: N/A
-
-Variable: `WALLETINFORMATION_GENERALINFORMATION_VERSION`  
-Description: Version of the Wallet Solution.  
-Default value: N/A
-
-Variable: `WALLETINFORMATION_GENERALINFORMATION_CERTIFICATION`  
-Description: Which conformity assessment body certified the Wallet Solution, the applicable certification number, etc.  
-Default value: N/A  
-
-Variable: `WALLETINFORMATION_WALLETSECURECRYPTOGRAPHICDEVICEINFORMATION_TYPE`  
-Description: Technical implementation of the WSCD.  
-Default value: N/A  
-Examples:
-* `REMOTE`
-* `LOCAL_EXTERNAL`
-* `LOCAL_INTERNAL`
-* `LOCAL_NATIVE`
-* `HYBRID`
-
-Variable: `WALLETINFORMATION_WALLETSECURECRYPTOGRAPHICDEVICEINFORMATION_CERTIFICATION`  
-Description: Information about the certification achieved by the WSCD.  
-Default value: N/A
-
 ### Wallet Instance Attestation Configuration
 
 Variable: `WALLETINSTANCEATTESTATION_VALIDITY`  
@@ -468,24 +436,6 @@ Minimum value: `31 days`
 Variable: `WALLETAUNITATTESTATION_VALIDITY_MAXIMUM`  
 Description: Maximum duration a Wallet Unit Attestations is valid for.    
 Default value: `62 days`  
-
-Variable: `WALLETUNITATTESTATION_KEYSTORAGE_XX`  
-Description: Case sensitive strings that assert the attack potential resistance of the key storage component and its keys attested.  
-Default value: N/A  
-Examples:
-* `iso_18045_high`
-* `iso_18045_moderate`
-* `iso_18045_enhanced-basic`
-* `iso_18045_basic`  
-
-Variable: `WALLETUNITATTESTATION_USERAUTHENTICATION_XX`  
-Description: Case sensitive strings that assert the attack potential resistance of the user authentication methods allowed to access the private keys from the attested_keys.  
-Default value: N/A  
-Examples:
-* `iso_18045_high`
-* `iso_18045_moderate`
-* `iso_18045_enhanced-basic`
-* `iso_18045_basic`
 
 Variable: `WALLETUNITATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  

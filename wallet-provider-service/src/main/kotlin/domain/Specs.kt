@@ -41,23 +41,8 @@ object RFC7800 {
 }
 
 object ARF {
-    const val EUDI_WALLET_INFORMATION: String = "eudi_wallet_info"
-
-    const val GENERAL_INFORMATION: String = "general_info"
-    const val WALLET_PROVIDER_NAME: String = "wallet_provider_name"
-    const val WALLET_SOLUTION_ID: String = "wallet_solution_id"
-    const val WALLET_SOLUTION_VERSION: String = "wallet_solution_version"
     val MIN_WALLET_UNIT_ATTESTATION_VALIDITY: Duration = 31.days
     val MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY: Duration = 24.hours
-
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_INFORMATION: String = "wscd_info"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE: String = "wscd_type"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_REMOTE: String = "REMOTE"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_EXTERNAL: String = "LOCAL_EXTERNAL"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_INTERNAL: String = "LOCAL_INTERNAL"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_LOCAL_NATIVE: String = "LOCAL_NATIVE"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_DEVICE_TYPE_HYBRID: String = "HYBRID"
-    const val WALLET_SECURE_CRYPTOGRAPHIC_CERTIFICATION_INFORMATION: String = "wscd_certification_information"
 
     const val PREFERRED_TTL: String = "preferred_ttl"
 }
@@ -115,4 +100,5 @@ object TS3 {
     const val WALLET_VERSION: String = "wallet_version"
     const val WALLET_SOLUTION_CERTIFICATION_INFORMATION: String = "wallet_solution_certification_information"
     const val CLIENT_STATUS: String = "client_status"
+    const val KEY_STORAGE_STATUS: String = "key_storage_status"
 }

@@ -21,6 +21,9 @@ import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import java.net.URI
 import java.net.URL
 import kotlin.time.Duration
@@ -86,6 +89,18 @@ value class PositiveDuration(
 ) {
     init {
         require(value.isPositive()) { "value must be positive" }
+    }
+
+    override fun toString(): String = value.toString()
+}
+
+@JvmInline
+@Serializable
+value class CertificationInformation(
+    val value: JsonElement,
+) {
+    init {
+        require((value is JsonPrimitive && value.isString && value.content.isNotBlank()) || value is JsonObject)
     }
 
     override fun toString(): String = value.toString()

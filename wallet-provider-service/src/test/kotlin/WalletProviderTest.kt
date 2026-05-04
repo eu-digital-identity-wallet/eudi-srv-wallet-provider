@@ -24,12 +24,13 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.StringUri
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.forms.*
@@ -97,19 +98,6 @@ private class WalletProviderExtension :
                     keyPassword = Secret("testKeystore"),
                     algorithm = SigningAlgorithm.ES256,
                 ),
-            walletInformation =
-                WalletInformationConfiguration(
-                    GeneralInformationConfiguration(
-                        provider = WalletProviderName("Wallet Provider"),
-                        id = SolutionId("EUDI Wallet"),
-                        version = SolutionVersion("1.0.0"),
-                        certification = CertificationInformation(JsonPrimitive("ARF")),
-                    ),
-                    WalletSecureCryptographicDeviceInformationConfiguration(
-                        WalletSecureCryptographicDeviceType.LocalNative,
-                        CertificationInformation(JsonPrimitive("ARF")),
-                    ),
-                ),
             walletInstanceAttestation =
                 WalletInstanceAttestationConfiguration(
                     walletName = "EUDI Wallet".toNonBlankString(),
@@ -118,6 +106,10 @@ private class WalletProviderExtension :
                         CertificationInformation(
                             JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
                         ),
+                ),
+            walletUnitAttestation =
+                WalletUnitAttestationConfiguration(
+                    certification = StringUri.create("https://example.org/certification").toURL(),
                 ),
             tokenStatusListService =
                 TokenStatusListServiceConfiguration(

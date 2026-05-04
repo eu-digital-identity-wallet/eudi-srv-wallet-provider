@@ -21,11 +21,9 @@ import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.*
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
@@ -46,9 +44,8 @@ data class WalletProviderConfiguration(
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
-    val walletInformation: WalletInformationConfiguration,
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration,
-    val walletUnitAttestation: WalletUnitAttestationConfiguration = WalletUnitAttestationConfiguration(),
+    val walletUnitAttestation: WalletUnitAttestationConfiguration,
     val tokenStatusListService: TokenStatusListServiceConfiguration,
     val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration(),
 )
@@ -189,18 +186,6 @@ class Base64UrlSafeByteArrayDecoder : Decoder<Base64UrlSafeByteArray> {
         }
 }
 
-data class WalletInformationConfiguration(
-    val generalInformation: GeneralInformationConfiguration,
-    val walletSecureCryptographicDeviceInformation: WalletSecureCryptographicDeviceInformationConfiguration,
-)
-
-data class GeneralInformationConfiguration(
-    val provider: WalletProviderName,
-    val id: SolutionId,
-    val version: SolutionVersion,
-    val certification: CertificationInformation,
-)
-
 class CertificationInformationDecoder : Decoder<CertificationInformation> {
     override fun supports(type: KType): Boolean = type.classifier == CertificationInformation::class
 
@@ -225,11 +210,6 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
         }
 }
 
-data class WalletSecureCryptographicDeviceInformationConfiguration(
-    val type: WalletSecureCryptographicDeviceType? = null,
-    val certification: CertificationInformation,
-)
-
 data class WalletInstanceAttestationConfiguration(
     val validity: WalletInstanceAttestationValidity = WalletInstanceAttestationValidity.Default,
     val walletName: WalletName,
@@ -241,9 +221,7 @@ data class WalletInstanceAttestationConfiguration(
 
 data class WalletUnitAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
-    val keyStorage: List<AttackPotentialResistance>? = null,
-    val userAuthentication: List<AttackPotentialResistance>? = null,
-    val certification: StringUrl? = null,
+    val certification: StringUrl,
 ) {
     data class ValidityConfiguration(
         val minimum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY,

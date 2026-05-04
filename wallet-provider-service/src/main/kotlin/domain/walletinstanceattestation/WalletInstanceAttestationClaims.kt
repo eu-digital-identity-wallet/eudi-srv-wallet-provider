@@ -19,8 +19,6 @@ import at.asitplus.signum.indispensable.josef.ConfirmationClaim
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.CertificationInformation
-import eu.europa.ec.eudi.walletprovider.domain.walletinformation.GeneralInformation
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
