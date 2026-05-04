@@ -130,10 +130,10 @@ private fun Logger.warn(failure: WalletUnitAttestationIssuanceFailure) {
             warn("WalletUnitAttestationIssuanceRequest validation failed, contains non-unique Platform Attested Keys")
         }
 
-        is WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+        is WalletUnitAttestationIssuanceFailure.KeyStorageStatusGenerationFailure -> {
             when (failure.error) {
                 is StatusListTokenGenerationFailure.Unexpected -> {
-                    warn("WalletUnitAttestationIssuance failed, unable to generate Status List Token", failure.error.cause)
+                    warn("WalletUnitAttestationIssuance failed, unable to generate Key Storage Status", failure.error.cause)
                 }
             }
         }
@@ -172,8 +172,8 @@ private enum class WalletUnitAttestationError {
     @SerialName("non_unique_platform_attested_keys")
     NonUniquePlatformAttestedKeys,
 
-    @SerialName("status_list_token_generation_failure")
-    StatusListTokenGenerationFailure,
+    @SerialName("key_storage_status_generation_failure")
+    KeyStorageStatusGenerationFailure,
 }
 
 @Serializable
@@ -218,7 +218,7 @@ private fun WalletUnitAttestationIssuanceFailure.toWalletUnitAttestationErrorRes
             nonEmptyListOf(WalletUnitAttestationError.NonUniquePlatformAttestedKeys)
         }
 
-        is WalletUnitAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
-            nonEmptyListOf(WalletUnitAttestationError.StatusListTokenGenerationFailure)
+        is WalletUnitAttestationIssuanceFailure.KeyStorageStatusGenerationFailure -> {
+            nonEmptyListOf(WalletUnitAttestationError.KeyStorageStatusGenerationFailure)
         }
     }.let { WalletUnitAttestationErrorResponse(it) }

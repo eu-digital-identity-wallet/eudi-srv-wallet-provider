@@ -34,6 +34,7 @@ import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
@@ -143,8 +144,8 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
         val curve: ECCurve,
     ) : WalletInstanceAttestationIssuanceFailure
 
-    class StatusListTokenGenerationFailure(
-        val error: eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure,
+    class ClientStatusGenerationFailure(
+        val error: StatusListTokenGenerationFailure,
     ) : WalletInstanceAttestationIssuanceFailure
 }
 
@@ -233,7 +234,7 @@ class IssueWalletInstanceAttestationLive(
                     val clientStatusExpiresAt = issuedAt + clientStatusPeriod
                     val statusListToken =
                         generateStatusListToken(clientStatusExpiresAt)
-                            .mapLeft { WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure(it) }
+                            .mapLeft { WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure(it) }
                             .bind()
                     ClientStatus(Status(statusListToken), clientStatusExpiresAt)
                 }

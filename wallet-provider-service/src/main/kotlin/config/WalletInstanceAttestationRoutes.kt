@@ -120,10 +120,10 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                     null
             }
 
-            is WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
+            is WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure -> {
                 when (failure.error) {
                     is StatusListTokenGenerationFailure.Unexpected -> {
-                        "WalletInstanceAttestationIssuanceRequest failed, unable to generate Status List Token" to
+                        "WalletInstanceAttestationIssuanceRequest failed, unable to generate Client Status" to
                             failure.error.cause
                     }
                 }
@@ -163,8 +163,8 @@ private enum class WalletInstanceAttestationError {
     @SerialName("unsupported_platform_attested_key_curve")
     UnsupportedPlatformAttestedKeyCurve,
 
-    @SerialName("status_list_token_generation_failure")
-    StatusListTokenGenerationFailure,
+    @SerialName("client_status_generation_failure")
+    ClientStatusGenerationFailure,
 }
 
 @Serializable
@@ -202,7 +202,7 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
             WalletInstanceAttestationError.UnsupportedPlatformAttestedKeyCurve
         }
 
-        is WalletInstanceAttestationIssuanceFailure.StatusListTokenGenerationFailure -> {
-            WalletInstanceAttestationError.StatusListTokenGenerationFailure
+        is WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure -> {
+            WalletInstanceAttestationError.ClientStatusGenerationFailure
         }
     }.let { WalletInstanceAttestationErrorResponse(it) }
