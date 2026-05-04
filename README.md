@@ -437,10 +437,6 @@ Variable: `WALLETAUNITATTESTATION_VALIDITY_MAXIMUM`
 Description: Maximum duration a Wallet Unit Attestations is valid for.    
 Default value: `62 days`  
 
-Variable: `WALLETUNITATTESTATION_CERTIFICATION`
-Description: URL that links to the certification of the key storage component.  
-Default value: N/A
-
 Variable: `WALLETUNITATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  
 Default value: N/A
