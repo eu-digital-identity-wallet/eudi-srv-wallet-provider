@@ -54,13 +54,9 @@ any of the open-sourced components is suitable for use in that application.
 The service supports issuance of:
 
 1. Wallet Instance Attestations
-2. Wallet Unit Attestations
+2. Key Attestations
 
-per [Specification of Wallet Unit Attestations (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).
-
-The following deviations apply:
-
-1. Wallet Unit Attestations do not use any revocation mechanism
+per [Specification of Wallet Unit Attestation (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).  
 
 ### Issuance of Wallet Instance Attestation
 
@@ -121,20 +117,20 @@ sequenceDiagram
     WP->>+W: Provide issued Wallet Instance Attestation
 ```
 
-### Issuance of Wallet Unit Attestation
+### Issuance of Key Attestation
 
 #### Issuance using platform Key Attestations
 
-To issue a Wallet Unit Attestation:
+To issue a Key Attestation:
 
 1. The Wallet requests a single-use Challenge from the Wallet Provider
 2. The Wallet generates new Key-Pairs and platform Key Attestations which contain the single-use Challenge provided by the Wallet Provider
-3. The Wallet requests a Wallet Unit Attestation from the Wallet Provider
+3. The Wallet requests a Key Attestation from the Wallet Provider
 4. The Wallet Provider:
     1. Validates the single-use Challenge
     2. Validates the platform Key Attestations
     3. Verifies the platform Key Attestations contain the single-use Challenge
-    4. Issues Wallet Unit Attestation
+    4. Issues Key Attestation
 
 ```mermaid
 sequenceDiagram    
@@ -148,26 +144,26 @@ sequenceDiagram
     
     W->>+W: Generate new Key-Pairs and platform Key Attestations (with single-use Challenge)
     
-    W->>+WP: Request Wallet Unit Attestation Issuance
+    W->>+WP: Request Key Attestation Issuance
     
     WP->>+WP: Validate Challenge
     WP->>+WP: Validate platform Key Attestations
-    WP->>+WP: Issue Wallet Unit Attestation
+    WP->>+WP: Issue Key Attestation
     
-    WP->>+W: Provide issued Wallet Unit Attestation
+    WP->>+W: Provide issued Key Attestation
 ```
 
 #### Issuance using Json Web Key Set
 
 > [!CAUTION]  
-> When using a Json Web Key Set, Wallet Provider performs **NO** validations and simply issues a Wallet Unit Attestation
+> When using a Json Web Key Set, Wallet Provider performs **NO** validations and simply issues a Key Attestation
 > using the provided Json Web Key Set.
 
-To issue a Wallet Unit Attestation:
+To issue a Key Attestation:
 
 1. The Wallet generates new Key-Pairs
-2. The Wallet requests a Wallet Unit Attestation from the Wallet Provider
-3. The Wallet Provider issues a Wallet Unit Attestation
+2. The Wallet requests a Key Attestation from the Wallet Provider
+3. The Wallet Provider issues a Key Attestation
 
 ```mermaid
 sequenceDiagram    
@@ -175,9 +171,9 @@ sequenceDiagram
     participant WP as Wallet Provider
     
     W->>+W: Generate new Key-Pairs
-    W->>+WP: Request Wallet Unit Attestation Issuance
-    WP->>+WP: Issue Wallet Unit Attestation
-    WP->>+W: Provide issued Wallet Unit Attestation
+    W->>+WP: Request Key Attestation Issuance
+    WP->>+WP: Issue Key Attestation
+    WP->>+W: Provide issued Key Attestation
 ```
 
 ## Technical Details
@@ -426,18 +422,18 @@ Variable: `WALLETINSTANCEATTESTATION_CLIENTSTATUSVALIDITY`
 Description: Duration a Client Status of a Wallet Instance Attestation is valid for.  
 Default value: `90 days`
 
-### Wallet Unit Attestation Configuration
+### Key Attestation Configuration
 
-Variable: `WALLETAUNITATTESTATION_VALIDITY_MINIMUM`  
-Description: Minimum duration a Wallet Unit Attestations is valid for.    
+Variable: `KEYATTESTATION_VALIDITY_MINIMUM`  
+Description: Minimum duration a Key Attestations is valid for.    
 Default value: `31 days`  
 Minimum value: `31 days`  
 
-Variable: `WALLETAUNITATTESTATION_VALIDITY_MAXIMUM`  
-Description: Maximum duration a Wallet Unit Attestations is valid for.    
+Variable: `KEYATTESTATION_VALIDITY_MAXIMUM`  
+Description: Maximum duration a Key Attestations is valid for.    
 Default value: `62 days`  
 
-Variable: `WALLETUNITATTESTATION_CERTIFICATION`  
+Variable: `KEYATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  
 Default value: N/A
 
@@ -488,7 +484,7 @@ Wallet Provider supports [RFC9728: Protected Resource Metadata](https://www.rfc-
 Wallet Provider includes the following additional metadata:
 
 * `client_attestation_signing_alg_values_supported`: JWS Algorithms supported by Wallet Provider to sign Wallet Instance Attestations
-* `proof_signing_alg_values_supported`: JWS Algorithms supported by Wallet Provider to sign Wallet Unit Attestations
+* `proof_signing_alg_values_supported`: JWS Algorithms supported by Wallet Provider to sign Key Attestations
 
 Wallet Provider exposes Protected Resource Metadata at `/.well-known/oauth-protected-resource`. Per Section 3 of [RFC9728: Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728.html):
 

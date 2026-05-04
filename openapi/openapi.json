@@ -158,17 +158,17 @@
         }
       }
     },
-    "/wallet-unit-attestation/platform-key-attestation/android": {
+    "/key-attestation/platform-key-attestation/android": {
       "post": {
         "tags": [
-          "wallet-unit-attestation"
+          "key-attestation"
         ],
-        "operationId": "issueAndroidPlatformKeyAttestationWalletUnitAttestation",
+        "operationId": "issueAndroidPlatformKeyAttestationKeyAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AndroidPlatformKeyAttestationWalletUnitAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/AndroidPlatformKeyAttestationKeyAttestationIssuanceRequest"
               }
             }
           },
@@ -180,7 +180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationResponse"
+                  "$ref": "#/components/schemas/KeyAttestationResponse"
                 }
               }
             }
@@ -190,7 +190,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationErrorResponse"
+                  "$ref": "#/components/schemas/KeyAttestationErrorResponse"
                 }
               }
             }
@@ -201,17 +201,17 @@
         }
       }
     },
-    "/wallet-unit-attestation/platform-key-attestation/ios": {
+    "/key-attestation/platform-key-attestation/ios": {
       "post": {
         "tags": [
-          "wallet-unit-attestation"
+          "key-attestation"
         ],
-        "operationId": "issueIosPlatformKeyAttestationWalletUnitAttestation",
+        "operationId": "issueIosPlatformKeyAttestationKeyAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IosPlatformKeyAttestationWalletUnitAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/IosPlatformKeyAttestationKeyAttestationIssuanceRequest"
               }
             }
           },
@@ -223,7 +223,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationResponse"
+                  "$ref": "#/components/schemas/KeyAttestationResponse"
                 }
               }
             }
@@ -233,7 +233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationErrorResponse"
+                  "$ref": "#/components/schemas/KeyAttestationErrorResponse"
                 }
               }
             }
@@ -244,17 +244,17 @@
         }
       }
     },
-    "/wallet-unit-attestation/jwk-set": {
+    "/key-attestation/jwk-set": {
       "post": {
         "tags": [
-          "wallet-unit-attestation"
+          "key-attestation"
         ],
-        "operationId": "issueJwkSetWalletUnitAttestation",
+        "operationId": "issueJwkSetKeyAttestation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JwkSetWalletUnitAttestationIssuanceRequest"
+                "$ref": "#/components/schemas/JwkSetKeyAttestationIssuanceRequest"
               }
             }
           },
@@ -266,7 +266,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationResponse"
+                  "$ref": "#/components/schemas/KeyAttestationResponse"
                 }
               }
             }
@@ -276,7 +276,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletUnitAttestationErrorResponse"
+                  "$ref": "#/components/schemas/KeyAttestationErrorResponse"
                 }
               }
             }
@@ -530,7 +530,7 @@
       "Nonce": {
         "type": "string"
       },
-      "AndroidPlatformKeyAttestationWalletUnitAttestationIssuanceRequest": {
+      "AndroidPlatformKeyAttestationKeyAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "nonce": {
@@ -564,19 +564,19 @@
         ],
         "additionalProperties": false
       },
-      "WalletUnitAttestationResponse": {
+      "KeyAttestationResponse": {
         "type": "object",
         "properties": {
-          "walletUnitAttestation": {
+          "keyAttestation": {
             "type": "string"
           }
         },
         "required": [
-          "walletUnitAttestation"
+          "keyAttestation"
         ],
         "additionalProperties": false
       },
-      "WalletUnitAttestationError": {
+      "KeyAttestationError": {
         "type": "string",
         "enum": [
           "unsupported_signing_algorithms",
@@ -589,13 +589,13 @@
           "key_storage_status_generation_failure"
         ]
       },
-      "WalletUnitAttestationErrorResponse": {
+      "KeyAttestationErrorResponse": {
         "type": "object",
         "properties": {
           "errors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WalletInstanceAttestationError"
+              "$ref": "#/components/schemas/KeyAttestationError"
             },
             "minItems": 1,
             "uniqueItems": true
@@ -606,7 +606,7 @@
         ],
         "additionalProperties": false
       },
-      "IosPlatformKeyAttestationWalletUnitAttestationIssuanceRequest": {
+      "IosPlatformKeyAttestationKeyAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "nonce": {
@@ -657,7 +657,7 @@
         ],
         "additionalProperties": false
       },
-      "JwkSetWalletUnitAttestationIssuanceRequest": {
+      "JwkSetKeyAttestationIssuanceRequest": {
         "type": "object",
         "properties": {
           "nonce": {

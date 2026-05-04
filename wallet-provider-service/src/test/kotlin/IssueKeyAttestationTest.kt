@@ -19,10 +19,10 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.Nonce
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestation
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestationClaims
-import eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation.WalletUnitAttestationIssuanceRequest.JwkSet
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestationClaims
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.Nonce
+import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceRequest.JwkSet
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -35,23 +35,23 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.*
 import kotlin.uuid.Uuid
 
-class IssueWalletUnitAttestationTest : WalletProviderTest() {
+class IssueKeyAttestationTest : WalletProviderTest() {
     @Test
-    fun `wallet unit attestation contains nonce when provided`(httpClient: HttpClient) {
-        httpClient.runWalletUnitAttestationTestCase {
+    fun `key attestation contains nonce when provided`(httpClient: HttpClient) {
+        httpClient.runKeyAttestationTestCase {
             assertNull(it.payload.nonce)
         }
 
         val nonce = Uuid.random().toString()
-        httpClient.runWalletUnitAttestationTestCase(nonce) {
+        httpClient.runKeyAttestationTestCase(nonce) {
             assertEquals(nonce, it.payload.nonce)
         }
     }
 }
 
-private fun HttpClient.runWalletUnitAttestationTestCase(
+private fun HttpClient.runKeyAttestationTestCase(
     nonce: Nonce? = null,
-    assertions: suspend (WalletUnitAttestation) -> Unit,
+    assertions: suspend (KeyAttestation) -> Unit,
 ): TestResult =
     runTestWithRealTime {
         val request =
@@ -71,7 +71,7 @@ private fun HttpClient.runWalletUnitAttestationTestCase(
             )
 
         val response =
-            post("/wallet-unit-attestation/jwk-set") {
+            post("/key-attestation/jwk-set") {
                 expectSuccess = true
 
                 contentType(ContentType.Application.Json)
@@ -79,12 +79,12 @@ private fun HttpClient.runWalletUnitAttestationTestCase(
                 setBody(request)
             }.body<JsonObject>()
 
-        val serializedWalletUnitAttestation = assertIs<JsonPrimitive>(response["walletUnitAttestation"]).content
-        val walletUnitAttestation =
-            WalletUnitAttestation
+        val serializedKeyAttestation = assertIs<JsonPrimitive>(response["keyAttestation"]).content
+        val keyAttestation =
+            KeyAttestation
                 .deserialize(
-                    WalletUnitAttestationClaims.serializer(),
-                    serializedWalletUnitAttestation,
+                    KeyAttestationClaims.serializer(),
+                    serializedKeyAttestation,
                 ).getOrThrow()
-        assertions(walletUnitAttestation)
+        assertions(keyAttestation)
     }

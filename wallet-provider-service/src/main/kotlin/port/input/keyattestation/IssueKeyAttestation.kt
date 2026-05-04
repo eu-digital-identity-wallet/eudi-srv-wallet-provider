@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.port.input.walletunitattestation
+package eu.europa.ec.eudi.walletprovider.port.input.keyattestation
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
@@ -32,13 +32,13 @@ import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.AttackPotentialResistance
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestationClaims
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyStorageStatus
+import eu.europa.ec.eudi.walletprovider.domain.keyattestation.Nonce
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.AttackPotentialResistance
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.KeyStorageStatus
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.Nonce
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestation
-import eu.europa.ec.eudi.walletprovider.domain.walletunitattestation.WalletUnitAttestationClaims
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
@@ -51,18 +51,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 
-fun interface IssueWalletUnitAttestation {
-    suspend operator fun invoke(
-        request: WalletUnitAttestationIssuanceRequest,
-    ): Either<WalletUnitAttestationIssuanceFailure, WalletUnitAttestation>
+fun interface IssueKeyAttestation {
+    suspend operator fun invoke(request: KeyAttestationIssuanceRequest): Either<KeyAttestationIssuanceFailure, KeyAttestation>
 }
 
-sealed interface WalletUnitAttestationIssuanceRequest {
+sealed interface KeyAttestationIssuanceRequest {
     val nonce: Nonce?
     val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>?
     val preferredTtl: SecondsDuration?
 
-    sealed interface PlatformKeyAttestation<out PlatformKeyAttestation : Attestation> : WalletUnitAttestationIssuanceRequest {
+    sealed interface PlatformKeyAttestation<out PlatformKeyAttestation : Attestation> : KeyAttestationIssuanceRequest {
         val platformKeyAttestations: NonEmptyList<PlatformKeyAttestation>
         val challenge: Base64UrlSafeByteArray
 
@@ -131,50 +129,50 @@ sealed interface WalletUnitAttestationIssuanceRequest {
         val jwkSet: JsonWebKeySet,
         @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         @SerialName(ARF.PREFERRED_TTL) override val preferredTtl: SecondsDuration? = null,
-    ) : WalletUnitAttestationIssuanceRequest {
+    ) : KeyAttestationIssuanceRequest {
         init {
             require(jwkSet.keys.isNotEmpty()) { "jwkSet must not be empty" }
         }
     }
 }
 
-sealed interface WalletUnitAttestationIssuanceFailure {
+sealed interface KeyAttestationIssuanceFailure {
     class UnsupportedSigningAlgorithms(
         val supportedSigningAlgorithm: JwsAlgorithm,
         val requestedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>,
-    ) : WalletUnitAttestationIssuanceFailure
+    ) : KeyAttestationIssuanceFailure
 
     data class InvalidPreferredTtl(
         val requested: Duration,
         val minimumAllowed: Duration,
         val maximumAllowed: Duration,
-    ) : WalletUnitAttestationIssuanceFailure
+    ) : KeyAttestationIssuanceFailure
 
     class InvalidChallenge(
         val error: NonBlankString,
         val cause: Throwable? = null,
-    ) : WalletUnitAttestationIssuanceFailure
+    ) : KeyAttestationIssuanceFailure
 
     class InvalidPlatformKeyAttestations(
         val errors: NonEmptyList<PlatformKeyAttestationValidationFailure>,
-    ) : WalletUnitAttestationIssuanceFailure
+    ) : KeyAttestationIssuanceFailure
 
-    data object NoPlatformAttestedKeys : WalletUnitAttestationIssuanceFailure
+    data object NoPlatformAttestedKeys : KeyAttestationIssuanceFailure
 
-    data object NonUniquePlatformAttestedKeys : WalletUnitAttestationIssuanceFailure
+    data object NonUniquePlatformAttestedKeys : KeyAttestationIssuanceFailure
 
     class KeyStorageStatusGenerationFailure(
         val error: StatusListTokenGenerationFailure,
-    ) : WalletUnitAttestationIssuanceFailure
+    ) : KeyAttestationIssuanceFailure
 }
 
 @JvmInline
-value class WalletUnitAttestationValidity(
+value class KeyAttestationValidity(
     val value: ClosedRange<Duration>,
 ) {
     init {
-        require(value.start.isPositive() && value.start >= ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY) {
-            "minimum value must be greater than ${ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY}"
+        require(value.start.isPositive() && value.start >= ARF.MIN_KEY_ATTESTATION_VALIDITY) {
+            "minimum value must be greater than ${ARF.MIN_KEY_ATTESTATION_VALIDITY}"
         }
         require(value.start < value.endInclusive) {
             "maximum value must be greater than minimum value"
@@ -184,56 +182,54 @@ value class WalletUnitAttestationValidity(
     override fun toString(): String = value.toString()
 }
 
-class IssueWalletUnitAttestationLive(
+class IssueKeyAttestationLive(
     private val clock: Clock,
     private val validateChallenge: ValidateChallenge,
     private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
-    private val validity: WalletUnitAttestationValidity,
+    private val validity: KeyAttestationValidity,
     private val generateStatusListToken: GenerateStatusListToken,
     private val certification: StringUrl,
-    private val signJwt: SignJwt<WalletUnitAttestationClaims>,
-) : IssueWalletUnitAttestation {
-    override suspend fun invoke(
-        request: WalletUnitAttestationIssuanceRequest,
-    ): Either<WalletUnitAttestationIssuanceFailure, WalletUnitAttestation> =
+    private val signJwt: SignJwt<KeyAttestationClaims>,
+) : IssueKeyAttestation {
+    override suspend fun invoke(request: KeyAttestationIssuanceRequest): Either<KeyAttestationIssuanceFailure, KeyAttestation> =
         either {
             val supportedSigningAlgorithm = signJwt.signingAlgorithm
             val requestedSigningAlgorithms = request.supportedSigningAlgorithms
             if (null != requestedSigningAlgorithms) {
                 ensure(supportedSigningAlgorithm in requestedSigningAlgorithms) {
-                    WalletUnitAttestationIssuanceFailure.UnsupportedSigningAlgorithms(supportedSigningAlgorithm, requestedSigningAlgorithms)
+                    KeyAttestationIssuanceFailure.UnsupportedSigningAlgorithms(supportedSigningAlgorithm, requestedSigningAlgorithms)
                 }
             }
 
             val platformAttestedKeys =
                 when (request) {
-                    is WalletUnitAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+                    is KeyAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
                         validateChallenge(request.challenge, clock.now())
-                            .mapLeft { WalletUnitAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
+                            .mapLeft { KeyAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
                             .bind()
 
                         request.platformKeyAttestations
                             .parMapOrAccumulate(Dispatchers.Default, 4) { validatePlatformKeyAttestation(it, request.challenge).bind() }
-                            .mapLeft { errors -> WalletUnitAttestationIssuanceFailure.InvalidPlatformKeyAttestations(errors) }
+                            .mapLeft { errors -> KeyAttestationIssuanceFailure.InvalidPlatformKeyAttestations(errors) }
                             .bind()
                             .map { it.publicKey.toJsonWebKey() }
                             .toNonEmptyListOrNull()
                     }
 
-                    is WalletUnitAttestationIssuanceRequest.JwkSet -> {
+                    is KeyAttestationIssuanceRequest.JwkSet -> {
                         request.jwkSet.keys.toNonEmptyListOrNull()
                     }
                 }
 
-            ensureNotNull(platformAttestedKeys) { WalletUnitAttestationIssuanceFailure.NoPlatformAttestedKeys }
+            ensureNotNull(platformAttestedKeys) { KeyAttestationIssuanceFailure.NoPlatformAttestedKeys }
             ensure(platformAttestedKeys.distinct().size == platformAttestedKeys.size) {
-                WalletUnitAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
+                KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
             }
 
             val validity =
                 request.preferredTtl?.let {
                     ensure(it in validity.value) {
-                        WalletUnitAttestationIssuanceFailure.InvalidPreferredTtl(
+                        KeyAttestationIssuanceFailure.InvalidPreferredTtl(
                             requested = it,
                             minimumAllowed = validity.value.start,
                             maximumAllowed = validity.value.endInclusive,
@@ -248,14 +244,14 @@ class IssueWalletUnitAttestationLive(
                 run {
                     val statusListToken =
                         generateStatusListToken(expiresAt)
-                            .mapLeft { error -> WalletUnitAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
+                            .mapLeft { error -> KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
                             .bind()
                     val status = Status(statusListToken)
                     KeyStorageStatus(status, expiresAt)
                 }
 
-            val walletUnitAttestation =
-                WalletUnitAttestationClaims(
+            val keyAttestation =
+                KeyAttestationClaims(
                     issuedAt = issuedAt,
                     expiresAt = expiresAt,
                     platformAttestedKeys,
@@ -266,6 +262,6 @@ class IssueWalletUnitAttestationLive(
                     keyStorageStatus = keyStorageStatus,
                 )
 
-            signJwt(walletUnitAttestation)
+            signJwt(keyAttestation)
         }
 }

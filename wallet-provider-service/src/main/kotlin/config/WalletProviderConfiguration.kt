@@ -45,7 +45,7 @@ data class WalletProviderConfiguration(
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
     val walletInstanceAttestation: WalletInstanceAttestationConfiguration,
-    val walletUnitAttestation: WalletUnitAttestationConfiguration,
+    val keyAttestation: KeyAttestationConfiguration,
     val tokenStatusListService: TokenStatusListServiceConfiguration,
     val swaggerUi: SwaggerUiConfiguration = SwaggerUiConfiguration(),
 )
@@ -219,13 +219,13 @@ data class WalletInstanceAttestationConfiguration(
     val clientStatusValidity: PositiveDuration = PositiveDuration(90.days),
 )
 
-data class WalletUnitAttestationConfiguration(
+data class KeyAttestationConfiguration(
     val validity: ValidityConfiguration = ValidityConfiguration(),
     val certification: StringUrl,
 ) {
     data class ValidityConfiguration(
-        val minimum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY,
-        val maximum: Duration = ARF.MIN_WALLET_UNIT_ATTESTATION_VALIDITY * 2,
+        val minimum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY,
+        val maximum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY * 2,
     ) {
         val closedRange: ClosedRange<Duration> = minimum..maximum
     }
