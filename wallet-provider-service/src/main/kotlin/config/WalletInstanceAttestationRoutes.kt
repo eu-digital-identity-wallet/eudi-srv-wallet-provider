@@ -76,17 +76,19 @@ fun Application.configureWalletInstanceAttestationRoutes(issueWalletInstanceAtte
 }
 
 private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
+    val validationFailureMessagePrefix = "WalletInstanceAttestationIssuanceRequest validation failed, "
+
     val (error, cause) =
         when (failure) {
             is WalletInstanceAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
-                "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                validationFailureMessagePrefix +
                     "Unsupported signing algorithms. Supported: ${failure.supportedSigningAlgorithm.identifier}, " +
                     "requested: ${failure.requestedSigningAlgorithms.joinToString { it.identifier } }" to
                     null
             }
 
             is WalletInstanceAttestationIssuanceFailure.InvalidChallenge -> {
-                "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                validationFailureMessagePrefix +
                     "Challenge is not valid: ${failure.error}" to
                     failure.cause
             }
@@ -94,13 +96,13 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
             is WalletInstanceAttestationIssuanceFailure.InvalidKeyAttestation -> {
                 when (val keyAttestationFailure = failure.error) {
                     is KeyAttestationValidationFailure.InvalidKeyAttestation -> {
-                        "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                        validationFailureMessagePrefix +
                             "Key Attestation is not valid: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
                     }
 
                     is KeyAttestationValidationFailure.UnsupportedAttestedKey -> {
-                        "WalletInstanceAttestationIssuanceRequest validation failed, " +
+                        validationFailureMessagePrefix +
                             "Key Attestation contains an unsupported PublicKey: ${keyAttestationFailure.error}" to
                             keyAttestationFailure.cause
                     }
