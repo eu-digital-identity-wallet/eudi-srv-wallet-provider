@@ -220,17 +220,10 @@ data class WalletInstanceAttestationConfiguration(
 )
 
 data class KeyAttestationConfiguration(
-    val validity: ValidityConfiguration = ValidityConfiguration(),
-    val keyStorageStatusValidity: PositiveDuration,
+    val validity: PositiveDuration = PositiveDuration(ARF.MIN_KEY_ATTESTATION_VALIDITY),
     val certification: StringUrl,
-) {
-    data class ValidityConfiguration(
-        val minimum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY,
-        val maximum: Duration = ARF.MIN_KEY_ATTESTATION_VALIDITY * 2,
-    ) {
-        val closedRange: ClosedRange<Duration> = minimum..maximum
-    }
-}
+    val keyStorageStatusValidity: PositiveDuration = PositiveDuration(90.days),
+)
 
 data class TokenStatusListServiceConfiguration(
     val serviceUrl: StringUrl,

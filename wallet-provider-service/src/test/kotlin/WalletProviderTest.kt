@@ -26,7 +26,6 @@ import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
 import eu.europa.ec.eudi.walletprovider.domain.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
-import eu.europa.ec.eudi.walletprovider.domain.PositiveDuration
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
@@ -54,7 +53,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.fail
-import kotlin.time.Duration.Companion.days
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val database by lazy {
@@ -114,7 +112,6 @@ private class WalletProviderExtension :
             keyAttestation =
                 KeyAttestationConfiguration(
                     certification = StringUri.create("https://example.org/certification").toURL(),
-                    keyStorageStatusValidity = PositiveDuration(1.days),
                 ),
             tokenStatusListService =
                 TokenStatusListServiceConfiguration(

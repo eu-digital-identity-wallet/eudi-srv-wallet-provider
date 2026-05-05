@@ -135,7 +135,7 @@ fun Application.configureWalletProviderModule(
             clock = clock,
             validateChallenge = validateChallenge,
             validatePlatformKeyAttestation = validatePlatformKeyAttestation,
-            validity = KeyAttestationValidity(config.keyAttestation.validity.closedRange),
+            validity = KeyAttestationValidity(config.keyAttestation.validity.value),
             generateStatusListToken = generateStatusListToken,
             certification = config.keyAttestation.certification,
             signJwt =
@@ -145,7 +145,7 @@ fun Application.configureWalletProviderModule(
                     JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
                     json,
                 ),
-            preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity.value,
+            preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity,
         )
 
     configureChallengeRoutes(generateChallenge)

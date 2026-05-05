@@ -554,11 +554,15 @@
             },
             "minItems": 1
           },
-          "preferred_ttl": {
-            "$ref": "#/components/schemas/SecondsDuration"
-          },
           "preferredKeyStorageStatusPeriod": {
-            "$ref": "#/components/schemas/SecondsDuration"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
+              }
+            ]
           }
         },
         "required": [
@@ -633,11 +637,15 @@
             },
             "minItems": 1
           },
-          "preferred_ttl": {
-            "$ref": "#/components/schemas/SecondsDuration"
-          },
           "preferredKeyStorageStatusPeriod": {
-            "$ref": "#/components/schemas/SecondsDuration"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
+              }
+            ]
           }
         },
         "required": [
@@ -679,11 +687,15 @@
             },
             "minItems": 1
           },
-          "preferred_ttl": {
-            "$ref": "#/components/schemas/SecondsDuration"
-          },
           "preferredKeyStorageStatusPeriod": {
-            "$ref": "#/components/schemas/SecondsDuration"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SecondsDuration"
+              },
+              {
+                "description": "A PID or Attestation Provider's preference for the remaining status maintenance period"
+              }
+            ]
           }
         },
         "required": [
