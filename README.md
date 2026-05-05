@@ -424,18 +424,18 @@ Default value: `90 days`
 
 ### Key Attestation Configuration
 
-Variable: `KEYATTESTATION_VALIDITY_MINIMUM`  
-Description: Minimum duration a Key Attestations is valid for.    
+Variable: `KEYATTESTATION_VALIDITY`  
+Description: Duration a Key Attestations is valid for.    
 Default value: `31 days`  
 Minimum value: `31 days`  
 
-Variable: `KEYATTESTATION_VALIDITY_MAXIMUM`  
-Description: Maximum duration a Key Attestations is valid for.    
-Default value: `62 days`  
-
 Variable: `KEYATTESTATION_CERTIFICATION`  
 Description: URL that links to the certification of the key storage component.  
-Default value: N/A
+Default value: N/A  
+
+Variable: `KEYATTESTATION_KEYSTORAGESTATUSVALIDITY`  
+Description: Duration a Key Storage Status is valid for.  
+Default value: `90 days`  
 
 ### Token Status List Service Configuration
 

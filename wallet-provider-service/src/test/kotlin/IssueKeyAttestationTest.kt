@@ -19,9 +19,12 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
+import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
+import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestationClaims
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.Nonce
+import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceRequest.JwkSet
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -33,6 +36,8 @@ import kotlinx.coroutines.test.TestResult
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.uuid.Uuid
 
 class IssueKeyAttestationTest : WalletProviderTest() {
@@ -47,10 +52,58 @@ class IssueKeyAttestationTest : WalletProviderTest() {
             assertEquals(nonce, it.payload.nonce)
         }
     }
+
+    @Test
+    fun `key attestation uses configured key storage status validity when no preference is provided`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) = httpClient.runKeyAttestationTestCase {
+        val now = clock.now()
+        val keyStorageStatusValidity: Duration = it.payload.keyStorageStatus.exp - now
+
+        assertTrue(keyStorageStatusValidity <= config.keyAttestation.keyStorageStatusValidity.value)
+    }
+
+    @Test
+    fun `key attestation uses configured key storage status validity when preference is less than configured`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) {
+        val preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity.value - 5.days
+        check(preferredKeyStorageStatusPeriod.isPositive()) { "preferredKeyStorageStatusPeriod can't be negative" }
+
+        httpClient.runKeyAttestationTestCase(preferredKeyStorageStatusPeriod = preferredKeyStorageStatusPeriod) {
+            val now = clock.now()
+            val keyStorageStatusValidity: Duration = it.payload.keyStorageStatus.exp - now
+
+            assertTrue(keyStorageStatusValidity > preferredKeyStorageStatusPeriod)
+            assertTrue(keyStorageStatusValidity <= config.keyAttestation.keyStorageStatusValidity.value)
+        }
+    }
+
+    @Test
+    fun `key attestation uses preferred key storage status validity when preference is more than configured`(
+        httpClient: HttpClient,
+        clock: Clock,
+        config: WalletProviderConfiguration,
+    ) {
+        val preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity.value + 5.days
+
+        httpClient.runKeyAttestationTestCase(preferredKeyStorageStatusPeriod = preferredKeyStorageStatusPeriod) {
+            val now = clock.now()
+            val keyStorageStatusValidity: Duration = it.payload.keyStorageStatus.exp - now
+
+            assertTrue(keyStorageStatusValidity <= preferredKeyStorageStatusPeriod)
+            assertTrue(keyStorageStatusValidity > config.keyAttestation.keyStorageStatusValidity.value)
+        }
+    }
 }
 
 private fun HttpClient.runKeyAttestationTestCase(
     nonce: Nonce? = null,
+    preferredKeyStorageStatusPeriod: SecondsDuration? = null,
     assertions: suspend (KeyAttestation) -> Unit,
 ): TestResult =
     runTestWithRealTime {
@@ -68,6 +121,7 @@ private fun HttpClient.runKeyAttestationTestCase(
                                 }.getOrThrow().publicKey.toJsonWebKey(),
                             ),
                     ),
+                preferredKeyStorageStatusPeriod = preferredKeyStorageStatusPeriod,
             )
 
         val response =

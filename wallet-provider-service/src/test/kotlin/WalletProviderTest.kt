@@ -69,6 +69,8 @@ private val MySQLContainer.r2dbcUrl: String
 
 private val log = LoggerFactory.getLogger(WalletProviderExtension::class.java)
 
+private val clock = Clock.System
+
 private class WalletProviderExtension :
     BeforeAllCallback,
     BeforeEachCallback,
@@ -117,8 +119,6 @@ private class WalletProviderExtension :
                     apiKey = Secret("API-KEY"),
                 ),
         )
-
-    private val clock = Clock.System
 
     private val testApplication: TestApplication =
         runBlocking {

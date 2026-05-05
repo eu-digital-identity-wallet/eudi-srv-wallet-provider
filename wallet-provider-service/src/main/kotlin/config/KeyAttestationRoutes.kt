@@ -87,14 +87,6 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
             )
         }
 
-        is KeyAttestationIssuanceFailure.InvalidPreferredTtl -> {
-            warn(
-                "KeyAttestationIssuanceRequest validation failed, " +
-                    "preferred ttl is not valid. Requested: ${failure.requested}, " +
-                    "minimum allowed: ${failure.minimumAllowed}, maximum allowed: ${failure.maximumAllowed}",
-            )
-        }
-
         is KeyAttestationIssuanceFailure.InvalidChallenge -> {
             warn(
                 "KeyAttestationIssuanceRequest validation failed, Challenge is not valid: ${failure.error}",
@@ -154,9 +146,6 @@ private enum class KeyAttestationError {
     @SerialName("unsupported_signing_algorithms")
     UnsupportedSigningAlgorithms,
 
-    @SerialName("invalid_preferred_ttl")
-    InvalidPreferredTtl,
-
     @SerialName("invalid_challenge")
     InvalidChallenge,
 
@@ -185,10 +174,6 @@ private fun KeyAttestationIssuanceFailure.toKeyAttestationErrorResponse(): KeyAt
     when (this) {
         is KeyAttestationIssuanceFailure.UnsupportedSigningAlgorithms -> {
             nonEmptyListOf(KeyAttestationError.UnsupportedSigningAlgorithms)
-        }
-
-        is KeyAttestationIssuanceFailure.InvalidPreferredTtl -> {
-            nonEmptyListOf(KeyAttestationError.InvalidPreferredTtl)
         }
 
         is KeyAttestationIssuanceFailure.InvalidChallenge -> {

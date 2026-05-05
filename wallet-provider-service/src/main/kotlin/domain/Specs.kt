@@ -43,8 +43,6 @@ object RFC7800 {
 object ARF {
     val MIN_KEY_ATTESTATION_VALIDITY: Duration = 31.days
     val MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY: Duration = 24.hours
-
-    const val PREFERRED_TTL: String = "preferred_ttl"
 }
 
 object TokenStatusListSpec {
