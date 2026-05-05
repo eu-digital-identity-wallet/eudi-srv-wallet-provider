@@ -25,6 +25,7 @@ import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletL
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.Length
+import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationValidity
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationValidity
 import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Path
@@ -220,7 +221,7 @@ data class WalletInstanceAttestationConfiguration(
 )
 
 data class KeyAttestationConfiguration(
-    val validity: PositiveDuration = PositiveDuration(ARF.MIN_KEY_ATTESTATION_VALIDITY),
+    val validity: KeyAttestationValidity = KeyAttestationValidity.Default,
     val certification: StringUrl,
     val keyStorageStatusValidity: PositiveDuration = PositiveDuration(90.days),
 )

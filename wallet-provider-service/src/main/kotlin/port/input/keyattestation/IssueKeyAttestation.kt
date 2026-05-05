@@ -168,6 +168,10 @@ value class KeyAttestationValidity(
         }
     }
 
+    companion object {
+        val Default: KeyAttestationValidity = KeyAttestationValidity(ARF.MIN_KEY_ATTESTATION_VALIDITY)
+    }
+
     override fun toString(): String = value.toString()
 }
 
