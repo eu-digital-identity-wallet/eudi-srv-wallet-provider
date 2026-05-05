@@ -132,20 +132,19 @@ fun Application.configureWalletProviderModule(
 
     val issueKeyAttestation =
         IssueKeyAttestationLive(
-            clock = clock,
-            validateChallenge = validateChallenge,
-            validatePlatformKeyAttestation = validatePlatformKeyAttestation,
-            validity = KeyAttestationValidity(config.keyAttestation.validity.value),
-            generateStatusListToken = generateStatusListToken,
-            certification = config.keyAttestation.certification,
-            signJwt =
-                SignumSignJwt(
-                    signer,
-                    certificateChain,
-                    JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
-                    json,
-                ),
-            preferredKeyStorageStatusPeriod = config.keyAttestation.keyStorageStatusValidity,
+            clock,
+            validateChallenge,
+            validatePlatformKeyAttestation,
+            config.keyAttestation.validity,
+            generateStatusListToken,
+            config.keyAttestation.certification,
+            SignumSignJwt(
+                signer,
+                certificateChain,
+                JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
+                json,
+            ),
+            config.keyAttestation.keyStorageStatusValidity,
         )
 
     configureChallengeRoutes(generateChallenge)
