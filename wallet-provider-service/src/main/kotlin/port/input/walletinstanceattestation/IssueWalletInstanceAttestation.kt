@@ -29,6 +29,7 @@ import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
+import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.ClientStatus
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure

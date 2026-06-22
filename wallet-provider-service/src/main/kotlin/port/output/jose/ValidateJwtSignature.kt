@@ -16,11 +16,12 @@
 package eu.europa.ec.eudi.walletprovider.port.output.jose
 
 import arrow.core.Either
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 
 fun interface ValidateJwtSignature<T : Any> {
-    suspend operator fun invoke(unvalidated: String): Either<JwtSignatureValidationFailure, JwsSigned<T>>
+    suspend operator fun invoke(unvalidated: String): Either<JwtSignatureValidationFailure, JwsCompactTyped<T>>
 }
 
 sealed interface JwtSignatureValidationFailure {

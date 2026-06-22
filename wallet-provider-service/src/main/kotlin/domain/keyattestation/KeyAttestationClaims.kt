@@ -18,7 +18,7 @@ package eu.europa.ec.eudi.walletprovider.domain.keyattestation
 import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.josef.JsonWebKey
-import at.asitplus.signum.indispensable.josef.JwsSigned
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import kotlinx.serialization.Required
@@ -75,4 +75,4 @@ value class AttackPotentialResistance(
 
 typealias Nonce = String
 
-typealias KeyAttestation = JwsSigned<KeyAttestationClaims>
+typealias KeyAttestation = JwsCompactTyped<KeyAttestationClaims>

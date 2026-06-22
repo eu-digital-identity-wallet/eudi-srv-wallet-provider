@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider
 
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JsonWebKeySet
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
@@ -134,11 +135,6 @@ private fun HttpClient.runKeyAttestationTestCase(
             }.body<JsonObject>()
 
         val serializedKeyAttestation = assertIs<JsonPrimitive>(response["keyAttestation"]).content
-        val keyAttestation =
-            KeyAttestation
-                .deserialize(
-                    KeyAttestationClaims.serializer(),
-                    serializedKeyAttestation,
-                ).getOrThrow()
+        val keyAttestation = JwsCompactTyped<KeyAttestationClaims>(serializedKeyAttestation)
         assertions(keyAttestation)
     }

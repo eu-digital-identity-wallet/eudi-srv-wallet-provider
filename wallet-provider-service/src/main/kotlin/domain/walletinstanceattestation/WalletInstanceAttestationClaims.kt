@@ -16,7 +16,7 @@
 package eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation
 
 import at.asitplus.signum.indispensable.josef.ConfirmationClaim
-import at.asitplus.signum.indispensable.josef.JwsSigned
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import kotlinx.serialization.Required
@@ -59,4 +59,4 @@ typealias WalletVersion = NonBlankString
  */
 typealias WalletMetadata = JsonElement
 
-typealias WalletInstanceAttestation = JwsSigned<WalletInstanceAttestationClaims>
+typealias WalletInstanceAttestation = JwsCompactTyped<WalletInstanceAttestationClaims>

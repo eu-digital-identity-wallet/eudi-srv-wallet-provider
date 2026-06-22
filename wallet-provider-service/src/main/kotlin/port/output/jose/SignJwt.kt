@@ -16,10 +16,11 @@
 package eu.europa.ec.eudi.walletprovider.port.output.jose
 
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.JwsSigned
 
 interface SignJwt<T : Any> {
     val signingAlgorithm: JwsAlgorithm
 
-    suspend operator fun invoke(claims: T): JwsSigned<T>
+    suspend operator fun invoke(claims: T): JwsCompactTyped<T>
 }

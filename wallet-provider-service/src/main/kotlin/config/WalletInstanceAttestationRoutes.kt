@@ -137,7 +137,7 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
 private data class WalletInstanceAttestationResponse(
     @Required val walletInstanceAttestation: String,
 ) {
-    constructor(walletInstanceAttestation: WalletInstanceAttestation) : this(walletInstanceAttestation.serialize())
+    constructor(walletInstanceAttestation: WalletInstanceAttestation) : this(walletInstanceAttestation.toString())
 }
 
 private fun WalletInstanceAttestation.toWalletInstanceAttestationResponse(): WalletInstanceAttestationResponse =

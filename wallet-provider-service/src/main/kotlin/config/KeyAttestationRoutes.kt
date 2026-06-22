@@ -136,7 +136,7 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
 private data class KeyAttestationResponse(
     @Required val keyAttestation: String,
 ) {
-    constructor(keyAttestation: KeyAttestation) : this(keyAttestation.serialize())
+    constructor(keyAttestation: KeyAttestation) : this(keyAttestation.toString())
 }
 
 private fun KeyAttestation.toKeyAttestationResponse(): KeyAttestationResponse = KeyAttestationResponse(this)
