@@ -15,12 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.input.keyattestation
 
-import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.nonEmptyListOf
-import arrow.core.raise.either
-import arrow.core.raise.ensure
-import arrow.core.raise.ensureNotNull
+import arrow.core.raise.context.*
 import arrow.core.serialization.NonEmptyListSerializer
 import arrow.core.toNonEmptyListOrNull
 import arrow.fx.coroutines.parMapOrAccumulate
@@ -41,14 +38,14 @@ import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.Platf
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 
 fun interface IssueKeyAttestation {
-    suspend operator fun invoke(request: KeyAttestationIssuanceRequest): Either<KeyAttestationIssuanceFailure, KeyAttestation>
+    context(_: Raise<KeyAttestationIssuanceFailure>)
+    suspend operator fun invoke(request: KeyAttestationIssuanceRequest): KeyAttestation
 }
 
 sealed interface KeyAttestationIssuanceRequest {
@@ -150,10 +147,6 @@ sealed interface KeyAttestationIssuanceFailure {
     data object NoPlatformAttestedKeys : KeyAttestationIssuanceFailure
 
     data object NonUniquePlatformAttestedKeys : KeyAttestationIssuanceFailure
-
-    class KeyStorageStatusGenerationFailure(
-        val error: StatusListTokenAllocationFailure,
-    ) : KeyAttestationIssuanceFailure
 }
 
 @JvmInline
@@ -186,70 +179,67 @@ class IssueKeyAttestationLive(
     private val signJwt: SignJwt<KeyAttestationClaims>,
     private val preferredKeyStorageStatusPeriod: PositiveDuration,
 ) : IssueKeyAttestation {
-    override suspend fun invoke(request: KeyAttestationIssuanceRequest): Either<KeyAttestationIssuanceFailure, KeyAttestation> =
-        either {
-            val supportedSigningAlgorithm = signJwt.signingAlgorithm
-            val requestedSigningAlgorithms = request.supportedSigningAlgorithms
-            if (null != requestedSigningAlgorithms) {
-                ensure(supportedSigningAlgorithm in requestedSigningAlgorithms) {
-                    KeyAttestationIssuanceFailure.UnsupportedSigningAlgorithms(supportedSigningAlgorithm, requestedSigningAlgorithms)
-                }
+    context(_: Raise<KeyAttestationIssuanceFailure>)
+    override suspend fun invoke(request: KeyAttestationIssuanceRequest): KeyAttestation {
+        val supportedSigningAlgorithm = signJwt.signingAlgorithm
+        val requestedSigningAlgorithms = request.supportedSigningAlgorithms
+        if (null != requestedSigningAlgorithms) {
+            ensure(supportedSigningAlgorithm in requestedSigningAlgorithms) {
+                KeyAttestationIssuanceFailure.UnsupportedSigningAlgorithms(supportedSigningAlgorithm, requestedSigningAlgorithms)
             }
+        }
 
-            val platformAttestedKeys =
-                when (request) {
-                    is KeyAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+        val platformAttestedKeys =
+            when (request) {
+                is KeyAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+                    withError({ KeyAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }) {
                         validateChallenge(request.challenge, clock.now())
-                            .mapLeft { KeyAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
-                            .bind()
+                    }
 
+                    withError({ errors -> KeyAttestationIssuanceFailure.InvalidPlatformKeyAttestations(errors) }) {
                         request.platformKeyAttestations
-                            .parMapOrAccumulate(Dispatchers.Default, 4) { validatePlatformKeyAttestation(it, request.challenge).bind() }
-                            .mapLeft { errors -> KeyAttestationIssuanceFailure.InvalidPlatformKeyAttestations(errors) }
+                            .parMapOrAccumulate(Dispatchers.Default, 4) { validatePlatformKeyAttestation(it, request.challenge) }
                             .bind()
                             .map { it.publicKey.toJsonWebKey() }
                             .toNonEmptyListOrNull()
                     }
-
-                    is KeyAttestationIssuanceRequest.JwkSet -> {
-                        request.jwkSet.keys.toNonEmptyListOrNull()
-                    }
                 }
 
-            ensureNotNull(platformAttestedKeys) { KeyAttestationIssuanceFailure.NoPlatformAttestedKeys }
-            ensure(platformAttestedKeys.distinct().size == platformAttestedKeys.size) {
-                KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
+                is KeyAttestationIssuanceRequest.JwkSet -> {
+                    request.jwkSet.keys.toNonEmptyListOrNull()
+                }
             }
 
-            val issuedAt = clock.now()
-            val expiresAt = issuedAt + validity.value
-            val keyStorageStatus =
-                run {
-                    val keyStatusPeriod =
-                        maxOf(request.preferredKeyStorageStatusPeriod ?: Duration.ZERO, preferredKeyStorageStatusPeriod.value)
-                    val keyStorageExpiresAt = issuedAt + keyStatusPeriod
-
-                    val statusListToken =
-                        allocateStatusListToken(StatusList.KeyAttestation, keyStorageExpiresAt)
-                            .mapLeft { error -> KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
-                            .bind()
-                    val status = Status(statusListToken)
-
-                    KeyStorageStatus(status, keyStorageExpiresAt)
-                }
-
-            val keyAttestation =
-                KeyAttestationClaims(
-                    issuedAt = issuedAt,
-                    expiresAt = expiresAt,
-                    platformAttestedKeys,
-                    keyStorage = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
-                    userAuthentication = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
-                    certification,
-                    request.nonce,
-                    keyStorageStatus = keyStorageStatus,
-                )
-
-            signJwt(keyAttestation)
+        ensureNotNull(platformAttestedKeys) { KeyAttestationIssuanceFailure.NoPlatformAttestedKeys }
+        ensure(platformAttestedKeys.distinct().size == platformAttestedKeys.size) {
+            KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
         }
+
+        val issuedAt = clock.now()
+        val expiresAt = issuedAt + validity.value
+        val keyStorageStatus =
+            run {
+                val keyStatusPeriod = maxOf(request.preferredKeyStorageStatusPeriod ?: Duration.ZERO, preferredKeyStorageStatusPeriod.value)
+                val keyStorageExpiresAt = issuedAt + keyStatusPeriod
+
+                val statusListToken = allocateStatusListToken(StatusList.KeyAttestation, keyStorageExpiresAt)
+                val status = Status(statusListToken)
+
+                KeyStorageStatus(status, keyStorageExpiresAt)
+            }
+
+        val keyAttestation =
+            KeyAttestationClaims(
+                issuedAt = issuedAt,
+                expiresAt = expiresAt,
+                platformAttestedKeys,
+                keyStorage = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
+                userAuthentication = nonEmptyListOf(AttackPotentialResistance.Iso18045High),
+                certification,
+                request.nonce,
+                keyStorageStatus = keyStorageStatus,
+            )
+
+        return signJwt(keyAttestation)
+    }
 }

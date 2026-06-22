@@ -16,7 +16,7 @@
 package eu.europa.ec.eudi.walletprovider.adapter.jose
 
 import arrow.core.raise.catch
-import arrow.core.raise.either
+import arrow.core.raise.context.raise
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.sign.Verifier
@@ -28,32 +28,30 @@ import eu.europa.ec.eudi.walletprovider.port.output.jose.ValidateJwtSignature
 
 inline fun <reified T : Any> ValidateJwtSignature(verifier: Verifier): ValidateJwtSignature<T> =
     ValidateJwtSignature { unvalidated ->
-        either {
-            val parsed =
-                catch({
-                    JwsCompactTyped<T>(unvalidated)
-                }) {
-                    raise(
-                        JwtSignatureValidationFailure.UnparsableJwt(
-                            "Jwt cannot be parsed".toNonBlankString(),
-                            it,
-                        ),
-                    )
-                }
+        val parsed =
+            catch({
+                JwsCompactTyped<T>(unvalidated)
+            }) {
+                raise(
+                    JwtSignatureValidationFailure.UnparsableJwt(
+                        "Jwt cannot be parsed".toNonBlankString(),
+                        it,
+                    ),
+                )
+            }
 
-            verifier
-                .verify(parsed.jws.signatureInput, parsed.jws.signature)
-                .getOrElse {
-                    raise(
-                        JwtSignatureValidationFailure.InvalidSignature(
-                            "Jwt signature is invalid".toNonBlankString(),
-                            it,
-                        ),
-                    )
-                }
+        verifier
+            .verify(parsed.jws.signatureInput, parsed.jws.signature)
+            .getOrElse {
+                raise(
+                    JwtSignatureValidationFailure.InvalidSignature(
+                        "Jwt signature is invalid".toNonBlankString(),
+                        it,
+                    ),
+                )
+            }
 
-            parsed
-        }
+        parsed
     }
 
 inline fun <reified T : Any> ValidateJwtSignature(singer: Signer): ValidateJwtSignature<T> =

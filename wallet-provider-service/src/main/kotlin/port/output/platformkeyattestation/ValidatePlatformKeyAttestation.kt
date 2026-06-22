@@ -15,17 +15,18 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation
 
-import arrow.core.Either
+import arrow.core.raise.context.Raise
 import at.asitplus.attestation.AttestationException
 import at.asitplus.signum.indispensable.Attestation
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation.PlatformAttestedKey
 
 fun interface ValidatePlatformKeyAttestation {
+    context(_: Raise<PlatformKeyAttestationValidationFailure>)
     suspend operator fun invoke(
         unvalidatedKeyAttestation: Attestation,
         challenge: ByteArray,
-    ): Either<PlatformKeyAttestationValidationFailure, PlatformAttestedKey>
+    ): PlatformAttestedKey
 }
 
 sealed interface PlatformKeyAttestationValidationFailure {

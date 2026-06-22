@@ -15,13 +15,13 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.output.jose
 
-import arrow.core.Either
+import arrow.core.raise.context.Raise
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
-import at.asitplus.signum.indispensable.josef.JwsSigned
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 
 fun interface ValidateJwtSignature<T : Any> {
-    suspend operator fun invoke(unvalidated: String): Either<JwtSignatureValidationFailure, JwsCompactTyped<T>>
+    context(_: Raise<JwtSignatureValidationFailure>)
+    suspend operator fun invoke(unvalidated: String): JwsCompactTyped<T>
 }
 
 sealed interface JwtSignatureValidationFailure {

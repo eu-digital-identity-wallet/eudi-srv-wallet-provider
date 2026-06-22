@@ -49,11 +49,7 @@ import org.slf4j.LoggerFactory
 import org.testcontainers.mysql.MySQLContainer
 import java.net.URI
 import java.nio.file.Path
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-import kotlin.test.fail
+import kotlin.test.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val database by lazy {

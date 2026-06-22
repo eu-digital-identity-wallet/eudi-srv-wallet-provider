@@ -22,8 +22,6 @@ import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerialize
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import java.net.URI
 import java.net.URL
 import kotlin.time.Duration

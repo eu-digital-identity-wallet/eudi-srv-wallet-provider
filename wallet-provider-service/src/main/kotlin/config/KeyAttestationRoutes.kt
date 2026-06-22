@@ -17,13 +17,14 @@ package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.NonEmptyList
 import arrow.core.nonEmptyListOf
+import arrow.core.raise.effect
+import arrow.core.raise.getOrElse
 import arrow.core.serialization.NonEmptyListSerializer
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -45,17 +46,14 @@ fun Application.configureKeyAttestationRoutes(issueKeyAttestation: IssueKeyAttes
                 val request = call.receive(requestType)
                 logger.info("Received KeyAttestationIssuanceRequest: {}", request)
 
-                issueKeyAttestation(request)
-                    .fold(
-                        ifRight = { keyAttestation ->
-                            logger.info("Successfully issued KeyAttestation: {}", keyAttestation)
-                            call.respond(HttpStatusCode.OK, keyAttestation.toKeyAttestationResponse())
-                        },
-                        ifLeft = { failure ->
-                            logger.warn(failure)
-                            call.respond(HttpStatusCode.BadRequest, failure.toKeyAttestationErrorResponse())
-                        },
-                    )
+                effect {
+                    val keyAttestation = issueKeyAttestation(request)
+                    logger.info("Successfully issued KeyAttestation: {}", keyAttestation)
+                    call.respond(HttpStatusCode.OK, keyAttestation.toKeyAttestationResponse())
+                }.getOrElse { failure ->
+                    logger.warn(failure)
+                    call.respond(HttpStatusCode.BadRequest, failure.toKeyAttestationErrorResponse())
+                }
             }
 
             route("/platform-key-attestation/android") {
@@ -121,14 +119,6 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             warn("KeyAttestationIssuanceRequest validation failed, contains non-unique Platform Attested Keys")
         }
-
-        is KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure -> {
-            when (failure.error) {
-                is StatusListTokenAllocationFailure.Unexpected -> {
-                    warn("KeyAttestationIssuance failed, unable to generate Key Storage Status", failure.error.cause)
-                }
-            }
-        }
     }
 }
 
@@ -160,9 +150,6 @@ private enum class KeyAttestationError {
 
     @SerialName("non_unique_platform_attested_keys")
     NonUniquePlatformAttestedKeys,
-
-    @SerialName("key_storage_status_generation_failure")
-    KeyStorageStatusGenerationFailure,
 }
 
 @Serializable
@@ -201,9 +188,5 @@ private fun KeyAttestationIssuanceFailure.toKeyAttestationErrorResponse(): KeyAt
 
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             nonEmptyListOf(KeyAttestationError.NonUniquePlatformAttestedKeys)
-        }
-
-        is KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure -> {
-            nonEmptyListOf(KeyAttestationError.KeyStorageStatusGenerationFailure)
         }
     }.let { KeyAttestationErrorResponse(it) }

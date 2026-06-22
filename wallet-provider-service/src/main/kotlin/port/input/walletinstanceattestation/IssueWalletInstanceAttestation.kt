@@ -15,10 +15,10 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation
 
-import arrow.core.Either
 import arrow.core.NonEmptyList
-import arrow.core.raise.either
-import arrow.core.raise.ensure
+import arrow.core.raise.context.Raise
+import arrow.core.raise.context.ensure
+import arrow.core.raise.context.withError
 import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
@@ -36,16 +36,14 @@ import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.Platf
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 fun interface IssueWalletInstanceAttestation {
-    suspend operator fun invoke(
-        request: WalletInstanceAttestationIssuanceRequest,
-    ): Either<WalletInstanceAttestationIssuanceFailure, WalletInstanceAttestation>
+    context(_: Raise<WalletInstanceAttestationIssuanceFailure>)
+    suspend operator fun invoke(request: WalletInstanceAttestationIssuanceRequest): WalletInstanceAttestation
 }
 
 sealed interface WalletInstanceAttestationIssuanceRequest {
@@ -145,10 +143,6 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
     data class UnsupportedPlatformAttestedKeyCurve(
         val curve: ECCurve,
     ) : WalletInstanceAttestationIssuanceFailure
-
-    class ClientStatusGenerationFailure(
-        val error: StatusListTokenAllocationFailure,
-    ) : WalletInstanceAttestationIssuanceFailure
 }
 
 @JvmInline
@@ -184,80 +178,75 @@ class IssueWalletInstanceAttestationLive(
     private val allocateStatusListToken: AllocateStatusListToken,
     private val signJwt: SignJwt<WalletInstanceAttestationClaims>,
 ) : IssueWalletInstanceAttestation {
-    override suspend fun invoke(
-        request: WalletInstanceAttestationIssuanceRequest,
-    ): Either<WalletInstanceAttestationIssuanceFailure, WalletInstanceAttestation> =
-        either {
-            val supportedSigningAlgorithm = signJwt.signingAlgorithm
-            val requestedSigningAlgorithms = request.supportedSigningAlgorithms
-            if (null != requestedSigningAlgorithms) {
-                ensure(supportedSigningAlgorithm in requestedSigningAlgorithms) {
-                    WalletInstanceAttestationIssuanceFailure.UnsupportedSigningAlgorithms(
-                        supportedSigningAlgorithm,
-                        requestedSigningAlgorithms,
-                    )
-                }
+    context(_: Raise<WalletInstanceAttestationIssuanceFailure>)
+    override suspend fun invoke(request: WalletInstanceAttestationIssuanceRequest): WalletInstanceAttestation {
+        val supportedSigningAlgorithm = signJwt.signingAlgorithm
+        val requestedSigningAlgorithms = request.supportedSigningAlgorithms
+        if (null != requestedSigningAlgorithms) {
+            ensure(supportedSigningAlgorithm in requestedSigningAlgorithms) {
+                WalletInstanceAttestationIssuanceFailure.UnsupportedSigningAlgorithms(
+                    supportedSigningAlgorithm,
+                    requestedSigningAlgorithms,
+                )
             }
+        }
 
-            val platformAttestedKey =
-                when (request) {
-                    is WalletInstanceAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+        val platformAttestedKey =
+            when (request) {
+                is WalletInstanceAttestationIssuanceRequest.PlatformKeyAttestation<*> -> {
+                    withError({ WalletInstanceAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }) {
                         validateChallenge(request.challenge, clock.now())
-                            .mapLeft { WalletInstanceAttestationIssuanceFailure.InvalidChallenge(it.error, it.cause) }
-                            .bind()
+                    }
 
+                    withError({ WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation(it) }) {
                         validatePlatformKeyAttestation(request.platformKeyAttestation, request.challenge)
-                            .mapLeft { WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation(it) }
-                            .bind()
                             .publicKey
                             .toJsonWebKey()
                     }
-
-                    is WalletInstanceAttestationIssuanceRequest.Jwk -> {
-                        request.jwk
-                    }
                 }
 
-            val platformAttestedKeyType = checkNotNull(platformAttestedKey.type) { "Platform Attested Key is missing `kty` claim" }
-            ensure(JwkType.EC == platformAttestedKeyType) {
-                WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType(platformAttestedKeyType)
-            }
-
-            val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
-            ensure(platformAttestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
-                WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
-            }
-
-            val issuedAt = clock.now()
-            val expiresAt = issuedAt + validity.value
-            val clientStatus =
-                run {
-                    val clientStatusPeriod = maxOf(request.preferredClientStatusPeriod ?: Duration.ZERO, clientStatusValidity.value)
-                    val clientStatusExpiresAt = issuedAt + clientStatusPeriod
-                    val statusListToken =
-                        allocateStatusListToken(StatusList.WalletInstanceAttestation, clientStatusExpiresAt)
-                            .mapLeft { WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure(it) }
-                            .bind()
-                    ClientStatus(Status(statusListToken), clientStatusExpiresAt)
+                is WalletInstanceAttestationIssuanceRequest.Jwk -> {
+                    request.jwk
                 }
+            }
 
-            val walletInstanceAttestation =
-                WalletInstanceAttestationClaims(
-                    issuer,
-                    clientId,
-                    expiresAt = expiresAt,
-                    ConfirmationClaim(jsonWebKey = platformAttestedKey),
-                    issuedAt = issuedAt,
-                    notBefore = issuedAt,
-                    walletName = walletName,
-                    walletLink,
-                    null,
-                    walletVersion = walletVersion,
-                    walletSolutionCertificationInformation,
-                    clientStatus,
-                    request.walletMetadata,
-                )
-
-            signJwt(walletInstanceAttestation)
+        val platformAttestedKeyType = checkNotNull(platformAttestedKey.type) { "Platform Attested Key is missing `kty` claim" }
+        ensure(JwkType.EC == platformAttestedKeyType) {
+            WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType(platformAttestedKeyType)
         }
+
+        val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
+        ensure(platformAttestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
+            WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
+        }
+
+        val issuedAt = clock.now()
+        val expiresAt = issuedAt + validity.value
+        val clientStatus =
+            run {
+                val clientStatusPeriod = maxOf(request.preferredClientStatusPeriod ?: Duration.ZERO, clientStatusValidity.value)
+                val clientStatusExpiresAt = issuedAt + clientStatusPeriod
+                val statusListToken = allocateStatusListToken(StatusList.WalletInstanceAttestation, clientStatusExpiresAt)
+                ClientStatus(Status(statusListToken), clientStatusExpiresAt)
+            }
+
+        val walletInstanceAttestation =
+            WalletInstanceAttestationClaims(
+                issuer,
+                clientId,
+                expiresAt = expiresAt,
+                ConfirmationClaim(jsonWebKey = platformAttestedKey),
+                issuedAt = issuedAt,
+                notBefore = issuedAt,
+                walletName = walletName,
+                walletLink,
+                null,
+                walletVersion = walletVersion,
+                walletSolutionCertificationInformation,
+                clientStatus,
+                request.walletMetadata,
+            )
+
+        return signJwt(walletInstanceAttestation)
+    }
 }

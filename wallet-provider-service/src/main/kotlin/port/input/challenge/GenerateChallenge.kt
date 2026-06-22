@@ -22,7 +22,6 @@ import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
 import java.security.SecureRandom
 import kotlin.random.asKotlinRandom
-import kotlin.time.Duration
 
 fun interface GenerateChallenge {
     suspend operator fun invoke(): Challenge

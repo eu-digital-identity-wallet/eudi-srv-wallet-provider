@@ -15,10 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.output.challenge
 
-import arrow.core.Either
-import arrow.core.raise.either
-import arrow.core.raise.ensure
-import arrow.core.raise.ensureNotNull
+import arrow.core.raise.context.Raise
+import arrow.core.raise.context.ensure
+import arrow.core.raise.context.ensureNotNull
 import arrow.core.right
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
@@ -28,10 +27,11 @@ import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
 import kotlin.time.Instant
 
 fun interface ValidateChallenge {
+    context(_: Raise<ChallengeValidationFailure>)
     suspend operator fun invoke(
         value: ByteArray,
         at: Instant,
-    ): Either<ChallengeValidationFailure, Unit>
+    )
 }
 
 class ChallengeValidationFailure(
@@ -43,25 +43,25 @@ class ValidateChallengeLive(
     private val runInTransaction: RunInTransaction,
     private val challengeRepository: ChallengeRepository,
 ) : ValidateChallenge {
+    context(_: Raise<ChallengeValidationFailure>)
     override suspend fun invoke(
         value: ByteArray,
         at: Instant,
-    ): Either<ChallengeValidationFailure, Unit> =
-        either {
-            runInTransaction {
-                val challenge =
-                    ensureNotNull(challengeRepository.findByValueAndLock(value)) {
-                        ChallengeValidationFailure("Challenge is not valid.".toNonBlankString())
-                    }
-                ensure(challenge.unused) {
-                    ChallengeValidationFailure("Challenge has already been used.".toNonBlankString())
+    ) {
+        runInTransaction {
+            val challenge =
+                ensureNotNull(challengeRepository.findByValueAndLock(value)) {
+                    ChallengeValidationFailure("Challenge is not valid.".toNonBlankString())
                 }
-                ensure(challenge.isActive(at)) {
-                    ChallengeValidationFailure("Challenge is not active.".toNonBlankString())
-                }
-                challengeRepository.store(challenge.copy(unused = false))
+            ensure(challenge.unused) {
+                ChallengeValidationFailure("Challenge has already been used.".toNonBlankString())
             }
+            ensure(challenge.isActive(at)) {
+                ChallengeValidationFailure("Challenge is not active.".toNonBlankString())
+            }
+            challengeRepository.store(challenge.copy(unused = false))
         }
+    }
 }
 
 val ValidateChallengeNoop = ValidateChallenge { _, _ -> Unit.right() }
