@@ -17,19 +17,14 @@
 
 package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
-import arrow.core.Either
-import arrow.core.raise.catch
-import arrow.core.raise.either
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
-import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -50,39 +45,31 @@ class TokenStatusListServiceAllocateStatusListToken(
     override suspend fun invoke(
         statusList: StatusList,
         expiresAt: Instant,
-    ): Either<StatusListTokenAllocationFailure, StatusListToken> =
-        either {
-            catch({
-                httpClient
-                    .submitForm(
-                        Parameters.build {
-                            append("country", "FC")
-                            append(
-                                "doctype",
-                                when (statusList) {
-                                    StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE
-                                    StatusList.KeyAttestation -> OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE
-                                },
-                            )
-                            append(
-                                "expiry_date",
-                                with(clock) { expiresAt.toZonedDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE) },
-                            )
+    ): StatusListToken =
+        httpClient
+            .submitForm(
+                Parameters.build {
+                    append("country", "FC")
+                    append(
+                        "doctype",
+                        when (statusList) {
+                            StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE
+                            StatusList.KeyAttestation -> OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE
                         },
-                    ) {
-                        expectSuccess = true
-                        url(serviceUrl)
-                        headers.apply {
-                            append(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                            append(HttpHeaders.Accept, ContentType.Application.Json.toString())
-                            append("X-API-Key", apiKey.value)
-                        }
-                    }.body<Status>()
-                    .statusList
-            }) { error ->
-                raise(
-                    StatusListTokenAllocationFailure.Unexpected("Unable to generate StatusListToken".toNonBlankString(), error),
-                )
-            }
-        }
+                    )
+                    append(
+                        "expiry_date",
+                        with(clock) { expiresAt.toZonedDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE) },
+                    )
+                },
+            ) {
+                expectSuccess = true
+                url(serviceUrl)
+                headers.apply {
+                    append(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                    append(HttpHeaders.Accept, ContentType.Application.Json.toString())
+                    append("X-API-Key", apiKey.value)
+                }
+            }.body<Status>()
+            .statusList
 }

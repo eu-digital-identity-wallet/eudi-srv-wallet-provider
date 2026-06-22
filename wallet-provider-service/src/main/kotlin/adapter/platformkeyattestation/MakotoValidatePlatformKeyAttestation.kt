@@ -15,8 +15,8 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation
 
-import arrow.core.Either
-import arrow.core.raise.either
+import arrow.core.raise.context.Raise
+import arrow.core.raise.context.raise
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.toCryptoPublicKey
@@ -29,38 +29,38 @@ import at.asitplus.attestation.AttestationService as MakotoAttestationService
 class MakotoValidatePlatformKeyAttestation(
     private val makotoAttestationService: MakotoAttestationService,
 ) : ValidatePlatformKeyAttestation {
+    context(_: Raise<PlatformKeyAttestationValidationFailure>)
     override suspend fun invoke(
         unvalidatedKeyAttestation: Attestation,
         challenge: ByteArray,
-    ): Either<PlatformKeyAttestationValidationFailure, PlatformAttestedKey> =
-        either {
-            val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge)
+    ): PlatformAttestedKey {
+        val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge)
 
-            if (!verificationResult.isSuccess) {
-                val errorDetails = verificationResult.details as AttestationResult.Error
-                val error = errorDetails.explanation.toNonBlankString()
-                raise(
-                    PlatformKeyAttestationValidationFailure
-                        .InvalidPlatformKeyAttestation(
-                            error,
-                            errorDetails.cause,
-                        ),
-                )
-            }
-
-            val publicKey = checkNotNull(verificationResult.attestedPublicKey)
-            val cryptoPublicKey =
-                publicKey
-                    .toCryptoPublicKey()
-                    .getOrElse {
-                        raise(
-                            PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey(
-                                "Attested PublicKey is not supported".toNonBlankString(),
-                                it,
-                            ),
-                        )
-                    }
-
-            PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
+        if (!verificationResult.isSuccess) {
+            val errorDetails = verificationResult.details as AttestationResult.Error
+            val error = errorDetails.explanation.toNonBlankString()
+            raise(
+                PlatformKeyAttestationValidationFailure
+                    .InvalidPlatformKeyAttestation(
+                        error,
+                        errorDetails.cause,
+                    ),
+            )
         }
+
+        val publicKey = checkNotNull(verificationResult.attestedPublicKey)
+        val cryptoPublicKey =
+            publicKey
+                .toCryptoPublicKey()
+                .getOrElse {
+                    raise(
+                        PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey(
+                            "Attested PublicKey is not supported".toNonBlankString(),
+                            it,
+                        ),
+                    )
+                }
+
+        return PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
+    }
 }

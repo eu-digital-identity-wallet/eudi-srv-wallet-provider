@@ -15,8 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist
 
-import arrow.core.Either
-import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import kotlin.time.Instant
 
@@ -24,17 +22,10 @@ fun interface AllocateStatusListToken {
     suspend operator fun invoke(
         statusList: StatusList,
         expiresAt: Instant,
-    ): Either<StatusListTokenAllocationFailure, StatusListToken>
+    ): StatusListToken
 }
 
 enum class StatusList {
     WalletInstanceAttestation,
     KeyAttestation,
-}
-
-sealed interface StatusListTokenAllocationFailure {
-    class Unexpected(
-        val error: NonBlankString,
-        val cause: Throwable? = null,
-    ) : StatusListTokenAllocationFailure
 }

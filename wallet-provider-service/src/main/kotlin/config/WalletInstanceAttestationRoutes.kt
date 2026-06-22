@@ -15,12 +15,13 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
+import arrow.core.raise.effect
+import arrow.core.raise.getOrElse
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -44,17 +45,14 @@ fun Application.configureWalletInstanceAttestationRoutes(issueWalletInstanceAtte
                 val request = call.receive(requestType)
                 logger.info("Received WalletInstanceAttestationIssuanceRequest: {}", request)
 
-                issueWalletInstanceAttestation(request)
-                    .fold(
-                        ifRight = { walletInstanceAttestation ->
-                            logger.info("Successfully issued WalletInstanceAttestation: {}", walletInstanceAttestation)
-                            call.respond(HttpStatusCode.OK, walletInstanceAttestation.toWalletInstanceAttestationResponse())
-                        },
-                        ifLeft = { failure ->
-                            logger.warn(failure)
-                            call.respond(HttpStatusCode.BadRequest, failure.toWalletInstanceAttestationErrorResponse())
-                        },
-                    )
+                effect {
+                    val walletInstanceAttestation = issueWalletInstanceAttestation(request)
+                    logger.info("Successfully issued WalletInstanceAttestation: {}", walletInstanceAttestation)
+                    call.respond(HttpStatusCode.OK, walletInstanceAttestation.toWalletInstanceAttestationResponse())
+                }.getOrElse { failure ->
+                    logger.warn(failure)
+                    call.respond(HttpStatusCode.BadRequest, failure.toWalletInstanceAttestationErrorResponse())
+                }
             }
 
             route("/platform-key-attestation/android") {
@@ -119,15 +117,6 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                     "Platform Attested Key Curve is not supported: ${failure.curve.name}" to
                     null
             }
-
-            is WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure -> {
-                when (failure.error) {
-                    is StatusListTokenAllocationFailure.Unexpected -> {
-                        "WalletInstanceAttestationIssuanceRequest failed, unable to generate Client Status" to
-                            failure.error.cause
-                    }
-                }
-            }
         }
 
     warn(error, cause)
@@ -162,9 +151,6 @@ private enum class WalletInstanceAttestationError {
 
     @SerialName("unsupported_platform_attested_key_curve")
     UnsupportedPlatformAttestedKeyCurve,
-
-    @SerialName("client_status_generation_failure")
-    ClientStatusGenerationFailure,
 }
 
 @Serializable
@@ -200,9 +186,5 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
 
         is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
             WalletInstanceAttestationError.UnsupportedPlatformAttestedKeyCurve
-        }
-
-        is WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure -> {
-            WalletInstanceAttestationError.ClientStatusGenerationFailure
         }
     }.let { WalletInstanceAttestationErrorResponse(it) }

@@ -511,8 +511,7 @@
           "invalid_platform_key_attestation",
           "unsupported_platform_attested_key",
           "unsupported_platform_attested_key_type",
-          "unsupported_platform_attested_key_curve",
-          "client_status_generation_failure"
+          "unsupported_platform_attested_key_curve"
         ]
       },
       "WalletInstanceAttestationErrorResponse": {
@@ -591,8 +590,7 @@
           "invalid_platform_key_attestation",
           "unsupported_platform_attested_key",
           "no_platform_attested_keys",
-          "non_unique_platform_attested_keys",
-          "key_storage_status_generation_failure"
+          "non_unique_platform_attested_keys"
         ]
       },
       "KeyAttestationErrorResponse": {
