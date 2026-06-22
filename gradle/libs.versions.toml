@@ -1,7 +1,7 @@
 [versions]
 java = "25"
 kotlin = "2.4.0"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.7.1"
 ktor = "3.4.2"
