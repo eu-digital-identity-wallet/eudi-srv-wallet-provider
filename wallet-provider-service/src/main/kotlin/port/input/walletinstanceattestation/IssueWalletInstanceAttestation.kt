@@ -33,8 +33,9 @@ import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
@@ -145,7 +146,7 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
     ) : WalletInstanceAttestationIssuanceFailure
 
     class ClientStatusGenerationFailure(
-        val error: StatusListTokenGenerationFailure,
+        val error: StatusListTokenAllocationFailure,
     ) : WalletInstanceAttestationIssuanceFailure
 }
 
@@ -179,7 +180,7 @@ class IssueWalletInstanceAttestationLive(
     private val walletVersion: WalletVersion,
     private val walletSolutionCertificationInformation: CertificationInformation,
     private val clientStatusValidity: PositiveDuration,
-    private val generateStatusListToken: GenerateStatusListToken,
+    private val allocateStatusListToken: AllocateStatusListToken,
     private val signJwt: SignJwt<WalletInstanceAttestationClaims>,
 ) : IssueWalletInstanceAttestation {
     override suspend fun invoke(
@@ -233,7 +234,7 @@ class IssueWalletInstanceAttestationLive(
                     val clientStatusPeriod = maxOf(request.preferredClientStatusPeriod ?: Duration.ZERO, clientStatusValidity.value)
                     val clientStatusExpiresAt = issuedAt + clientStatusPeriod
                     val statusListToken =
-                        generateStatusListToken(clientStatusExpiresAt)
+                        allocateStatusListToken(StatusList.WalletInstanceAttestation, clientStatusExpiresAt)
                             .mapLeft { WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure(it) }
                             .bind()
                     ClientStatus(Status(statusListToken), clientStatusExpiresAt)

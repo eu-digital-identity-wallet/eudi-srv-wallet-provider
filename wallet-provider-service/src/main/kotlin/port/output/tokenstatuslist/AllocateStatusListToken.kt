@@ -20,13 +20,21 @@ import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import kotlin.time.Instant
 
-fun interface GenerateStatusListToken {
-    suspend operator fun invoke(expiresAt: Instant): Either<StatusListTokenGenerationFailure, StatusListToken>
+fun interface AllocateStatusListToken {
+    suspend operator fun invoke(
+        statusList: StatusList,
+        expiresAt: Instant,
+    ): Either<StatusListTokenAllocationFailure, StatusListToken>
 }
 
-sealed interface StatusListTokenGenerationFailure {
+enum class StatusList {
+    WalletInstanceAttestation,
+    KeyAttestation,
+}
+
+sealed interface StatusListTokenAllocationFailure {
     class Unexpected(
         val error: NonBlankString,
         val cause: Throwable? = null,
-    ) : StatusListTokenGenerationFailure
+    ) : StatusListTokenAllocationFailure
 }

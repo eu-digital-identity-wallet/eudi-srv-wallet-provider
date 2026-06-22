@@ -39,8 +39,9 @@ import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
@@ -151,7 +152,7 @@ sealed interface KeyAttestationIssuanceFailure {
     data object NonUniquePlatformAttestedKeys : KeyAttestationIssuanceFailure
 
     class KeyStorageStatusGenerationFailure(
-        val error: StatusListTokenGenerationFailure,
+        val error: StatusListTokenAllocationFailure,
     ) : KeyAttestationIssuanceFailure
 }
 
@@ -180,7 +181,7 @@ class IssueKeyAttestationLive(
     private val validateChallenge: ValidateChallenge,
     private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
     private val validity: KeyAttestationValidity,
-    private val generateStatusListToken: GenerateStatusListToken,
+    private val allocateStatusListToken: AllocateStatusListToken,
     private val certification: StringUrl,
     private val signJwt: SignJwt<KeyAttestationClaims>,
     private val preferredKeyStorageStatusPeriod: PositiveDuration,
@@ -229,7 +230,7 @@ class IssueKeyAttestationLive(
                     val keyStorageExpiresAt = issuedAt + keyStatusPeriod
 
                     val statusListToken =
-                        generateStatusListToken(keyStorageExpiresAt)
+                        allocateStatusListToken(StatusList.KeyAttestation, keyStorageExpiresAt)
                             .mapLeft { error -> KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure(error) }
                             .bind()
                     val status = Status(statusListToken)
