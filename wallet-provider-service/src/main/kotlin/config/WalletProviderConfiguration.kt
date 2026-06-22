@@ -198,7 +198,7 @@ class CertificationInformationDecoder : Decoder<CertificationInformation> {
         when (node) {
             is StringNode -> {
                 runCatching {
-                    CertificationInformation(JsonPrimitive((node.value)))
+                    JsonPrimitive((node.value))
                 }.fold(
                     { it.valid() },
                     { ConfigFailure.DecodeError(node, type).invalid() },
@@ -216,7 +216,7 @@ data class WalletInstanceAttestationConfiguration(
     val walletName: WalletName,
     val walletLink: WalletLink? = null,
     val walletVersion: WalletVersion,
-    val walletCertificationInformation: CertificationInformation,
+    val walletSolutionCertificationInformation: CertificationInformation,
     val clientStatusValidity: PositiveDuration = PositiveDuration(90.days),
 )
 

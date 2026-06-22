@@ -118,7 +118,7 @@ fun Application.configureWalletProviderModule(
             walletName = config.walletInstanceAttestation.walletName,
             config.walletInstanceAttestation.walletLink,
             walletVersion = config.walletInstanceAttestation.walletVersion,
-            config.walletInstanceAttestation.walletCertificationInformation,
+            config.walletInstanceAttestation.walletSolutionCertificationInformation,
             config.walletInstanceAttestation.clientStatusValidity,
             generateStatusListToken,
             SignumSignJwt(

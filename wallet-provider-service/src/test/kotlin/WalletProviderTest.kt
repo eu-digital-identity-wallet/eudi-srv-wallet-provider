@@ -25,7 +25,6 @@ import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
-import eu.europa.ec.eudi.walletprovider.domain.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -106,10 +105,7 @@ private class WalletProviderExtension :
                 WalletInstanceAttestationConfiguration(
                     walletName = "EUDI Wallet".toNonBlankString(),
                     walletVersion = "1.0.0".toNonBlankString(),
-                    walletCertificationInformation =
-                        CertificationInformation(
-                            JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
-                        ),
+                    walletSolutionCertificationInformation = JsonPrimitive("https://github.com/eu-digital-identity-wallet"),
                 ),
             keyAttestation =
                 KeyAttestationConfiguration(
