@@ -414,8 +414,8 @@ Variable: `WALLETINSTANCEATTESTATION_WALLETVERSION`
 Description: Wallet Version that will be included in the Wallet Instance Attestations.  
 Default value: N/A
 
-Variable: `WALLETINSTANCEATTESTATION_WALLETCERTIFICATIONINFORMATION`  
-Description: Wallet Certification Information that will be included in the Wallet Instance Attestations.  
+Variable: `WALLETINSTANCEATTESTATION_WALLETSOLUTIONCERTIFICATIONINFORMATION`  
+Description: Wallet Solution Certification Information that will be included in the Wallet Instance Attestations.  
 Default value: N/A
 
 Variable: `WALLETINSTANCEATTESTATION_CLIENTSTATUSVALIDITY`  

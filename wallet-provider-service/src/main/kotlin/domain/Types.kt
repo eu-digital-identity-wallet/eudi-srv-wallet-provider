@@ -94,14 +94,4 @@ value class PositiveDuration(
     override fun toString(): String = value.toString()
 }
 
-@JvmInline
-@Serializable
-value class CertificationInformation(
-    val value: JsonElement,
-) {
-    init {
-        require((value is JsonPrimitive && value.isString && value.content.isNotBlank()) || value is JsonObject)
-    }
-
-    override fun toString(): String = value.toString()
-}
+typealias CertificationInformation = JsonElement
