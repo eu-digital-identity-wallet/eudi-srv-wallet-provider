@@ -15,10 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.jose
 
-import arrow.core.Either
 import arrow.core.raise.catch
 import arrow.core.raise.either
-import at.asitplus.signum.indispensable.josef.JwsSigned
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.sign.Verifier
 import at.asitplus.signum.supreme.sign.verifierFor
@@ -26,31 +25,24 @@ import at.asitplus.signum.supreme.sign.verify
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.port.output.jose.JwtSignatureValidationFailure
 import eu.europa.ec.eudi.walletprovider.port.output.jose.ValidateJwtSignature
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 
-class SignumValidateJwtSignature<T : Any>(
-    private val verifier: Verifier,
-    private val deserializer: DeserializationStrategy<T>,
-    private val json: Json,
-) : ValidateJwtSignature<T> {
-    override suspend fun invoke(unvalidated: String): Either<JwtSignatureValidationFailure, JwsSigned<T>> =
+inline fun <reified T : Any> ValidateJwtSignature(verifier: Verifier): ValidateJwtSignature<T> =
+    ValidateJwtSignature { unvalidated ->
         either {
             val parsed =
-                JwsSigned
-                    .deserialize(unvalidated)
-                    .getOrElse {
-                        raise(
-                            JwtSignatureValidationFailure.UnparsableJwt(
-                                "Jwt cannot be parsed".toNonBlankString(),
-                                it,
-                            ),
-                        )
-                    }
+                catch({
+                    JwsCompactTyped<T>(unvalidated)
+                }) {
+                    raise(
+                        JwtSignatureValidationFailure.UnparsableJwt(
+                            "Jwt cannot be parsed".toNonBlankString(),
+                            it,
+                        ),
+                    )
+                }
 
             verifier
-                .verify(parsed.plainSignatureInput, parsed.signature)
+                .verify(parsed.jws.signatureInput, parsed.jws.signature)
                 .getOrElse {
                     raise(
                         JwtSignatureValidationFailure.InvalidSignature(
@@ -60,40 +52,9 @@ class SignumValidateJwtSignature<T : Any>(
                     )
                 }
 
-            val claims =
-                catch({
-                    json.decodeFromString(deserializer, parsed.payload.decodeToString())
-                }) {
-                    raise(
-                        JwtSignatureValidationFailure.UnparsableJwt(
-                            "Attestation payload cannot be parsed".toNonBlankString(),
-                            it,
-                        ),
-                    )
-                }
-
-            JwsSigned(
-                header = parsed.header,
-                payload = claims,
-                plainSignatureInput = parsed.plainSignatureInput,
-                signature = parsed.signature,
-            )
+            parsed
         }
-
-    companion object {
-        inline operator fun <reified T : Any> invoke(
-            verifier: Verifier,
-            json: Json,
-        ): SignumValidateJwtSignature<T> = SignumValidateJwtSignature(verifier, serializer<T>(), json)
-
-        inline operator fun <reified T : Any> invoke(
-            signer: Signer,
-            json: Json,
-        ): SignumValidateJwtSignature<T> =
-            SignumValidateJwtSignature(
-                signer.signatureAlgorithm.verifierFor(signer.publicKey).getOrThrow(),
-                serializer<T>(),
-                json,
-            )
     }
-}
+
+inline fun <reified T : Any> ValidateJwtSignature(singer: Signer): ValidateJwtSignature<T> =
+    ValidateJwtSignature(singer.signatureAlgorithm.verifierFor(singer.publicKey).getOrThrow())

@@ -16,6 +16,7 @@
 package eu.europa.ec.eudi.walletprovider
 
 import at.asitplus.signum.indispensable.ECCurve
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
@@ -156,11 +157,6 @@ private fun HttpClient.runWalletInstanceAttestationTestCase(
             }.body<JsonObject>()
 
         val serializedWalletInstanceAttestation = assertIs<JsonPrimitive>(response["walletInstanceAttestation"]).content
-        val walletInstanceAttestation =
-            WalletInstanceAttestation
-                .deserialize(
-                    WalletInstanceAttestationClaims.serializer(),
-                    serializedWalletInstanceAttestation,
-                ).getOrThrow()
+        val walletInstanceAttestation = JwsCompactTyped<WalletInstanceAttestationClaims>(serializedWalletInstanceAttestation)
         assertions(walletInstanceAttestation)
     }

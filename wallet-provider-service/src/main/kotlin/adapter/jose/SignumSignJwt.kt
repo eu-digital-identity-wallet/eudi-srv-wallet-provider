@@ -21,48 +21,31 @@ import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.signature
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 
-class SignumSignJwt<T : Any>(
-    private val signer: Signer,
-    private val certificateChain: CertificateChain?,
-    private val type: JwtType,
-    private val serializer: SerializationStrategy<T>,
-    private val json: Json,
-) : SignJwt<T> {
-    override val signingAlgorithm: JwsAlgorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
+inline fun <reified T : Any> SignJwt(
+    signer: Signer,
+    certificateChain: CertificateChain?,
+    type: JwtType,
+): SignJwt<T> =
+    object : SignJwt<T> {
+        override val signingAlgorithm: JwsAlgorithm
+            get() = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
 
-    override suspend fun invoke(claims: T): JwsSigned<T> {
-        val header =
-            JwsHeader(
-                algorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow(),
-                certificateChain = certificateChain?.takeIf { it.isNotEmpty() },
-                jsonWebKey =
-                    if (certificateChain.isNullOrEmpty())
-                        signer.publicKey.toJsonWebKey()
-                    else
-                        null,
-                type = type.value,
-            )
-        val plainSignatureInput =
-            JwsSigned.prepareJwsSignatureInput(
-                header = header,
-                payload = claims,
-                serializer = serializer,
-                json = json,
-            )
-        val signature = signer.sign(plainSignatureInput).signature
-        return JwsSigned(header, claims, signature, plainSignatureInput)
+        override suspend fun invoke(claims: T): JwsCompactTyped<T> {
+            val header =
+                JwsHeader(
+                    algorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow(),
+                    certificateChain = certificateChain?.takeIf { it.isNotEmpty() },
+                    jsonWebKey =
+                        if (certificateChain.isNullOrEmpty())
+                            signer.publicKey.toJsonWebKey()
+                        else
+                            null,
+                    type = type.value,
+                )
+
+            return JwsCompactTyped<T>(protectedHeader = header, payload = claims) {
+                signer.sign(it).signature.rawByteArray
+            }
+        }
     }
-
-    companion object {
-        inline operator fun <reified T : Any> invoke(
-            signer: Signer,
-            certificateChain: CertificateChain?,
-            type: JwtType,
-            json: Json,
-        ): SignumSignJwt<T> = SignumSignJwt(signer, certificateChain, type, serializer<T>(), json)
-    }
-}

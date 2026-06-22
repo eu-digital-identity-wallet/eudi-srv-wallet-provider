@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -100,26 +102,27 @@ abstract class VirtualPlatformAlignmentRule
     }
 
 kotlin {
-    compilerOptions {
-        apiVersion = KotlinVersion.DEFAULT
-        languageVersion = KotlinVersion.DEFAULT
-        freeCompilerArgs.addAll(
-            "-Xjsr305=strict",
-            "-Xconsistent-data-class-copy-visibility",
-            "-Xcontext-parameters",
-        )
-        optIn.addAll(
-            "kotlin.io.encoding.ExperimentalEncodingApi",
-            "kotlin.time.ExperimentalTime",
-            "at.asitplus.attestation.DisabledAttestation",
-            "kotlin.uuid.ExperimentalUuidApi",
-        )
-    }
-
     jvmToolchain {
         languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
         vendor = JvmVendorSpec.ADOPTIUM
         implementation = JvmImplementation.VENDOR_SPECIFIC
+    }
+
+    target {
+        compilerOptions {
+            javaParameters = true
+            jvmDefault = JvmDefaultMode.ENABLE
+            jvmTarget = JvmTarget.fromTarget(libs.versions.java.get())
+            apiVersion = KotlinVersion.DEFAULT
+            languageVersion = KotlinVersion.DEFAULT
+            optIn.addAll(
+                "at.asitplus.attestation.DisabledAttestation",
+            )
+            freeCompilerArgs.addAll(
+                "-Xjsr305=strict",
+                "-Xconsistent-data-class-copy-visibility",
+            )
+        }
     }
 }
 
@@ -187,7 +190,10 @@ dependencyCheck {
     formats = listOf("XML", "HTML")
 
     nvd {
-        apiKey = System.getenv("NVD_API_KEY") ?: properties["nvdApiKey"]?.toString()
+        apiKey = System.getenv("NVD_API_KEY") ?: findProperty("nvdApiKey")?.toString()
+
+        delay = 10000
+        maxRetryCount = 2
     }
 }
 
