@@ -116,10 +116,7 @@ kotlin {
             apiVersion = KotlinVersion.DEFAULT
             languageVersion = KotlinVersion.DEFAULT
             optIn.addAll(
-                "kotlin.io.encoding.ExperimentalEncodingApi",
-                "kotlin.time.ExperimentalTime",
                 "at.asitplus.attestation.DisabledAttestation",
-                "kotlin.uuid.ExperimentalUuidApi",
             )
             freeCompilerArgs.addAll(
                 "-Xjsr305=strict",
