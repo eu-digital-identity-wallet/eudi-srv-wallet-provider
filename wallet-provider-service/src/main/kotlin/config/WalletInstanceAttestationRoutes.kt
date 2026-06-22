@@ -20,7 +20,7 @@ import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.Iss
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -122,7 +122,7 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
 
             is WalletInstanceAttestationIssuanceFailure.ClientStatusGenerationFailure -> {
                 when (failure.error) {
-                    is StatusListTokenGenerationFailure.Unexpected -> {
+                    is StatusListTokenAllocationFailure.Unexpected -> {
                         "WalletInstanceAttestationIssuanceRequest failed, unable to generate Client Status" to
                             failure.error.cause
                     }

@@ -23,7 +23,7 @@ import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttest
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceRequest
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -124,7 +124,7 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
 
         is KeyAttestationIssuanceFailure.KeyStorageStatusGenerationFailure -> {
             when (failure.error) {
-                is StatusListTokenGenerationFailure.Unexpected -> {
+                is StatusListTokenAllocationFailure.Unexpected -> {
                     warn("KeyAttestationIssuance failed, unable to generate Key Storage Status", failure.error.cause)
                 }
             }

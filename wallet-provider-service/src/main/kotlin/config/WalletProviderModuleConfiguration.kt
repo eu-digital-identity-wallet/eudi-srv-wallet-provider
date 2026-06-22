@@ -26,7 +26,7 @@ import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
 import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
-import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceGenerateStatusListToken
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceAllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
 import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
@@ -35,7 +35,6 @@ import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestationLive
-import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationValidity
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
@@ -101,7 +100,7 @@ fun Application.configureWalletProviderModule(
     val validatePlatformKeyAttestation = MakotoValidatePlatformKeyAttestation(makotoAttestationService)
 
     val generateStatusListToken =
-        TokenStatusListServiceGenerateStatusListToken(
+        TokenStatusListServiceAllocateStatusListToken(
             httpClient,
             Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
             ApiKey(config.tokenStatusListService.apiKey.value),

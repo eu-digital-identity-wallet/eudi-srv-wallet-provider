@@ -20,14 +20,16 @@ package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 import arrow.core.Either
 import arrow.core.raise.catch
 import arrow.core.raise.either
+import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.GenerateStatusListToken
-import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenGenerationFailure
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
+import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusListTokenAllocationFailure
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -39,20 +41,29 @@ import kotlin.time.Instant
 
 typealias ApiKey = NonBlankString
 
-class TokenStatusListServiceGenerateStatusListToken(
+class TokenStatusListServiceAllocateStatusListToken(
     private val httpClient: HttpClient,
     private val serviceUrl: Url,
     private val apiKey: ApiKey,
     private val clock: Clock,
-) : GenerateStatusListToken {
-    override suspend fun invoke(expiresAt: Instant): Either<StatusListTokenGenerationFailure, StatusListToken> =
+) : AllocateStatusListToken {
+    override suspend fun invoke(
+        statusList: StatusList,
+        expiresAt: Instant,
+    ): Either<StatusListTokenAllocationFailure, StatusListToken> =
         either {
             catch({
                 httpClient
                     .submitForm(
                         Parameters.build {
                             append("country", "FC")
-                            append("doctype", OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE)
+                            append(
+                                "doctype",
+                                when (statusList) {
+                                    StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE
+                                    StatusList.KeyAttestation -> OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE
+                                },
+                            )
                             append(
                                 "expiry_date",
                                 with(clock) { expiresAt.toZonedDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE) },
@@ -70,7 +81,7 @@ class TokenStatusListServiceGenerateStatusListToken(
                     .statusList
             }) { error ->
                 raise(
-                    StatusListTokenGenerationFailure.Unexpected("Unable to generate StatusListToken".toNonBlankString(), error),
+                    StatusListTokenAllocationFailure.Unexpected("Unable to generate StatusListToken".toNonBlankString(), error),
                 )
             }
         }

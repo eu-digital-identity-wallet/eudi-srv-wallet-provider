@@ -24,6 +24,7 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
+import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.CertificationInformation
 import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
@@ -52,6 +53,7 @@ import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.test.fail
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
@@ -233,7 +235,13 @@ private fun createMockHttpClient(
 
                     val form = assertIs<FormDataContent>(request.body).formData
                     assertEquals("FC", form["country"])
-                    assertEquals(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE, form["doctype"])
+                    assertTrue {
+                        form["doctype"] in
+                            setOf(
+                                AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE,
+                                OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE,
+                            )
+                    }
                     assertNotNull(form["expiry_date"])
 
                     respond(
