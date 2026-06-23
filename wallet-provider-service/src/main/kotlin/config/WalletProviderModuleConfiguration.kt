@@ -197,11 +197,7 @@ private fun createMakotoAttestationService(
                 requireRollbackResistance = it.rollbackResistanceRequired,
                 ignoreLeafValidity = it.leafCertificateValidityIgnored,
                 verificationSecondsOffset = it.verificationSkew.inWholeSeconds,
-                attestationStatementValiditySeconds =
-                    when (it.attestationStatementValidity) {
-                        AttestationStatementValidity.Ignored -> null
-                        is AttestationStatementValidity.Enforced -> it.attestationStatementValidity.skew.inWholeSeconds
-                    },
+                attestationStatementValiditySeconds = it.attestationStatementValiditySkew.value.inWholeSeconds,
                 disableHardwareAttestation = !it.hardwareAttestationEnabled,
                 enableSoftwareAttestation = it.softwareAttestationEnabled,
                 supremeParser = it.supremeParserEnabled,
@@ -220,7 +216,7 @@ private fun createMakotoAttestationService(
                             ).sandbox(IosEnvironment.Sandbox == application.environment)
                             .build()
                     },
-                attestationStatementValiditySeconds = it.attestationStatementValiditySkew.inWholeSeconds,
+                attestationStatementValiditySeconds = it.attestationStatementValiditySkew.value.inWholeSeconds,
             )
         }
 

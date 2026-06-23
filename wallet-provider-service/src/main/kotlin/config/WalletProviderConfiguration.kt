@@ -112,7 +112,7 @@ data class AndroidKeyAttestationConfiguration(
     val rollbackResistanceRequired: Boolean = false,
     val leafCertificateValidityIgnored: Boolean = false,
     val verificationSkew: Duration = 0.seconds,
-    val attestationStatementValidity: AttestationStatementValidity = AttestationStatementValidity.Enforced(),
+    val attestationStatementValiditySkew: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.minutes),
     val hardwareAttestationEnabled: Boolean = true,
     val softwareAttestationEnabled: Boolean = false,
     val supremeParserEnabled: Boolean = false,
@@ -125,17 +125,9 @@ data class AndroidKeyAttestationConfiguration(
     }
 }
 
-sealed interface AttestationStatementValidity {
-    data object Ignored : AttestationStatementValidity
-
-    data class Enforced(
-        val skew: Duration = 5.minutes,
-    ) : AttestationStatementValidity
-}
-
 data class IosKeyAttestationConfiguration(
     val applications: NonEmptyList<ApplicationConfiguration>,
-    val attestationStatementValiditySkew: Duration = 5.minutes,
+    val attestationStatementValiditySkew: ZeroOrPositiveDuration = ZeroOrPositiveDuration(5.minutes),
 ) {
     data class ApplicationConfiguration(
         val team: TeamIdentifier,
