@@ -119,6 +119,14 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             warn("KeyAttestationIssuanceRequest validation failed, contains non-unique Platform Attested Keys")
         }
+
+        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
+            warn("KeyAttestationIssuanceRequest validation failed, Platform Attested Key Type is not supported: ${failure.type.name}")
+        }
+
+        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
+            warn("KeyAttestationIssuanceRequest validation failed, Platform Attested Key Curve is not supported: ${failure.curve.name}")
+        }
     }
 }
 
@@ -150,6 +158,12 @@ private enum class KeyAttestationError {
 
     @SerialName("non_unique_platform_attested_keys")
     NonUniquePlatformAttestedKeys,
+
+    @SerialName("unsupported_platform_attested_key_type")
+    UnsupportedPlatformAttestedKeyType,
+
+    @SerialName("unsupported_platform_attested_key_curve")
+    UnsupportedPlatformAttestedKeyCurve,
 }
 
 @Serializable
@@ -188,5 +202,13 @@ private fun KeyAttestationIssuanceFailure.toKeyAttestationErrorResponse(): KeyAt
 
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             nonEmptyListOf(KeyAttestationError.NonUniquePlatformAttestedKeys)
+        }
+
+        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
+            nonEmptyListOf(KeyAttestationError.UnsupportedPlatformAttestedKeyType)
+        }
+
+        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
+            nonEmptyListOf(KeyAttestationError.UnsupportedPlatformAttestedKeyCurve)
         }
     }.let { KeyAttestationErrorResponse(it) }
