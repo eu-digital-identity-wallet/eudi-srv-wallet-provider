@@ -15,11 +15,12 @@
  */
 package eu.europa.ec.eudi.walletprovider.config
 
+import arrow.core.NonEmptyList
+import arrow.core.toNonEmptyListOrThrow
 import arrow.fx.coroutines.resourceScope
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.os.JKSProvider
 import at.asitplus.signum.supreme.sign.Signer
@@ -29,7 +30,7 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import java.security.KeyStore
 
-internal suspend fun SigningKeyConfiguration.load(): Pair<Signer, CertificateChain> {
+internal suspend fun SigningKeyConfiguration.load(): Pair<Signer, NonEmptyList<X509Certificate>> {
     val keystore =
         resourceScope {
             withContext(Dispatchers.IO) {
@@ -73,17 +74,18 @@ internal suspend fun SigningKeyConfiguration.load(): Pair<Signer, CertificateCha
         "Signing key must be on curve: ${curve.name}"
     }
 
-    val certificateChain: CertificateChain =
+    val certificateChain =
         keystore
             .getCertificateChain(keyAlias.value)
             .map {
                 X509Certificate.decodeFromDer(it.encoded)
             }.dropRootCaIfNeeded()
+            .toNonEmptyListOrThrow()
 
     return signer to certificateChain
 }
 
-private fun CertificateChain.dropRootCaIfNeeded(): CertificateChain =
+private fun List<X509Certificate>.dropRootCaIfNeeded(): List<X509Certificate> =
     if (size > 1 && last().isSelfSigned())
         dropLast(1)
     else
