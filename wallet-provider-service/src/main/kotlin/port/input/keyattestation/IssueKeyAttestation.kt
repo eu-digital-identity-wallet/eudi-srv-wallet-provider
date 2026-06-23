@@ -190,6 +190,13 @@ class IssueKeyAttestationLive(
     private val signJwt: SignJwt<KeyAttestationClaims>,
     private val preferredKeyStorageStatusPeriod: PositiveDuration,
 ) : IssueKeyAttestation {
+    init {
+        require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
+            "Key Attestations must be signed using one of the following JWS Algorithms: " +
+                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier }
+        }
+    }
+
     context(_: Raise<KeyAttestationIssuanceFailure>)
     override suspend fun invoke(request: KeyAttestationIssuanceRequest): KeyAttestation {
         val supportedSigningAlgorithm = signJwt.signingAlgorithm
