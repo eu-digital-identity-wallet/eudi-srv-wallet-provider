@@ -290,10 +290,6 @@ To enable platform Key Attestation validation, use the following environment var
 
 #### Android Platform Key Attestation
 
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ENABLED`   
-Description: Whether Android platform Key Attestations are enabled or not.  
-Default value: `true`
-
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_APPLICATIONS_XX_PACKAGENAME`   
 Description: Android Package of the Wallet.  
 Default value: N/A  
@@ -336,20 +332,14 @@ Default value: `false`
 
 **Validity of platform Key Attestation**
 
-By default, Wallet Provider validates the creation time of the platform Key Attestation using a default skew of `5 minutes`. You can modify the `skew` using
-the following environment variable:
+By default, Wallet Provider validates the creation time of the platform Key Attestation using a default skew of `5 minutes`.
+You can modify the `skew` using:
 
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
+Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITYSKEW`  
 Description: How far in the past, the creation date of a platform Key Attestation can be.  
-Default value: `5 minutes`  
-
-To disable this check, set the environment variable `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY` to `Disabled`.
+Default value: `5 minutes`
 
 ##### iOS Platform Key Attestation
-
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ENABLED`   
-Description: Whether iOS platform Key Attestations are enabled or not.  
-Default value: `true`
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_APPLICATIONS_XX_TEAMIDENTIFIER`   
 Description: The Team Identifier of the Wallet.  
@@ -366,7 +356,10 @@ Allowed values:
 * `Production`
 * `Sandbox`
 
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ATTESTATIONSTATEMENTVALIDITY_SKEW`  
+By default, Wallet Provider validates the creation time of the platform Key Attestation using a default skew of `5 minutes`. 
+You can modify the `skew` using:
+
+Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ATTESTATIONSTATEMENTVALIDITYSKEW`  
 Description: How far in the past, the creation date of a platform Key Attestation can be.  
 Default value: `5 minutes`  
 

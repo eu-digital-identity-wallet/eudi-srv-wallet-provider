@@ -38,6 +38,7 @@ object WalletProviderApplication {
                     .builder()
                     .addDecoder(Base64UrlSafeByteArrayDecoder())
                     .addDecoder(CertificationInformationDecoder())
+                    .withExplicitSealedTypes()
                     .build()
                     .loadConfigOrThrow<WalletProviderConfiguration>()
 
