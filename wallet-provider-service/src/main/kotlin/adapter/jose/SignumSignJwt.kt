@@ -15,43 +15,50 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.jose
 
-import at.asitplus.signum.indispensable.josef.*
-import at.asitplus.signum.indispensable.pki.CertificateChain
+import arrow.core.NonEmptyList
+import at.asitplus.signum.indispensable.josef.JwsAlgorithm
+import at.asitplus.signum.indispensable.josef.JwsCompactTyped
+import at.asitplus.signum.indispensable.josef.JwsHeader
+import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
+import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.signature
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 
-inline fun <reified T : Any> SignJwt(
-    signer: Signer,
-    certificateChain: CertificateChain?,
-    type: JwtType,
-): SignJwt<T> {
-    val signingAlgorithm =
-        signer.signatureAlgorithm.toJwsAlgorithm().getOrElse {
-            throw IllegalArgumentException("signer is not using a JwsAlgorithm", it)
-        }
+class SignumSignJwt<T : Any> private constructor(
+    override val signingAlgorithm: JwsAlgorithm,
+    private val certificateChain: NonEmptyList<X509Certificate>,
+    private val type: JwtType,
+    private val sign: suspend (JwsHeader, T) -> JwsCompactTyped<T>,
+) : SignJwt<T> {
+    override suspend fun invoke(claims: T): JwsCompactTyped<T> {
+        val header =
+            JwsHeader(
+                algorithm = signingAlgorithm,
+                certificateChain = certificateChain,
+                type = type.value,
+            )
 
-    return object : SignJwt<T> {
-        override val signingAlgorithm: JwsAlgorithm
-            get() = signingAlgorithm
+        return sign(header, claims)
+    }
 
-        override suspend fun invoke(claims: T): JwsCompactTyped<T> {
-            val header =
-                JwsHeader(
-                    algorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow(),
-                    certificateChain = certificateChain?.takeIf { it.isNotEmpty() },
-                    jsonWebKey =
-                        if (certificateChain.isNullOrEmpty())
-                            signer.publicKey.toJsonWebKey()
-                        else
-                            null,
-                    type = type.value,
-                )
-
-            return JwsCompactTyped<T>(protectedHeader = header, payload = claims) {
-                signer.sign(it).signature.rawByteArray
+    companion object {
+        internal inline operator fun <reified T : Any> invoke(
+            signer: Signer,
+            certificateChain: NonEmptyList<X509Certificate>,
+            type: JwtType,
+        ): SignumSignJwt<T> =
+            SignumSignJwt(
+                signer.signatureAlgorithm.toJwsAlgorithm().getOrElse {
+                    throw IllegalArgumentException("signer is not using a JwsAlgorithm", it)
+                },
+                certificateChain,
+                type,
+            ) { header, claims ->
+                JwsCompactTyped<T>(protectedHeader = header, payload = claims) {
+                    signer.sign(it).signature.rawByteArray
+                }
             }
-        }
     }
 }
