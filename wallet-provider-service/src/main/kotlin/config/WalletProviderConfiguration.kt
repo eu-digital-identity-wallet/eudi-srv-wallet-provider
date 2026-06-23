@@ -41,7 +41,7 @@ data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
     val database: DatabaseConfiguration,
     val signingKey: SigningKeyConfiguration,
-    val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration = PlatformKeyAttestationValidationConfiguration.Disabled,
+    val platformKeyAttestationValidation: PlatformKeyAttestationValidationConfiguration? = null,
     val challenge: ChallengeConfiguration = ChallengeConfiguration(),
     val issuer: IssuerConfiguration = IssuerConfiguration(),
     val clientId: ClientId = ClientId("wallet-dev"),
@@ -95,23 +95,18 @@ data class SigningKeyConfiguration(
     val algorithm: SigningAlgorithm,
 )
 
-sealed interface PlatformKeyAttestationValidationConfiguration {
-    data object Disabled : PlatformKeyAttestationValidationConfiguration
-
-    data class Enabled(
-        val android: AndroidKeyAttestationConfiguration = AndroidKeyAttestationConfiguration(),
-        val ios: IosKeyAttestationConfiguration = IosKeyAttestationConfiguration(),
-        val verificationTimeSkew: Duration = 0.seconds,
-    ) : PlatformKeyAttestationValidationConfiguration {
-        init {
-            require(android.enabled || ios.enabled) { "At least one type of platform Key Attestation must be enabled" }
-        }
+data class PlatformKeyAttestationValidationConfiguration(
+    val android: AndroidKeyAttestationConfiguration? = null,
+    val ios: IosKeyAttestationConfiguration? = null,
+    val verificationTimeSkew: Duration = 0.seconds,
+) {
+    init {
+        require(null != android || null != ios) { "At least one type of platform Key Attestation must be enabled" }
     }
 }
 
 data class AndroidKeyAttestationConfiguration(
-    val enabled: Boolean = true,
-    val applications: List<ApplicationConfiguration> = emptyList(),
+    val applications: NonEmptyList<ApplicationConfiguration>,
     val strongBoxRequired: Boolean = false,
     val unlockedBootloaderAllowed: Boolean = false,
     val rollbackResistanceRequired: Boolean = false,
@@ -139,8 +134,7 @@ sealed interface AttestationStatementValidity {
 }
 
 data class IosKeyAttestationConfiguration(
-    val enabled: Boolean = true,
-    val applications: List<ApplicationConfiguration> = emptyList(),
+    val applications: NonEmptyList<ApplicationConfiguration>,
     val attestationStatementValiditySkew: Duration = 5.minutes,
 ) {
     data class ApplicationConfiguration(

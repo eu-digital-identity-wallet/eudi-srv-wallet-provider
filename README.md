@@ -290,10 +290,6 @@ To enable platform Key Attestation validation, use the following environment var
 
 #### Android Platform Key Attestation
 
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ENABLED`   
-Description: Whether Android platform Key Attestations are enabled or not.  
-Default value: `true`
-
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_APPLICATIONS_XX_PACKAGENAME`   
 Description: Android Package of the Wallet.  
 Default value: N/A  
@@ -346,10 +342,6 @@ Default value: `5 minutes`
 To disable this check, set the environment variable `PLATFORMKEYATTESTATIONVALIDATION_ANDROID_ATTESTATIONSTATEMENTVALIDITY` to `Disabled`.
 
 ##### iOS Platform Key Attestation
-
-Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_ENABLED`   
-Description: Whether iOS platform Key Attestations are enabled or not.  
-Default value: `true`
 
 Variable: `PLATFORMKEYATTESTATIONVALIDATION_IOS_APPLICATIONS_XX_TEAMIDENTIFIER`   
 Description: The Team Identifier of the Wallet.  
