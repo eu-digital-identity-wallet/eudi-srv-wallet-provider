@@ -117,6 +117,7 @@ kotlin {
             languageVersion = KotlinVersion.DEFAULT
             optIn.addAll(
                 "at.asitplus.attestation.DisabledAttestation",
+                "com.sksamuel.hoplite.ExperimentalHoplite",
             )
             freeCompilerArgs.addAll(
                 "-Xjsr305=strict",
