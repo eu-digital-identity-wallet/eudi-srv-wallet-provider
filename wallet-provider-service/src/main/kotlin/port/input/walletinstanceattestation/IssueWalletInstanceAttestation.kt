@@ -178,6 +178,13 @@ class IssueWalletInstanceAttestationLive(
     private val allocateStatusListToken: AllocateStatusListToken,
     private val signJwt: SignJwt<WalletInstanceAttestationClaims>,
 ) : IssueWalletInstanceAttestation {
+    init {
+        require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
+            "Wallet Instance Attestations must be signed using one of the following JWS Algorithms: " +
+                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier }
+        }
+    }
+
     context(_: Raise<WalletInstanceAttestationIssuanceFailure>)
     override suspend fun invoke(request: WalletInstanceAttestationIssuanceRequest): WalletInstanceAttestation {
         val supportedSigningAlgorithm = signJwt.signingAlgorithm
@@ -216,7 +223,7 @@ class IssueWalletInstanceAttestationLive(
         }
 
         val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
-        ensure(platformAttestedKeyCurve in setOf(ECCurve.SECP_256_R_1, ECCurve.SECP_384_R_1, ECCurve.SECP_521_R_1)) {
+        ensure(platformAttestedKeyCurve in TS3.ALLOWED_SIGNATURE_ALGORITHMS.map { it.ecCurve }) {
             WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
         }
 

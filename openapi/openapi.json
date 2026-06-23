@@ -590,7 +590,9 @@
           "invalid_platform_key_attestation",
           "unsupported_platform_attested_key",
           "no_platform_attested_keys",
-          "non_unique_platform_attested_keys"
+          "non_unique_platform_attested_keys",
+          "unsupported_platform_attested_key_type",
+          "unsupported_platform_attested_key_curve"
         ]
       },
       "KeyAttestationErrorResponse": {
