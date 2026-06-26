@@ -106,12 +106,6 @@ private fun Logger.warn(failure: WalletInstanceAttestationIssuanceFailure) {
                 }
             }
 
-            is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
-                "WalletInstanceAttestationIssuanceRequest validation failed, " +
-                    "Platform Attested Key Type is not supported: ${failure.type.name}" to
-                    null
-            }
-
             is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
                 "WalletInstanceAttestationIssuanceRequest validation failed, " +
                     "Platform Attested Key Curve is not supported: ${failure.curve.name}" to
@@ -146,9 +140,6 @@ private enum class WalletInstanceAttestationError {
     @SerialName("unsupported_platform_attested_key")
     UnsupportedPlatformAttestedKey,
 
-    @SerialName("unsupported_platform_attested_key_type")
-    UnsupportedPlatformAttestedKeyType,
-
     @SerialName("unsupported_platform_attested_key_curve")
     UnsupportedPlatformAttestedKeyCurve,
 }
@@ -178,10 +169,6 @@ private fun WalletInstanceAttestationIssuanceFailure.toWalletInstanceAttestation
                     WalletInstanceAttestationError.UnsupportedPlatformAttestedKey
                 }
             }
-        }
-
-        is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
-            WalletInstanceAttestationError.UnsupportedPlatformAttestedKeyType
         }
 
         is WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {

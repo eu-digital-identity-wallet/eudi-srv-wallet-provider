@@ -15,9 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
-import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
 import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
@@ -142,7 +142,8 @@ private fun HttpClient.runWalletInstanceAttestationTestCase(
                         ec {
                             curve = ECCurve.SECP_256_R_1
                         }
-                    }.getOrThrow().publicKey.toJsonWebKey(),
+                    }.getOrThrow()
+                        .publicKey as CryptoPublicKey.EC,
                 walletMetadata = walletMetadata,
                 preferredClientStatusPeriod = preferredClientStatusPeriod,
             )

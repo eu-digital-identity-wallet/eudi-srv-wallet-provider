@@ -17,7 +17,6 @@ package eu.europa.ec.eudi.walletprovider.domain.keyattestation
 
 import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
-import at.asitplus.signum.indispensable.josef.JsonWebKey
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
@@ -30,7 +29,7 @@ data class KeyAttestationClaims(
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
-    val attestedKeys: NonEmptyList<JsonWebKey>,
+    val attestedKeys: NonEmptyList<JsonWebKeyECCryptoPublicKey>,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
     val keyStorage: NonEmptyList<AttackPotentialResistance>,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.USER_AUTHENTICATION)

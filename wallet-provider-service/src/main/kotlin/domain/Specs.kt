@@ -39,6 +39,7 @@ object RFC7519 {
 
 object RFC7800 {
     const val CONFIRMATION: String = "cnf"
+    const val JWK = "jwk"
 }
 
 object ARF {
@@ -106,4 +107,11 @@ object TS3 {
             JwsAlgorithm.Signature.EC.ES384,
             JwsAlgorithm.Signature.EC.ES512,
         )
+}
+
+/**
+ * [JSON Web Key (JWK)](https://www.rfc-editor.org/info/rfc7517/)
+ */
+object RFC7517 {
+    const val KEYS: String = "keys"
 }

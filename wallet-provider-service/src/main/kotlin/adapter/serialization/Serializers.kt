@@ -15,6 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.serialization
 
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.josef.JsonWebKey
+import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -63,4 +66,23 @@ object DurationSecondsSerializer : KSerializer<Duration> {
     }
 
     override fun deserialize(decoder: Decoder): Duration = decoder.decodeLong().seconds
+}
+
+object ECCryptoPublicKeyJsonWebKeySerializer : KSerializer<CryptoPublicKey.EC> {
+    private val serializer = JsonWebKey.serializer()
+
+    override val descriptor: SerialDescriptor = SerialDescriptor("ECCryptoPublicKeyJsonWebKey", serializer.descriptor)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: CryptoPublicKey.EC,
+    ) {
+        encoder.encodeSerializableValue(serializer, value.toJsonWebKey())
+    }
+
+    override fun deserialize(decoder: Decoder): CryptoPublicKey.EC =
+        decoder
+            .decodeSerializableValue(serializer)
+            .toCryptoPublicKey()
+            .getOrThrow() as CryptoPublicKey.EC
 }
