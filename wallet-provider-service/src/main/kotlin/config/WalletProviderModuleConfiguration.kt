@@ -100,7 +100,7 @@ fun Application.configureWalletProviderModule(
     val generateStatusListToken =
         TokenStatusListServiceAllocateStatusListToken(
             httpClient,
-            Url(config.tokenStatusListService.serviceUrl.toExternalForm()),
+            config.tokenStatusListService.serviceUrl,
             ApiKey(config.tokenStatusListService.apiKey.value),
             clock,
         )
