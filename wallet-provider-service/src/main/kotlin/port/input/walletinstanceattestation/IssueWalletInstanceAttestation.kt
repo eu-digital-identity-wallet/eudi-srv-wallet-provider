@@ -114,7 +114,7 @@ sealed interface WalletInstanceAttestationIssuanceRequest {
 
     @Serializable
     data class Jwk(
-        val jwk: JsonWebKey,
+        val jwk: JsonWebKeyECCryptoPublicKey,
         @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         override val walletMetadata: WalletMetadata? = null,
         override val preferredClientStatusPeriod: SecondsDuration? = null,
@@ -134,10 +134,6 @@ sealed interface WalletInstanceAttestationIssuanceFailure {
 
     class InvalidPlatformKeyAttestation(
         val error: PlatformKeyAttestationValidationFailure,
-    ) : WalletInstanceAttestationIssuanceFailure
-
-    data class UnsupportedPlatformAttestedKeyType(
-        val type: JwkType,
     ) : WalletInstanceAttestationIssuanceFailure
 
     data class UnsupportedPlatformAttestedKeyCurve(
@@ -206,9 +202,10 @@ class IssueWalletInstanceAttestationLive(
                     }
 
                     withError({ WalletInstanceAttestationIssuanceFailure.InvalidPlatformKeyAttestation(it) }) {
-                        validatePlatformKeyAttestation(request.platformKeyAttestation, request.challenge)
-                            .publicKey
-                            .toJsonWebKey()
+                        validatePlatformKeyAttestation(
+                            request.platformKeyAttestation,
+                            request.challenge,
+                        ).publicKey
                     }
                 }
 
@@ -217,12 +214,7 @@ class IssueWalletInstanceAttestationLive(
                 }
             }
 
-        val platformAttestedKeyType = checkNotNull(platformAttestedKey.type) { "Platform Attested Key is missing `kty` claim" }
-        ensure(JwkType.EC == platformAttestedKeyType) {
-            WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType(platformAttestedKeyType)
-        }
-
-        val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
+        val platformAttestedKeyCurve = platformAttestedKey.curve
         ensure(platformAttestedKeyCurve in TS3.ALLOWED_SIGNATURE_ALGORITHMS.map { it.ecCurve }) {
             WalletInstanceAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
         }
@@ -242,7 +234,7 @@ class IssueWalletInstanceAttestationLive(
                 issuer,
                 clientId,
                 expiresAt = expiresAt,
-                ConfirmationClaim(jsonWebKey = platformAttestedKey),
+                Confirmation(platformAttestedKey),
                 issuedAt = issuedAt,
                 notBefore = issuedAt,
                 walletName = walletName,

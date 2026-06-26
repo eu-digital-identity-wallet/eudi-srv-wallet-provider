@@ -15,12 +15,13 @@
  */
 package eu.europa.ec.eudi.walletprovider
 
+import arrow.core.nonEmptyListOf
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
-import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.supreme.sign.EphemeralKey
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
+import eu.europa.ec.eudi.walletprovider.domain.JsonWebKeySet
 import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestationClaims
@@ -114,12 +115,13 @@ private fun HttpClient.runKeyAttestationTestCase(
                 jwkSet =
                     JsonWebKeySet(
                         keys =
-                            listOf(
+                            nonEmptyListOf(
                                 EphemeralKey {
                                     ec {
                                         curve = ECCurve.SECP_256_R_1
                                     }
-                                }.getOrThrow().publicKey.toJsonWebKey(),
+                                }.getOrThrow()
+                                    .publicKey as CryptoPublicKey.EC,
                             ),
                     ),
                 preferredKeyStorageStatusPeriod = preferredKeyStorageStatusPeriod,
