@@ -16,13 +16,9 @@
 package eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation
 
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
+import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.domain.*
-import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
-import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VP
-import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7519
-import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7800
-import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
-import eu.europa.ec.eudi.walletprovider.domain.specification.TokenStatusList
+import eu.europa.ec.eudi.walletprovider.domain.specification.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -54,7 +50,7 @@ data class ClientStatus(
 )
 
 typealias WalletName = NonBlankString
-typealias WalletLink = StringUrl
+typealias WalletLink = Url
 typealias WalletVersion = NonBlankString
 
 /**

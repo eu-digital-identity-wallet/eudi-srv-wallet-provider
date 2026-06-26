@@ -18,7 +18,9 @@ package eu.europa.ec.eudi.walletprovider.domain.keyattestation
 import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
-import eu.europa.ec.eudi.walletprovider.domain.*
+import com.eygraber.uri.Url
+import eu.europa.ec.eudi.walletprovider.domain.EpochSecondsInstant
+import eu.europa.ec.eudi.walletprovider.domain.JsonWebKeyECCryptoPublicKey
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7519
 import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
@@ -38,7 +40,7 @@ data class KeyAttestationClaims(
     val keyStorage: NonEmptyList<AttackPotentialResistance>,
     @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCI.USER_AUTHENTICATION)
     val userAuthentication: NonEmptyList<AttackPotentialResistance>,
-    @Required @SerialName(OpenId4VCI.CERTIFICATION) val certification: StringUrl,
+    @Required @SerialName(OpenId4VCI.CERTIFICATION) val certification: Url,
     @SerialName(OpenId4VCI.NONCE) val nonce: Nonce? = null,
     @SerialName(TokenStatusList.STATUS) val status: Status? = null,
     @Required @SerialName(TS3.KEY_STORAGE_STATUS)

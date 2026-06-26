@@ -21,10 +21,11 @@ import arrow.atomic.update
 import arrow.core.mergeSuppressed
 import arrow.core.prependTo
 import arrow.fx.coroutines.ExitCase
+import com.eygraber.uri.Uri
+import com.eygraber.uri.Url
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
-import eu.europa.ec.eudi.walletprovider.domain.StringUri
 import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -47,7 +48,6 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.junit.jupiter.api.extension.*
 import org.slf4j.LoggerFactory
 import org.testcontainers.mysql.MySQLContainer
-import java.net.URI
 import java.nio.file.Path
 import kotlin.test.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
@@ -105,11 +105,11 @@ private class WalletProviderExtension :
                 ),
             keyAttestation =
                 KeyAttestationConfiguration(
-                    certification = StringUri.create("https://example.org/certification").toURL(),
+                    certification = Url.parse("https://example.org/certification"),
                 ),
             tokenStatusListService =
                 TokenStatusListServiceConfiguration(
-                    serviceUrl = URI.create("https://status.example.com/create").toURL(),
+                    serviceUrl = Url.parse("https://status.example.com/create"),
                     apiKey = Secret("API-KEY"),
                 ),
         )
@@ -220,7 +220,7 @@ private fun createMockHttpClient(
     val engine =
         MockEngine { request ->
             when (request.url.toString()) {
-                config.tokenStatusListService.serviceUrl.toExternalForm() -> {
+                config.tokenStatusListService.serviceUrl.toString() -> {
                     assertEquals(HttpMethod.Post, request.method)
                     assertEquals(ContentType.Application.Json.toString(), request.headers[HttpHeaders.Accept])
                     assertEquals(config.tokenStatusListService.apiKey.value, request.headers["X-API-Key"])
@@ -239,7 +239,7 @@ private fun createMockHttpClient(
                     respond(
                         content =
                             json.encodeToString(
-                                Status(StatusListToken(5u, URI.create("https://status.example.com/lists/10"))),
+                                Status(StatusListToken(5u, Uri.parse("https://status.example.com/lists/10"))),
                             ),
                         status = HttpStatusCode.OK,
                         headers =

@@ -24,7 +24,9 @@ import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.supreme.sign.Signer
-import eu.europa.ec.eudi.walletprovider.domain.*
+import com.eygraber.uri.Url
+import eu.europa.ec.eudi.walletprovider.domain.Issuer
+import eu.europa.ec.eudi.walletprovider.domain.Name
 import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.specification.RFC9728
@@ -52,11 +54,13 @@ fun Application.configureMetadataRoutes(
                 val metadata =
                     run {
                         val jwksUri =
-                            URLBuilder(issuer.value.toExternalForm())
-                                .appendPathSegments("/jwks")
-                                .build()
-                                .toURI()
-                                .toURL()
+                            Url.parse(
+                                issuer.value
+                                    .buildUpon()
+                                    .appendPath("jwks")
+                                    .build()
+                                    .toString(),
+                            )
                         val signingAlgorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
                         ProtectedResourceMetadataResponse(
                             issuer,
@@ -85,7 +89,7 @@ fun Application.configureMetadataRoutes(
 @Serializable
 private data class ProtectedResourceMetadataResponse(
     @Required @SerialName(RFC9728.RESOURCE) val resource: Issuer,
-    @Required @SerialName(RFC9728.JWKS_URI) val jwksUri: StringUrl,
+    @Required @SerialName(RFC9728.JWKS_URI) val jwksUri: Url,
     @Required @SerialName(RFC9728.RESOURCE_NAME) val name: Name,
     @Required @SerialName(RFC9728.RESOURCE_SIGNING_ALGORITHMS_SUPPORTED) @Serializable(with = NonEmptyListSerializer::class)
     val resourceSigningAlgorithmsSupported: NonEmptyList<JwsAlgorithm>,

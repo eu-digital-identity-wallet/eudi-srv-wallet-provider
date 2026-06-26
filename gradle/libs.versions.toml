@@ -28,6 +28,7 @@ r2dbc-pool = "1.0.2.RELEASE"
 testcontainers = "2.0.5"
 jdbc-mysql = "9.7.0"
 reactor = "2025.0.6"
+uri-kmp = "0.0.21"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -83,6 +84,7 @@ testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version
 testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }
 jdbc-mysql = { module = "com.mysql:mysql-connector-j", version.ref = "jdbc-mysql" }
 reactor-bom = { module = "io.projectreactor:reactor-bom", version.ref = "reactor" }
+uri-kmp = { module = "com.eygraber:uri-kmp", version.ref = "uri-kmp" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
