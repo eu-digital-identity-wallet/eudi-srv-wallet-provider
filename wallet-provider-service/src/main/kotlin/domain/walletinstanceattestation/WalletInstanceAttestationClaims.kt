@@ -17,6 +17,12 @@ package eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation
 
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VP
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7519
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7800
+import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
+import eu.europa.ec.eudi.walletprovider.domain.specification.TokenStatusList
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -31,19 +37,19 @@ data class WalletInstanceAttestationClaims(
     @Required @SerialName(RFC7800.CONFIRMATION) val confirmation: Confirmation,
     @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant? = null,
     @SerialName(RFC7519.NOT_BEFORE) val notBefore: EpochSecondsInstant? = null,
-    @Required @SerialName(OpenId4VCISpec.WALLET_NAME) val walletName: WalletName,
-    @SerialName(OpenId4VCISpec.WALLET_LINK) val walletLink: WalletLink? = null,
-    @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
+    @Required @SerialName(OpenId4VCI.WALLET_NAME) val walletName: WalletName,
+    @SerialName(OpenId4VCI.WALLET_LINK) val walletLink: WalletLink? = null,
+    @SerialName(TokenStatusList.STATUS) val status: Status? = null,
     @Required @SerialName(TS3.WALLET_VERSION) val walletVersion: WalletVersion,
     @Required @SerialName(TS3.WALLET_SOLUTION_CERTIFICATION_INFORMATION) val walletSolutionCertificationInformation:
         CertificationInformation,
     @Required @SerialName(TS3.CLIENT_STATUS) val clientStatus: ClientStatus,
-    @SerialName(CustomFields.WALLET_METADATA) val walletMetadata: WalletMetadata? = null,
+    @SerialName(OpenId4VP.WALLET_METADATA) val walletMetadata: WalletMetadata? = null,
 )
 
 @Serializable
 data class ClientStatus(
-    @Required @SerialName(TokenStatusListSpec.STATUS) val status: Status,
+    @Required @SerialName(TokenStatusList.STATUS) val status: Status,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
 )
 

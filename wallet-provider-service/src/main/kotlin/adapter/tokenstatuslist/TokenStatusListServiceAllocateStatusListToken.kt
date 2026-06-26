@@ -17,9 +17,9 @@
 
 package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
-import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
@@ -53,8 +53,8 @@ class TokenStatusListServiceAllocateStatusListToken(
                     append(
                         "doctype",
                         when (statusList) {
-                            StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE
-                            StatusList.KeyAttestation -> OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE
+                            StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE
+                            StatusList.KeyAttestation -> OpenId4VCI.KEY_ATTESTATION_JWT_TYPE
                         },
                     )
                     append(

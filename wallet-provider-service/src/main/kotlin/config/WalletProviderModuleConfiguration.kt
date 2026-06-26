@@ -30,9 +30,9 @@ import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoVal
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceAllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
-import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
-import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
+import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
@@ -122,7 +122,7 @@ fun Application.configureWalletProviderModule(
             SignumSignJwt(
                 signer,
                 certificateChain,
-                JwtType(AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE),
+                JwtType(AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE),
             ),
         )
 
@@ -137,7 +137,7 @@ fun Application.configureWalletProviderModule(
             SignumSignJwt(
                 signer,
                 certificateChain,
-                JwtType(OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE),
+                JwtType(OpenId4VCI.KEY_ATTESTATION_JWT_TYPE),
             ),
             config.keyAttestation.keyStorageStatusValidity,
         )

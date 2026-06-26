@@ -29,6 +29,7 @@ import at.asitplus.signum.indispensable.josef.JsonWebAlgorithm
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
@@ -154,13 +155,13 @@ value class KeyAttestationValidity(
         require(value.isPositive()) {
             "value must be positive"
         }
-        require(value >= ARF.MIN_KEY_ATTESTATION_VALIDITY) {
-            "minimum value must be equal or greater than ${ARF.MIN_KEY_ATTESTATION_VALIDITY}"
+        require(value >= TS3.MIN_KEY_ATTESTATION_VALIDITY) {
+            "minimum value must be equal or greater than ${TS3.MIN_KEY_ATTESTATION_VALIDITY}"
         }
     }
 
     companion object {
-        val Default: KeyAttestationValidity = KeyAttestationValidity(ARF.MIN_KEY_ATTESTATION_VALIDITY)
+        val Default: KeyAttestationValidity = KeyAttestationValidity(TS3.MIN_KEY_ATTESTATION_VALIDITY)
     }
 
     override fun toString(): String = value.toString()
@@ -179,7 +180,8 @@ class IssueKeyAttestationLive(
     init {
         require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
             "Key Attestations must be signed using one of the following JWS Algorithms: " +
-                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier }
+                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
+                ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
         }
     }
 

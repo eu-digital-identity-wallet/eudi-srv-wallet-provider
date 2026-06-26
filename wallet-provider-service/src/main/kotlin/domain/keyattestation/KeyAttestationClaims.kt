@@ -19,6 +19,10 @@ import arrow.core.NonEmptyList
 import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7519
+import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
+import eu.europa.ec.eudi.walletprovider.domain.specification.TokenStatusList
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -28,15 +32,15 @@ import kotlinx.serialization.Serializable
 data class KeyAttestationClaims(
     @Required @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
-    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.ATTESTED_KEYS)
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCI.ATTESTED_KEYS)
     val attestedKeys: NonEmptyList<JsonWebKeyECCryptoPublicKey>,
-    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.KEY_STORAGE)
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCI.KEY_STORAGE)
     val keyStorage: NonEmptyList<AttackPotentialResistance>,
-    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCISpec.USER_AUTHENTICATION)
+    @Required @Serializable(with = NonEmptyListSerializer::class) @SerialName(OpenId4VCI.USER_AUTHENTICATION)
     val userAuthentication: NonEmptyList<AttackPotentialResistance>,
-    @Required @SerialName(OpenId4VCISpec.CERTIFICATION) val certification: StringUrl,
-    @SerialName(OpenId4VCISpec.NONCE) val nonce: Nonce? = null,
-    @SerialName(TokenStatusListSpec.STATUS) val status: Status? = null,
+    @Required @SerialName(OpenId4VCI.CERTIFICATION) val certification: StringUrl,
+    @SerialName(OpenId4VCI.NONCE) val nonce: Nonce? = null,
+    @SerialName(TokenStatusList.STATUS) val status: Status? = null,
     @Required @SerialName(TS3.KEY_STORAGE_STATUS)
     val keyStorageStatus: KeyStorageStatus,
 )
@@ -44,7 +48,7 @@ data class KeyAttestationClaims(
 @Serializable
 data class KeyStorageStatus(
     @Required
-    @SerialName(TokenStatusListSpec.STATUS)
+    @SerialName(TokenStatusList.STATUS)
     val status: Status,
     @Required
     @SerialName(RFC7519.EXPIRES_AT)
@@ -63,12 +67,12 @@ value class AttackPotentialResistance(
     override fun toString(): String = value
 
     companion object {
-        val Iso18045High: AttackPotentialResistance = AttackPotentialResistance(OpenId4VCISpec.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_HIGH)
+        val Iso18045High: AttackPotentialResistance = AttackPotentialResistance(OpenId4VCI.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_HIGH)
         val Iso18045Moderate: AttackPotentialResistance =
-            AttackPotentialResistance(OpenId4VCISpec.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_MODERATE)
+            AttackPotentialResistance(OpenId4VCI.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_MODERATE)
         val Iso18045EnhancedBasic: AttackPotentialResistance =
-            AttackPotentialResistance(OpenId4VCISpec.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_ENHANCED_BASIC)
-        val Iso18045Basic: AttackPotentialResistance = AttackPotentialResistance(OpenId4VCISpec.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_BASIC)
+            AttackPotentialResistance(OpenId4VCI.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_ENHANCED_BASIC)
+        val Iso18045Basic: AttackPotentialResistance = AttackPotentialResistance(OpenId4VCI.ATTACK_POTENTIAL_RESISTANCE_ISO_18045_BASIC)
     }
 }
 
