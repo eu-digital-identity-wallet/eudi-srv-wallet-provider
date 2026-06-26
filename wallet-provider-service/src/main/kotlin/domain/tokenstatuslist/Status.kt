@@ -16,18 +16,18 @@
 package eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist
 
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
-import eu.europa.ec.eudi.walletprovider.domain.TokenStatusListSpec
+import eu.europa.ec.eudi.walletprovider.domain.specification.TokenStatusList
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Status(
-    @Required @SerialName(TokenStatusListSpec.STATUS_LIST) val statusList: StatusListToken,
+    @Required @SerialName(TokenStatusList.STATUS_LIST) val statusList: StatusListToken,
 )
 
 @Serializable
 data class StatusListToken(
-    @Required @SerialName(TokenStatusListSpec.INDEX) val index: UInt,
-    @Required @SerialName(TokenStatusListSpec.URI) val uri: StringUri,
+    @Required @SerialName(TokenStatusList.INDEX) val index: UInt,
+    @Required @SerialName(TokenStatusList.URI) val uri: StringUri,
 )
