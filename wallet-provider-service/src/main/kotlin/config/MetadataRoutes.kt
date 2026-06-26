@@ -57,7 +57,7 @@ fun Application.configureMetadataRoutes(
                             Url.parse(
                                 issuer.value
                                     .buildUpon()
-                                    .appendPath("/jwks")
+                                    .appendPath("jwks")
                                     .build()
                                     .toString(),
                             )
