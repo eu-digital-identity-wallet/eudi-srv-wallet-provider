@@ -25,6 +25,9 @@ import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC9728
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -87,9 +90,9 @@ private data class ProtectedResourceMetadataResponse(
     @Required @SerialName(RFC9728.RESOURCE_SIGNING_ALGORITHMS_SUPPORTED) @Serializable(with = NonEmptyListSerializer::class)
     val resourceSigningAlgorithmsSupported: NonEmptyList<JwsAlgorithm>,
     @Required @SerialName(
-        AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_SIGNING_ALGORITHMS_SUPPORTED,
+        AttestationBasedClientAuthentication.CLIENT_ATTESTATION_SIGNING_ALGORITHMS_SUPPORTED,
     ) @Serializable(with = NonEmptyListSerializer::class)
     val clientAttestationSigningAlgorithmsSupported: NonEmptyList<JwsAlgorithm>,
-    @Required @SerialName(OpenId4VCISpec.PROOF_SIGNING_ALGORITHMS_SUPPORTED) @Serializable(with = NonEmptyListSerializer::class)
+    @Required @SerialName(OpenId4VCI.PROOF_SIGNING_ALGORITHMS_SUPPORTED) @Serializable(with = NonEmptyListSerializer::class)
     val proofSigningAlgorithmsSupported: NonEmptyList<JwsAlgorithm>,
 )

@@ -26,6 +26,7 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.*
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.*
@@ -147,8 +148,8 @@ value class WalletInstanceAttestationValidity(
 ) {
     init {
         require(value.isPositive())
-        require(value < ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY) {
-            "Wallet Instance Attestation validity must be less than ${ARF.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY}"
+        require(value < TS3.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY) {
+            "Wallet Instance Attestation validity must be less than ${TS3.MAX_WALLET_INSTANCE_ATTESTATION_VALIDITY}"
         }
     }
 
@@ -177,7 +178,8 @@ class IssueWalletInstanceAttestationLive(
     init {
         require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
             "Wallet Instance Attestations must be signed using one of the following JWS Algorithms: " +
-                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier }
+                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
+                ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
         }
     }
 

@@ -24,6 +24,8 @@ import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.ECCryptoPublicKeyJsonWebKeySerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7517
+import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7800
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

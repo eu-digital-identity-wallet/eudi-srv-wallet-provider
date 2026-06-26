@@ -24,9 +24,9 @@ import arrow.fx.coroutines.ExitCase
 import com.sksamuel.hoplite.Secret
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.Challenges
 import eu.europa.ec.eudi.walletprovider.config.*
-import eu.europa.ec.eudi.walletprovider.domain.AttestationBasedClientAuthenticationSpec
-import eu.europa.ec.eudi.walletprovider.domain.OpenId4VCISpec
 import eu.europa.ec.eudi.walletprovider.domain.StringUri
+import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
@@ -230,8 +230,8 @@ private fun createMockHttpClient(
                     assertTrue {
                         form["doctype"] in
                             setOf(
-                                AttestationBasedClientAuthenticationSpec.CLIENT_ATTESTATION_JWT_TYPE,
-                                OpenId4VCISpec.KEY_ATTESTATION_JWT_TYPE,
+                                AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE,
+                                OpenId4VCI.KEY_ATTESTATION_JWT_TYPE,
                             )
                     }
                     assertNotNull(form["expiry_date"])
