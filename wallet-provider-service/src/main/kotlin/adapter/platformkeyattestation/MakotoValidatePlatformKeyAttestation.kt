@@ -16,9 +16,11 @@
 package eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation
 
 import arrow.core.raise.context.Raise
+import arrow.core.raise.context.ensure
 import arrow.core.raise.context.raise
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation.PlatformAttestedKey
 import eu.europa.ec.eudi.walletprovider.domain.toNonBlankString
@@ -60,6 +62,12 @@ class MakotoValidatePlatformKeyAttestation(
                         ),
                     )
                 }
+        ensure(cryptoPublicKey is CryptoPublicKey.EC) {
+            PlatformKeyAttestationValidationFailure.UnsupportedPlatformAttestedKey(
+                "Attested PublicKey is not an EC key".toNonBlankString(),
+                null,
+            )
+        }
 
         return PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
     }

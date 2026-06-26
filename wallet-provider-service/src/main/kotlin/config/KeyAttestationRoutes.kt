@@ -112,16 +112,8 @@ private fun Logger.warn(failure: KeyAttestationIssuanceFailure) {
             }
         }
 
-        KeyAttestationIssuanceFailure.NoPlatformAttestedKeys -> {
-            warn("KeyAttestationIssuanceRequest validation failed, contains no Platform Attested Keys")
-        }
-
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             warn("KeyAttestationIssuanceRequest validation failed, contains non-unique Platform Attested Keys")
-        }
-
-        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
-            warn("KeyAttestationIssuanceRequest validation failed, Platform Attested Key Type is not supported: ${failure.type.name}")
         }
 
         is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {
@@ -153,14 +145,8 @@ private enum class KeyAttestationError {
     @SerialName("unsupported_platform_attested_key")
     UnsupportedPlatformAttestedKey,
 
-    @SerialName("no_platform_attested_keys")
-    NoPlatformAttestedKeys,
-
     @SerialName("non_unique_platform_attested_keys")
     NonUniquePlatformAttestedKeys,
-
-    @SerialName("unsupported_platform_attested_key_type")
-    UnsupportedPlatformAttestedKeyType,
 
     @SerialName("unsupported_platform_attested_key_curve")
     UnsupportedPlatformAttestedKeyCurve,
@@ -196,16 +182,8 @@ private fun KeyAttestationIssuanceFailure.toKeyAttestationErrorResponse(): KeyAt
                 }.distinct()
         }
 
-        KeyAttestationIssuanceFailure.NoPlatformAttestedKeys -> {
-            nonEmptyListOf(KeyAttestationError.NoPlatformAttestedKeys)
-        }
-
         KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys -> {
             nonEmptyListOf(KeyAttestationError.NonUniquePlatformAttestedKeys)
-        }
-
-        is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType -> {
-            nonEmptyListOf(KeyAttestationError.UnsupportedPlatformAttestedKeyType)
         }
 
         is KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve -> {

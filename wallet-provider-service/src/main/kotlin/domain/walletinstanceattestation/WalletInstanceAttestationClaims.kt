@@ -15,7 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation
 
-import at.asitplus.signum.indispensable.josef.ConfirmationClaim
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
@@ -29,7 +28,7 @@ data class WalletInstanceAttestationClaims(
     @Required @SerialName(RFC7519.ISSUER) val issuer: Issuer,
     @Required @SerialName(RFC7519.SUBJECT) val subject: ClientId,
     @Required @SerialName(RFC7519.EXPIRES_AT) val expiresAt: EpochSecondsInstant,
-    @Required @SerialName(RFC7800.CONFIRMATION) val confirmation: ConfirmationClaim,
+    @Required @SerialName(RFC7800.CONFIRMATION) val confirmation: Confirmation,
     @SerialName(RFC7519.ISSUED_AT) val issuedAt: EpochSecondsInstant? = null,
     @SerialName(RFC7519.NOT_BEFORE) val notBefore: EpochSecondsInstant? = null,
     @Required @SerialName(OpenId4VCISpec.WALLET_NAME) val walletName: WalletName,

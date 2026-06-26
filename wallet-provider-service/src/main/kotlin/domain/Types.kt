@@ -15,11 +15,17 @@
  */
 package eu.europa.ec.eudi.walletprovider.domain
 
+import arrow.core.NonEmptyList
+import arrow.core.serialization.NonEmptyListSerializer
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.io.InstantLongSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSerializer
+import eu.europa.ec.eudi.walletprovider.adapter.serialization.ECCryptoPublicKeyJsonWebKeySerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import java.net.URI
@@ -93,3 +99,20 @@ value class PositiveDuration(
 }
 
 typealias CertificationInformation = JsonElement
+
+typealias JsonWebKeyECCryptoPublicKey =
+    @Serializable(with = ECCryptoPublicKeyJsonWebKeySerializer::class)
+    CryptoPublicKey.EC
+
+@Serializable
+data class JsonWebKeySet(
+    @Required
+    @SerialName(RFC7517.KEYS)
+    @Serializable(with = NonEmptyListSerializer::class)
+    val keys: NonEmptyList<JsonWebKeyECCryptoPublicKey>,
+)
+
+@Serializable
+data class Confirmation(
+    @Required @SerialName(RFC7800.JWK) val jwk: JsonWebKeyECCryptoPublicKey,
+)

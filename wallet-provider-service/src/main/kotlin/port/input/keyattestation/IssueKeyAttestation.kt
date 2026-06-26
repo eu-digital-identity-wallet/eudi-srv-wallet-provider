@@ -19,22 +19,18 @@ import arrow.core.NonEmptyList
 import arrow.core.nonEmptyListOf
 import arrow.core.raise.context.*
 import arrow.core.serialization.NonEmptyListSerializer
-import arrow.core.toNonEmptyListOrNull
+import arrow.core.toNonEmptyListOrThrow
 import arrow.fx.coroutines.parMapOrAccumulate
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.JsonWebAlgorithm
-import at.asitplus.signum.indispensable.josef.JsonWebKeySet
-import at.asitplus.signum.indispensable.josef.JwkType
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
-import at.asitplus.signum.indispensable.josef.toJsonWebKey
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.*
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.PlatformKeyAttestationValidationFailure
@@ -125,11 +121,7 @@ sealed interface KeyAttestationIssuanceRequest {
         val jwkSet: JsonWebKeySet,
         @Serializable(with = NonEmptyListSerializer::class) override val supportedSigningAlgorithms: NonEmptyList<JsonWebAlgorithm>? = null,
         override val preferredKeyStorageStatusPeriod: SecondsDuration? = null,
-    ) : KeyAttestationIssuanceRequest {
-        init {
-            require(jwkSet.keys.isNotEmpty()) { "jwkSet must not be empty" }
-        }
-    }
+    ) : KeyAttestationIssuanceRequest
 }
 
 sealed interface KeyAttestationIssuanceFailure {
@@ -147,13 +139,7 @@ sealed interface KeyAttestationIssuanceFailure {
         val errors: NonEmptyList<PlatformKeyAttestationValidationFailure>,
     ) : KeyAttestationIssuanceFailure
 
-    data object NoPlatformAttestedKeys : KeyAttestationIssuanceFailure
-
     data object NonUniquePlatformAttestedKeys : KeyAttestationIssuanceFailure
-
-    data class UnsupportedPlatformAttestedKeyType(
-        val type: JwkType,
-    ) : KeyAttestationIssuanceFailure
 
     data class UnsupportedPlatformAttestedKeyCurve(
         val curve: ECCurve,
@@ -218,28 +204,21 @@ class IssueKeyAttestationLive(
                         request.platformKeyAttestations
                             .parMapOrAccumulate(Dispatchers.Default, 4) { validatePlatformKeyAttestation(it, request.challenge) }
                             .bind()
-                            .map { it.publicKey.toJsonWebKey() }
-                            .toNonEmptyListOrNull()
+                            .map { it.publicKey }
+                            .toNonEmptyListOrThrow()
                     }
                 }
 
                 is KeyAttestationIssuanceRequest.JwkSet -> {
-                    request.jwkSet.keys.toNonEmptyListOrNull()
+                    request.jwkSet.keys
                 }
             }
-
-        ensureNotNull(platformAttestedKeys) { KeyAttestationIssuanceFailure.NoPlatformAttestedKeys }
         ensure(platformAttestedKeys.distinct().size == platformAttestedKeys.size) {
             KeyAttestationIssuanceFailure.NonUniquePlatformAttestedKeys
         }
 
         platformAttestedKeys.forEach { platformAttestedKey ->
-            val platformAttestedKeyType = checkNotNull(platformAttestedKey.type) { "Platform Attested Key is missing `kty` claim" }
-            ensure(JwkType.EC == platformAttestedKeyType) {
-                KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyType(platformAttestedKeyType)
-            }
-
-            val platformAttestedKeyCurve = checkNotNull(platformAttestedKey.curve) { "Platform Attested Key is missing `crv` claim" }
+            val platformAttestedKeyCurve = platformAttestedKey.curve
             ensure(platformAttestedKeyCurve in TS3.ALLOWED_SIGNATURE_ALGORITHMS.map { it.ecCurve }) {
                 KeyAttestationIssuanceFailure.UnsupportedPlatformAttestedKeyCurve(platformAttestedKeyCurve)
             }
