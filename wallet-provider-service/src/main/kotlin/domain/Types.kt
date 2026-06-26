@@ -24,6 +24,7 @@ import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.ECCryptoPublicKeyJsonWebKeySerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
+import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -105,6 +106,7 @@ typealias JsonWebKeyECCryptoPublicKey =
 
 @Serializable
 data class JsonWebKeySet(
+    @Required
     @SerialName(RFC7517.KEYS)
     @Serializable(with = NonEmptyListSerializer::class)
     val keys: NonEmptyList<JsonWebKeyECCryptoPublicKey>,
@@ -112,5 +114,5 @@ data class JsonWebKeySet(
 
 @Serializable
 data class Confirmation(
-    @SerialName(RFC7800.JWK) val jwk: JsonWebKeyECCryptoPublicKey,
+    @Required @SerialName(RFC7800.JWK) val jwk: JsonWebKeyECCryptoPublicKey,
 )
