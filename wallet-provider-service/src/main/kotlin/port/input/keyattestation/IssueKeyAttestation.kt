@@ -27,6 +27,7 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.josef.JsonWebAlgorithm
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
+import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.domain.*
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.*
 import eu.europa.ec.eudi.walletprovider.domain.specification.TS3
@@ -173,7 +174,7 @@ class IssueKeyAttestationLive(
     private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
     private val validity: KeyAttestationValidity,
     private val allocateStatusListToken: AllocateStatusListToken,
-    private val certification: StringUrl,
+    private val certification: Url,
     private val signJwt: SignJwt<KeyAttestationClaims>,
     private val preferredKeyStorageStatusPeriod: PositiveDuration,
 ) : IssueKeyAttestation {

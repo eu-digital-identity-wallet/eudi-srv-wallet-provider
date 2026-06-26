@@ -17,6 +17,7 @@
 
 package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
+import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
@@ -28,7 +29,6 @@ import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
-import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import java.time.format.DateTimeFormatter
@@ -48,6 +48,7 @@ class TokenStatusListServiceAllocateStatusListToken(
     ): StatusListToken =
         httpClient
             .submitForm(
+                serviceUrl.toString(),
                 Parameters.build {
                     append("country", "FC")
                     append(
@@ -64,7 +65,6 @@ class TokenStatusListServiceAllocateStatusListToken(
                 },
             ) {
                 expectSuccess = true
-                url(serviceUrl)
                 headers.apply {
                     append(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
                     append(HttpHeaders.Accept, ContentType.Application.Json.toString())

@@ -20,18 +20,15 @@ import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.io.InstantLongSerializer
+import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.ECCryptoPublicKeyJsonWebKeySerializer
-import eu.europa.ec.eudi.walletprovider.adapter.serialization.UriStringSerializer
-import eu.europa.ec.eudi.walletprovider.adapter.serialization.UrlStringSerializer
 import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7517
 import eu.europa.ec.eudi.walletprovider.domain.specification.RFC7800
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import java.net.URI
-import java.net.URL
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -59,25 +56,17 @@ fun String.toNonBlankString() = NonBlankString(this)
 
 typealias ClientId = NonBlankString
 
-typealias StringUri =
-    @Serializable(with = UriStringSerializer::class)
-    URI
-
-typealias StringUrl =
-    @Serializable(with = UrlStringSerializer::class)
-    URL
-
 @JvmInline
 @Serializable
 value class Issuer(
-    val value: StringUrl,
+    val value: Url,
 ) {
     init {
-        require(value.toExternalForm().substringAfter(delimiter = "#", missingDelimiterValue = "").isEmpty())
+        require(value.toString().substringAfter(delimiter = "#", missingDelimiterValue = "").isEmpty())
     }
 
     companion object {
-        fun create(value: String): Issuer = Issuer(URI.create(value).toURL())
+        fun create(value: String): Issuer = Issuer(Url.parse(value))
     }
 }
 

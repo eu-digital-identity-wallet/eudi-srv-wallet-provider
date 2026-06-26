@@ -16,6 +16,7 @@
 package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.NonEmptyList
+import com.eygraber.uri.Url
 import com.sksamuel.hoplite.*
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
@@ -208,12 +209,36 @@ data class WalletInstanceAttestationConfiguration(
 
 data class KeyAttestationConfiguration(
     val validity: KeyAttestationValidity = KeyAttestationValidity.Default,
-    val certification: StringUrl,
+    val certification: Url,
     val keyStorageStatusValidity: PositiveDuration = PositiveDuration(90.days),
 )
 
+class UrlDecoder : Decoder<Url> {
+    override fun supports(type: KType): Boolean = type.classifier == Url::class
+
+    override fun decode(
+        node: Node,
+        type: KType,
+        context: DecoderContext,
+    ): ConfigResult<Url> =
+        when (node) {
+            is StringNode -> {
+                runCatching {
+                    Url.parse(node.value)
+                }.fold(
+                    { it.valid() },
+                    { ConfigFailure.DecodeError(node, type).invalid() },
+                )
+            }
+
+            else -> {
+                ConfigFailure.DecodeError(node, type).invalid()
+            }
+        }
+}
+
 data class TokenStatusListServiceConfiguration(
-    val serviceUrl: StringUrl,
+    val serviceUrl: Url,
     val apiKey: Secret,
 )
 

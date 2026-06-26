@@ -78,6 +78,8 @@ dependencies {
     runtimeOnly(libs.r2dbc.mssql)
     runtimeOnly(libs.r2dbc.pool)
 
+    implementation(libs.uri.kmp)
+
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.ktor.server.test.host)
