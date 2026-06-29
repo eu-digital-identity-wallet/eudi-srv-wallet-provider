@@ -20,7 +20,9 @@ import arrow.atomic.Atomic
 import arrow.atomic.update
 import arrow.core.mergeSuppressed
 import arrow.core.prependTo
+import arrow.core.raise.context.result
 import arrow.fx.coroutines.ExitCase
+import arrow.fx.coroutines.ResourceScope
 import com.eygraber.uri.Uri
 import com.eygraber.uri.Url
 import com.sksamuel.hoplite.Secret
@@ -53,7 +55,7 @@ import kotlin.test.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 private val database by lazy {
-    MySQLContainer("mysql:8.4.8")
+    MySQLContainer("mysql:8.4.10")
         .withInitScripts(
             "schema.sql",
         ).also {
@@ -64,16 +66,16 @@ private val database by lazy {
 private val MySQLContainer.r2dbcUrl: String
     get() = "r2dbc:pool:mysql://$host:$firstMappedPort/$databaseName"
 
-private val log = LoggerFactory.getLogger(WalletProviderExtension::class.java)
-
-private val clock = Clock.System
-
+@OptIn(AutoCloseImplementation::class)
 private class WalletProviderExtension :
     BeforeAllCallback,
     BeforeEachCallback,
     AfterAllCallback,
-    ParameterResolver {
-    private val resources = ResourceScope()
+    ParameterResolver,
+    ResourceScope {
+    private val finalizers: Atomic<List<suspend (ExitCase) -> Unit>> = Atomic(emptyList())
+
+    private val clock = Clock.System
 
     private val json =
         Json {
@@ -116,9 +118,9 @@ private class WalletProviderExtension :
 
     private val testApplication: TestApplication =
         runBlocking {
-            val database = context(resources) { config.database.connect() }
+            val database = config.database.connect()
             val (signer, certificateChain) = config.signingKey.load()
-            val httpClient = context(resources) { createMockHttpClient(config, json) }
+            val httpClient = createMockHttpClient(config, json)
 
             TestApplication {
                 application {
@@ -142,7 +144,7 @@ private class WalletProviderExtension :
         runBlocking {
             testApplication.start()
             httpClient =
-                resources.install(
+                install(
                     testApplication.createClient {
                         install(ClientContentNegotiation) {
                             json(json)
@@ -155,8 +157,10 @@ private class WalletProviderExtension :
     override fun beforeEach(context: ExtensionContext) {
         log.info("Cleaning up database")
         runBlocking {
-            suspendTransaction {
-                Challenges.deleteAll()
+            withContext(NonCancellable) {
+                suspendTransaction {
+                    Challenges.deleteAll()
+                }
             }
         }
     }
@@ -166,7 +170,7 @@ private class WalletProviderExtension :
         runBlocking {
             withContext(NonCancellable) {
                 testApplication.stop()
-                resources.releaseAll()
+                releaseAll()
             }
         }
     }
@@ -175,7 +179,7 @@ private class WalletProviderExtension :
         parameterContext: ParameterContext,
         extensionContext: ExtensionContext,
     ): Boolean =
-        arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) ||
+        ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) ||
             HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) ||
             WalletProviderConfiguration::class.java.isAssignableFrom(parameterContext.parameter.type) ||
             Clock::class.java.isAssignableFrom(parameterContext.parameter.type)
@@ -185,17 +189,12 @@ private class WalletProviderExtension :
         extensionContext: ExtensionContext,
     ): Any =
         when {
-            arrow.fx.coroutines.ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> resources
+            ResourceScope::class.java.isAssignableFrom(parameterContext.parameter.type) -> this
             HttpClient::class.java.isAssignableFrom(parameterContext.parameter.type) -> httpClient
             WalletProviderConfiguration::class.java.isAssignableFrom(parameterContext.parameter.type) -> config
             Clock::class.java.isAssignableFrom(parameterContext.parameter.type) -> clock
             else -> throw ParameterResolutionException("Unsupported parameter type: ${parameterContext.parameter.type}")
         }
-}
-
-@OptIn(AutoCloseImplementation::class)
-private class ResourceScope : arrow.fx.coroutines.ResourceScope {
-    private val finalizers: Atomic<List<suspend (ExitCase) -> Unit>> = Atomic(emptyList())
 
     override fun onRelease(release: suspend (ExitCase) -> Unit) {
         finalizers.update(release::prependTo)
@@ -206,9 +205,13 @@ private class ResourceScope : arrow.fx.coroutines.ResourceScope {
             finalizers
                 .getAndSet(emptyList())
                 .fold(null as Throwable?) { acc, finalizer ->
-                    acc mergeSuppressed runCatching { finalizer(ExitCase.Completed) }.exceptionOrNull()
+                    acc mergeSuppressed result { finalizer(ExitCase.Completed) }.exceptionOrNull()
                 }?.let { throw it }
         }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(WalletProviderExtension::class.java)
     }
 }
 
