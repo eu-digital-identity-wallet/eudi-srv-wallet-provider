@@ -18,7 +18,11 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 ## Overview
 
 An implementation of a Wallet Provider service according to [OpenId4VCI 1.0](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html), 
-and [EUDI Wallet Standards and Technical Specifications](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications).
+and [EUDI Wallet Standards and Technical Specifications](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications), 
+aiming for compliance with:
+
+* [Specification of Wallet Unit Attestations (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md)
+* [ETSI TS 119 472-3 V1.1.1](https://www.etsi.org/deliver/etsi_ts/119400_119499/11947203/01.01.01_60/ts_11947203v010101p.pdf)
 
 > [!IMPORTANT]  
 > Wallet Provider is created strictly for testing and development purposes.   
@@ -56,7 +60,10 @@ The service supports issuance of:
 1. Wallet Instance Attestations
 2. Key Attestations
 
-per [Specification of Wallet Unit Attestation (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).  
+per [Specification of Wallet Unit Attestations (WUA) used in issuance of PID and Attestations](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts3-wallet-unit-attestation.md).
+
+> [!IMPORTANT]  
+> The service attests only **EC Keys**.
 
 ### Issuance of Wallet Instance Attestation
 
