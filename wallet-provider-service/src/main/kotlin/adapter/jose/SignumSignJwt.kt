@@ -19,26 +19,21 @@ import arrow.core.NonEmptyList
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.JwsHeader
-import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.signature
+import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 
 @Suppress("FunctionName")
 inline fun <reified T : Any> SignumSignJwt(
-    signer: Signer,
+    signer: JwsSigner,
     certificateChain: NonEmptyList<X509Certificate>,
     type: JwtType,
-): SignJwt<T> {
-    val signingAlgorithm =
-        signer.signatureAlgorithm.toJwsAlgorithm().getOrElse {
-            throw IllegalArgumentException("signer is not using a JwsAlgorithm", it)
-        }
-    return object : SignJwt<T> {
+): SignJwt<T> =
+    object : SignJwt<T> {
         override val signingAlgorithm: JwsAlgorithm
-            get() = signingAlgorithm
+            get() = signer.signingAlgorithm
 
         override suspend fun invoke(claims: T): JwsCompactTyped<T> {
             val header =
@@ -53,4 +48,3 @@ inline fun <reified T : Any> SignumSignJwt(
             }
         }
     }
-}

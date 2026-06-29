@@ -23,14 +23,14 @@ import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.os.JKSProvider
-import at.asitplus.signum.supreme.sign.Signer
+import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import java.security.KeyStore
 
-internal suspend fun SigningKeyConfiguration.load(): Pair<Signer, NonEmptyList<X509Certificate>> {
+internal suspend fun SigningKeyConfiguration.load(): Pair<JwsSigner, NonEmptyList<X509Certificate>> {
     val keystore =
         resourceScope {
             withContext(Dispatchers.IO) {
@@ -82,7 +82,7 @@ internal suspend fun SigningKeyConfiguration.load(): Pair<Signer, NonEmptyList<X
             }.dropRootCaIfNeeded()
             .toNonEmptyListOrThrow()
 
-    return signer to certificateChain
+    return JwsSigner(signer) to certificateChain
 }
 
 private fun List<X509Certificate>.dropRootCaIfNeeded(): List<X509Certificate> =

@@ -21,11 +21,10 @@ import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.josef.JsonWebKeySet
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
 import at.asitplus.signum.indispensable.josef.toJsonWebKey
-import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.supreme.sign.Signer
 import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.domain.Issuer
+import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.Name
 import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
@@ -44,7 +43,7 @@ private val logger = LoggerFactory.getLogger("MetadataRoutes")
 fun Application.configureMetadataRoutes(
     issuer: Issuer,
     name: Name,
-    signer: Signer,
+    signer: JwsSigner,
     certificateChain: CertificateChain?,
 ) {
     routing {
@@ -61,7 +60,7 @@ fun Application.configureMetadataRoutes(
                                     .build()
                                     .toString(),
                             )
-                        val signingAlgorithm = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
+                        val signingAlgorithm = signer.signingAlgorithm
                         ProtectedResourceMetadataResponse(
                             issuer,
                             jwksUri,
