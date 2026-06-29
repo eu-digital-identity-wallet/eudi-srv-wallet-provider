@@ -20,6 +20,9 @@ import arrow.core.serialization.NonEmptyListSerializer
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.io.InstantLongSerializer
+import at.asitplus.signum.indispensable.josef.JwsAlgorithm
+import at.asitplus.signum.indispensable.josef.toJwsAlgorithm
+import at.asitplus.signum.supreme.sign.Signer
 import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.DurationSecondsSerializer
 import eu.europa.ec.eudi.walletprovider.adapter.serialization.ECCryptoPublicKeyJsonWebKeySerializer
@@ -107,3 +110,17 @@ data class JsonWebKeySet(
 data class Confirmation(
     @Required @SerialName(RFC7800.JWK) val jwk: JsonWebKeyECCryptoPublicKey,
 )
+
+@JvmInline
+value class JwsSigner(
+    val signer: Signer,
+) : Signer by signer {
+    init {
+        signer.signatureAlgorithm.toJwsAlgorithm().getOrElse {
+            throw IllegalArgumentException("signer is not using a JwsAlgorithm", it)
+        }
+    }
+
+    val signingAlgorithm: JwsAlgorithm
+        get() = signer.signatureAlgorithm.toJwsAlgorithm().getOrThrow()
+}

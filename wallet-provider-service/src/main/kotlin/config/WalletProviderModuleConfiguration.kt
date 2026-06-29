@@ -22,7 +22,6 @@ import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.supreme.sign.Signer
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
@@ -30,6 +29,7 @@ import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoVal
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceAllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
+import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
 import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
@@ -66,7 +66,7 @@ fun Application.configureWalletProviderModule(
     clock: Clock,
     json: Json,
     database: R2dbcDatabase,
-    signer: Signer,
+    signer: JwsSigner,
     certificateChain: NonEmptyList<X509Certificate>,
     httpClient: HttpClient,
 ) {
