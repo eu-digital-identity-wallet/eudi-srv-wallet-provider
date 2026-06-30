@@ -20,6 +20,7 @@ import arrow.core.nonEmptyListOf
 import arrow.core.raise.effect
 import arrow.core.raise.getOrElse
 import arrow.core.serialization.NonEmptyListSerializer
+import eu.europa.ec.eudi.walletprovider.config.warn
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceFailure
@@ -29,6 +30,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -42,36 +44,38 @@ private val logger = LoggerFactory.getLogger("KeyAttestationRoutes")
 fun Application.configureKeyAttestationRoutes(issueKeyAttestation: IssueKeyAttestation) {
     routing {
         route("/key-attestation") {
-            suspend fun <T : KeyAttestationIssuanceRequest> RoutingContext.issueKeyAttestation(requestType: KClass<T>) {
-                val request = call.receive(requestType)
-                logger.info("Received KeyAttestationIssuanceRequest: {}", request)
-
-                effect {
-                    val keyAttestation = issueKeyAttestation(request)
-                    logger.info("Successfully issued KeyAttestation: {}", keyAttestation)
-                    call.respond(HttpStatusCode.OK, keyAttestation.toKeyAttestationResponse())
-                }.getOrElse { failure ->
-                    logger.warn(failure)
-                    call.respond(HttpStatusCode.BadRequest, failure.toKeyAttestationErrorResponse())
-                }
-            }
-
             route("/platform-key-attestation/android") {
                 post {
-                    issueKeyAttestation(KeyAttestationIssuanceRequest.PlatformKeyAttestation.Android::class)
+                    issueKeyAttestation<KeyAttestationIssuanceRequest.PlatformKeyAttestation.Android>()
                 }
             }
             route("/platform-key-attestation/ios") {
                 post {
-                    issueKeyAttestation(KeyAttestationIssuanceRequest.PlatformKeyAttestation.Ios::class)
+                    issueKeyAttestation<KeyAttestationIssuanceRequest.PlatformKeyAttestation.Ios>()
                 }
             }
             route("/jwk-set") {
                 post {
-                    issueKeyAttestation(KeyAttestationIssuanceRequest.JwkSet::class)
+                    issueKeyAttestation<KeyAttestationIssuanceRequest.JwkSet>()
                 }
             }
         }
+    }
+}
+
+context(context: RoutingContext)
+private suspend inline operator fun <reified T : KeyAttestationIssuanceRequest> IssueKeyAttestation.invoke() {
+    val call = context.call
+    val request = call.receive(T::class)
+    logger.info("Received KeyAttestationIssuanceRequest: {}", request)
+
+    effect {
+        val keyAttestation = invoke(request)
+        logger.info("Successfully issued KeyAttestation: {}", keyAttestation)
+        call.respond(HttpStatusCode.OK, keyAttestation.toKeyAttestationResponse())
+    }.getOrElse { failure ->
+        logger.warn(failure)
+        call.respond(HttpStatusCode.BadRequest, failure.toKeyAttestationErrorResponse())
     }
 }
 
