@@ -20,7 +20,6 @@ import arrow.core.nonEmptyListOf
 import arrow.core.raise.effect
 import arrow.core.raise.getOrElse
 import arrow.core.serialization.NonEmptyListSerializer
-import eu.europa.ec.eudi.walletprovider.config.warn
 import eu.europa.ec.eudi.walletprovider.domain.keyattestation.KeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.KeyAttestationIssuanceFailure
@@ -30,14 +29,12 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
 
 private val logger = LoggerFactory.getLogger("KeyAttestationRoutes")
 
@@ -66,7 +63,7 @@ fun Application.configureKeyAttestationRoutes(issueKeyAttestation: IssueKeyAttes
 context(context: RoutingContext)
 private suspend inline operator fun <reified T : KeyAttestationIssuanceRequest> IssueKeyAttestation.invoke() {
     val call = context.call
-    val request = call.receive(T::class)
+    val request = call.receive<T>()
     logger.info("Received KeyAttestationIssuanceRequest: {}", request)
 
     effect {

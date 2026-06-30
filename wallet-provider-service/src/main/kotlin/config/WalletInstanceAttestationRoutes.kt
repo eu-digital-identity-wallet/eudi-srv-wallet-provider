@@ -17,7 +17,6 @@ package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.raise.effect
 import arrow.core.raise.getOrElse
-import eu.europa.ec.eudi.walletprovider.config.warn
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.WalletInstanceAttestationIssuanceFailure
@@ -27,14 +26,12 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
 
 private val logger = LoggerFactory.getLogger("WalletInstanceAttestationRoutes")
 
@@ -63,7 +60,7 @@ fun Application.configureWalletInstanceAttestationRoutes(issueWalletInstanceAtte
 context(context: RoutingContext)
 private suspend inline operator fun <reified T : WalletInstanceAttestationIssuanceRequest> IssueWalletInstanceAttestation.invoke() {
     val call = context.call
-    val request = call.receive(T::class)
+    val request = call.receive<T>()
     logger.info("Received WalletInstanceAttestationIssuanceRequest: {}", request)
 
     effect {
