@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("ktlint:standard:max-line-length")
-
 package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
 import com.eygraber.uri.Url

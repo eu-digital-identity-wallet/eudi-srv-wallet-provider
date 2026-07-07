@@ -41,7 +41,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("ktlint:standard:max-line-length")
 data class WalletProviderConfiguration(
     val server: ServerConfiguration = ServerConfiguration(),
     val database: DatabaseConfiguration,
