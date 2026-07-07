@@ -22,7 +22,7 @@ import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
+import eu.europa.ec.eudi.walletprovider.adapter.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
 import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
@@ -122,7 +122,7 @@ fun Application.configureWalletProviderModule(
             config.walletInstanceAttestation.walletSolutionCertificationInformation,
             config.walletInstanceAttestation.clientStatusValidity,
             allocateStatusListToken,
-            SignumSignJwt(
+            SignJwt(
                 signer,
                 certificateChain,
                 JwtType(AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE),
@@ -137,7 +137,7 @@ fun Application.configureWalletProviderModule(
             config.keyAttestation.validity,
             allocateStatusListToken,
             config.keyAttestation.certification,
-            SignumSignJwt(
+            SignJwt(
                 signer,
                 certificateChain,
                 JwtType(OpenId4VCI.KEY_ATTESTATION_JWT_TYPE),

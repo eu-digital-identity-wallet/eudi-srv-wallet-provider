@@ -25,8 +25,7 @@ import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 
-@Suppress("FunctionName")
-inline fun <reified T : Any> SignumSignJwt(
+inline fun <reified T : Any> SignJwt(
     signer: JwsSigner,
     certificateChain: NonEmptyList<X509Certificate>,
     type: JwtType,
