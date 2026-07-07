@@ -26,8 +26,8 @@ import eu.europa.ec.eudi.walletprovider.adapter.jose.SignumSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
 import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
-import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.TokenStatusListServiceAllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
 import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
@@ -97,12 +97,15 @@ fun Application.configureWalletProviderModule(
     val makotoAttestationService = createMakotoAttestationService(config, clock)
     val validatePlatformKeyAttestation = MakotoValidatePlatformKeyAttestation(makotoAttestationService)
 
-    val generateStatusListToken =
-        TokenStatusListServiceAllocateStatusListToken(
+    val allocateStatusListToken =
+        AllocateStatusListToken(
+            clock,
             httpClient,
             config.tokenStatusListService.serviceUrl,
             ApiKey(config.tokenStatusListService.apiKey.value),
-            clock,
+            country = config.tokenStatusListService.country,
+            walletInstantAttestationStatusList = config.tokenStatusListService.walletInstanceAttestationStatusList,
+            keyAttestationStatusList = config.tokenStatusListService.keyAttestationStatusList,
         )
 
     val issueWalletInstanceAttestation =
@@ -118,7 +121,7 @@ fun Application.configureWalletProviderModule(
             walletVersion = config.walletInstanceAttestation.walletVersion,
             config.walletInstanceAttestation.walletSolutionCertificationInformation,
             config.walletInstanceAttestation.clientStatusValidity,
-            generateStatusListToken,
+            allocateStatusListToken,
             SignumSignJwt(
                 signer,
                 certificateChain,
@@ -132,7 +135,7 @@ fun Application.configureWalletProviderModule(
             validateChallenge,
             validatePlatformKeyAttestation,
             config.keyAttestation.validity,
-            generateStatusListToken,
+            allocateStatusListToken,
             config.keyAttestation.certification,
             SignumSignJwt(
                 signer,

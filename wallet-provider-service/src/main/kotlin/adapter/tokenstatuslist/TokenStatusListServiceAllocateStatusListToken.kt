@@ -19,11 +19,8 @@ package eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist
 
 import com.eygraber.uri.Url
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
-import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
-import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.Status
-import eu.europa.ec.eudi.walletprovider.domain.tokenstatuslist.StatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.port.output.tokenstatuslist.StatusList
 import io.ktor.client.*
@@ -32,30 +29,31 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import java.time.format.DateTimeFormatter
-import kotlin.time.Instant
 
 typealias ApiKey = NonBlankString
+typealias CountryCode = NonBlankString
+typealias StatusListName = NonBlankString
 
-class TokenStatusListServiceAllocateStatusListToken(
-    private val httpClient: HttpClient,
-    private val serviceUrl: Url,
-    private val apiKey: ApiKey,
-    private val clock: Clock,
-) : AllocateStatusListToken {
-    override suspend fun invoke(
-        statusList: StatusList,
-        expiresAt: Instant,
-    ): StatusListToken =
+fun AllocateStatusListToken(
+    clock: Clock,
+    httpClient: HttpClient,
+    serviceUrl: Url,
+    apiKey: ApiKey,
+    country: CountryCode,
+    walletInstantAttestationStatusList: StatusListName,
+    keyAttestationStatusList: StatusListName,
+): AllocateStatusListToken =
+    AllocateStatusListToken { statusList, expiresAt ->
         httpClient
             .submitForm(
                 serviceUrl.toString(),
                 Parameters.build {
-                    append("country", "FC")
+                    append("country", country.value)
                     append(
                         "doctype",
                         when (statusList) {
-                            StatusList.WalletInstanceAttestation -> AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE
-                            StatusList.KeyAttestation -> OpenId4VCI.KEY_ATTESTATION_JWT_TYPE
+                            StatusList.WalletInstanceAttestation -> walletInstantAttestationStatusList.value
+                            StatusList.KeyAttestation -> keyAttestationStatusList.value
                         },
                     )
                     append(
@@ -72,4 +70,4 @@ class TokenStatusListServiceAllocateStatusListToken(
                 }
             }.body<Status>()
             .statusList
-}
+    }

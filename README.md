@@ -451,6 +451,18 @@ Description: URL of the **take** operation of [eudi-srv-statuslist-py](https://g
 Variable: `TOKENSTATUSLISTSERVICE_APIKEY`  
 Description: API Key used to access [eudi-srv-statuslist-py](https://github.com/eu-digital-identity-wallet/eudi-srv-statuslist-py).  
 
+Variable: `TOKENSTATUSLISTSERVICE_COUNTRY`    
+Description: Country in which Status List Tokens will be allocated in.   
+Default value: `FC`    
+
+Variable: `TOKENSTATUSLISTSERVICE_WALLETINSTANCEATTESTATIONSTATUSLIST`    
+Description: Name of the Status List used for allocating Status List Tokens for issued Wallet Instance Attestations.   
+Default value: `oauth-client-attestation+jwt`   
+
+Variable: `TOKENSTATUSLISTSERVICE_KEYATTESTATIONSTATUSLIST`    
+Description: Name of the Status List used for allocating Status List Tokens for issued Key Attestations.   
+Default value: `key-attestation+jwt`  
+
 ### Swagger UI Configuration
 
 Wallet Provider exposes an OpenAPI specification of its endpoints using Swagger UI. You can configure the Swagger UI using the following environment variables:

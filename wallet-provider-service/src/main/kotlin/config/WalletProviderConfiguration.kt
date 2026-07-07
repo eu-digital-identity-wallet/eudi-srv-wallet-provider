@@ -21,7 +21,11 @@ import com.sksamuel.hoplite.*
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.fp.invalid
 import com.sksamuel.hoplite.fp.valid
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.CountryCode
+import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.StatusListName
 import eu.europa.ec.eudi.walletprovider.domain.*
+import eu.europa.ec.eudi.walletprovider.domain.specification.AttestationBasedClientAuthentication
+import eu.europa.ec.eudi.walletprovider.domain.specification.OpenId4VCI
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletLink
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletName
 import eu.europa.ec.eudi.walletprovider.domain.walletinstanceattestation.WalletVersion
@@ -240,6 +244,11 @@ class UrlDecoder : Decoder<Url> {
 data class TokenStatusListServiceConfiguration(
     val serviceUrl: Url,
     val apiKey: Secret,
+    val country: CountryCode = "FC".toNonBlankString(),
+    val walletInstanceAttestationStatusList: StatusListName =
+        AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE
+            .toNonBlankString(),
+    val keyAttestationStatusList: StatusListName = OpenId4VCI.KEY_ATTESTATION_JWT_TYPE.toNonBlankString(),
 )
 
 data class IssuerConfiguration(
