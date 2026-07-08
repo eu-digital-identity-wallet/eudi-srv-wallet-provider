@@ -35,12 +35,13 @@ internal suspend fun DatabaseConfiguration.connect(): R2dbcDatabase {
                 databaseConfig =
                     R2dbcDatabaseConfig {
                         defaultR2dbcIsolationLevel = IsolationLevel.REPEATABLE_READ
+                        useNestedTransactions = false
                     },
             )
         }) { database, _ -> TransactionManager.closeAndUnregister(database) }
 
     val migrations =
-        suspendTransaction {
+        suspendTransaction(db = database) {
             MigrationUtils.statementsRequiredForDatabaseMigration(
                 Challenges,
                 withLogs = true,

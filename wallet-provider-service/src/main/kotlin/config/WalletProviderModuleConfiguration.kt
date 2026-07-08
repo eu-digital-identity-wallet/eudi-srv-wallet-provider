@@ -23,8 +23,9 @@ import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignJwt
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransaction
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepository
+import eu.europa.ec.eudi.walletprovider.adapter.persistence.forUpdateOption
 import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
@@ -74,20 +75,23 @@ fun Application.configureWalletProviderModule(
 
     configureServerPlugins(json, config.swaggerUi)
 
+    val challengeRepository = ChallengeRepository(database.forUpdateOption)
+    val runInTransaction = RunInTransaction(database)
+
     val generateChallenge =
         GenerateChallengeLive(
             clock = clock,
             length = config.challenge.length,
             validity = config.challenge.validity,
-            runInTransaction = RunInTransactionLive,
-            challengeRepository = ChallengeRepositoryLive,
+            runInTransaction = runInTransaction,
+            challengeRepository = challengeRepository,
         )
 
     val validateChallenge =
         if (null != config.platformKeyAttestationValidation) {
             ValidateChallengeLive(
-                runInTransaction = RunInTransactionLive,
-                challengeRepository = ChallengeRepositoryLive,
+                runInTransaction = runInTransaction,
+                challengeRepository = challengeRepository,
             )
         } else {
             logger.warn("Challenge Validation is currently disabled")

@@ -16,12 +16,13 @@
 package eu.europa.ec.eudi.walletprovider.adapter.persistence
 
 import eu.europa.ec.eudi.walletprovider.port.output.persistence.RunInTransaction
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
-val RunInTransactionLive =
+fun RunInTransaction(database: R2dbcDatabase): RunInTransaction =
     object : RunInTransaction {
         override suspend fun <T : Any> invoke(
             readOnly: Boolean,
             block: suspend () -> T,
-        ): T = suspendTransaction(readOnly = readOnly) { block() }
+        ): T = suspendTransaction(db = database, readOnly = readOnly) { block() }
     }

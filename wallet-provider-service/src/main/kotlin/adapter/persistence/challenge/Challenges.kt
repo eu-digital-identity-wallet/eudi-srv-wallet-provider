@@ -15,8 +15,6 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge
 
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.PrimaryDatabase
-import eu.europa.ec.eudi.walletprovider.adapter.persistence.forUpdateOption
 import eu.europa.ec.eudi.walletprovider.domain.challenge.Challenge
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -24,6 +22,7 @@ import kotlinx.coroutines.flow.map
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.vendors.ForUpdateOption
 import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -36,7 +35,7 @@ object Challenges : ULongIdTable(name = "challenges", columnName = "id") {
     val unused: Column<Boolean> = bool("unused")
 }
 
-val ChallengeRepositoryLive =
+fun ChallengeRepository(forUpdateOption: ForUpdateOption): ChallengeRepository =
     object : ChallengeRepository {
         override suspend fun store(challenge: Challenge) {
             Challenges.insert {
@@ -50,7 +49,7 @@ val ChallengeRepositoryLive =
         override suspend fun findByValueAndLock(value: ByteArray): Challenge? =
             Challenges
                 .selectAll()
-                .forUpdate(PrimaryDatabase.forUpdateOption)
+                .forUpdate(forUpdateOption)
                 .where { Challenges.value.eq(value) }
                 .map {
                     Challenge(
