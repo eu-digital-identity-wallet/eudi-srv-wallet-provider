@@ -168,26 +168,23 @@ value class KeyAttestationValidity(
     override fun toString(): String = value.toString()
 }
 
-class IssueKeyAttestationLive(
-    private val clock: Clock,
-    private val validateChallenge: ValidateChallenge,
-    private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
-    private val validity: KeyAttestationValidity,
-    private val allocateStatusListToken: AllocateStatusListToken,
-    private val certification: Url,
-    private val signJwt: SignJwt<KeyAttestationClaims>,
-    private val preferredKeyStorageStatusPeriod: PositiveDuration,
-) : IssueKeyAttestation {
-    init {
-        require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
-            "Key Attestations must be signed using one of the following JWS Algorithms: " +
-                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
-                ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
-        }
+fun IssueKeyAttestation(
+    clock: Clock,
+    validateChallenge: ValidateChallenge,
+    validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
+    validity: KeyAttestationValidity,
+    allocateStatusListToken: AllocateStatusListToken,
+    certification: Url,
+    signJwt: SignJwt<KeyAttestationClaims>,
+    preferredKeyStorageStatusPeriod: PositiveDuration,
+): IssueKeyAttestation {
+    require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
+        "Key Attestations must be signed using one of the following JWS Algorithms: " +
+            TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
+            ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
     }
 
-    context(_: Raise<KeyAttestationIssuanceFailure>)
-    override suspend fun invoke(request: KeyAttestationIssuanceRequest): KeyAttestation {
+    return IssueKeyAttestation { request ->
         val supportedSigningAlgorithm = signJwt.signingAlgorithm
         val requestedSigningAlgorithms = request.supportedSigningAlgorithms
         if (null != requestedSigningAlgorithms) {
@@ -252,6 +249,6 @@ class IssueKeyAttestationLive(
                 keyStorageStatus = keyStorageStatus,
             )
 
-        return signJwt(keyAttestation)
+        signJwt(keyAttestation)
     }
 }
