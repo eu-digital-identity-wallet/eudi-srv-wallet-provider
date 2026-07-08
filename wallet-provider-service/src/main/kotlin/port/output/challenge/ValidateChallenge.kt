@@ -18,7 +18,6 @@ package eu.europa.ec.eudi.walletprovider.port.output.challenge
 import arrow.core.raise.context.Raise
 import arrow.core.raise.context.ensure
 import arrow.core.raise.context.ensureNotNull
-import arrow.core.right
 import eu.europa.ec.eudi.walletprovider.domain.NonBlankString
 import eu.europa.ec.eudi.walletprovider.domain.challenge.ChallengeRepository
 import eu.europa.ec.eudi.walletprovider.domain.challenge.isActive
@@ -39,15 +38,11 @@ class ChallengeValidationFailure(
     val cause: Throwable? = null,
 )
 
-class ValidateChallengeLive(
-    private val runInTransaction: RunInTransaction,
-    private val challengeRepository: ChallengeRepository,
-) : ValidateChallenge {
-    context(_: Raise<ChallengeValidationFailure>)
-    override suspend fun invoke(
-        value: ByteArray,
-        at: Instant,
-    ) {
+fun ValidateChallenge(
+    runInTransaction: RunInTransaction,
+    challengeRepository: ChallengeRepository,
+): ValidateChallenge =
+    ValidateChallenge { value, at ->
         runInTransaction {
             val challenge =
                 ensureNotNull(challengeRepository.findByValueAndLock(value)) {
@@ -62,6 +57,3 @@ class ValidateChallengeLive(
             challengeRepository.store(challenge.copy(unused = false))
         }
     }
-}
-
-val ValidateChallengeNoop = ValidateChallenge { _, _ -> Unit.right() }

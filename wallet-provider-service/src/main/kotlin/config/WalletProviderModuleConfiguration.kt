@@ -17,6 +17,7 @@ package eu.europa.ec.eudi.walletprovider.config
 
 import arrow.core.Ior
 import arrow.core.NonEmptyList
+import arrow.core.right
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
@@ -39,8 +40,7 @@ import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestationLive
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
-import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeLive
-import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallengeNoop
+import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.http.*
@@ -89,13 +89,10 @@ fun Application.configureWalletProviderModule(
 
     val validateChallenge =
         if (null != config.platformKeyAttestationValidation) {
-            ValidateChallengeLive(
-                runInTransaction = runInTransaction,
-                challengeRepository = challengeRepository,
-            )
+            ValidateChallenge(runInTransaction, challengeRepository)
         } else {
             logger.warn("Challenge Validation is currently disabled")
-            ValidateChallengeNoop
+            ValidateChallenge { _, _ -> Unit.right() }
         }
 
     val makotoAttestationService = createMakotoAttestationService(config, clock)
