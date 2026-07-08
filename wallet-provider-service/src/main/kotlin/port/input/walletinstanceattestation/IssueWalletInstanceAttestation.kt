@@ -160,31 +160,28 @@ value class WalletInstanceAttestationValidity(
     }
 }
 
-class IssueWalletInstanceAttestationLive(
-    private val clock: Clock,
-    private val validateChallenge: ValidateChallenge,
-    private val validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
-    private val validity: WalletInstanceAttestationValidity,
-    private val issuer: Issuer,
-    private val clientId: ClientId,
-    private val walletName: WalletName,
-    private val walletLink: WalletLink?,
-    private val walletVersion: WalletVersion,
-    private val walletSolutionCertificationInformation: CertificationInformation,
-    private val clientStatusValidity: PositiveDuration,
-    private val allocateStatusListToken: AllocateStatusListToken,
-    private val signJwt: SignJwt<WalletInstanceAttestationClaims>,
-) : IssueWalletInstanceAttestation {
-    init {
-        require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
-            "Wallet Instance Attestations must be signed using one of the following JWS Algorithms: " +
-                TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
-                ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
-        }
+fun IssueWalletInstanceAttestation(
+    clock: Clock,
+    validateChallenge: ValidateChallenge,
+    validatePlatformKeyAttestation: ValidatePlatformKeyAttestation,
+    validity: WalletInstanceAttestationValidity,
+    issuer: Issuer,
+    clientId: ClientId,
+    walletName: WalletName,
+    walletLink: WalletLink?,
+    walletVersion: WalletVersion,
+    walletSolutionCertificationInformation: CertificationInformation,
+    clientStatusValidity: PositiveDuration,
+    allocateStatusListToken: AllocateStatusListToken,
+    signJwt: SignJwt<WalletInstanceAttestationClaims>,
+): IssueWalletInstanceAttestation {
+    require(signJwt.signingAlgorithm in TS3.ALLOWED_SIGNATURE_ALGORITHMS) {
+        "Wallet Instance Attestations must be signed using one of the following JWS Algorithms: " +
+            TS3.ALLOWED_SIGNATURE_ALGORITHMS.joinToString { it.identifier } +
+            ". Got a SignJwt implementation that uses ${signJwt.signingAlgorithm.identifier} instead."
     }
 
-    context(_: Raise<WalletInstanceAttestationIssuanceFailure>)
-    override suspend fun invoke(request: WalletInstanceAttestationIssuanceRequest): WalletInstanceAttestation {
+    return IssueWalletInstanceAttestation { request ->
         val supportedSigningAlgorithm = signJwt.signingAlgorithm
         val requestedSigningAlgorithms = request.supportedSigningAlgorithms
         if (null != requestedSigningAlgorithms) {
@@ -248,6 +245,6 @@ class IssueWalletInstanceAttestationLive(
                 request.walletMetadata,
             )
 
-        return signJwt(walletInstanceAttestation)
+        signJwt(walletInstanceAttestation)
     }
 }

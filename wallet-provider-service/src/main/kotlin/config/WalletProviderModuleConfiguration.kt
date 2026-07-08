@@ -39,7 +39,7 @@ import eu.europa.ec.eudi.walletprovider.domain.time.Clock
 import eu.europa.ec.eudi.walletprovider.domain.time.toKotlinClock
 import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLive
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestationLive
-import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestationLive
+import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -110,7 +110,7 @@ fun Application.configureWalletProviderModule(
         )
 
     val issueWalletInstanceAttestation =
-        IssueWalletInstanceAttestationLive(
+        IssueWalletInstanceAttestation(
             clock,
             validateChallenge,
             validatePlatformKeyAttestation,
