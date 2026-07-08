@@ -15,11 +15,9 @@
  */
 package eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation
 
-import arrow.core.raise.context.Raise
 import arrow.core.raise.context.ensure
 import arrow.core.raise.context.raise
 import at.asitplus.attestation.AttestationResult
-import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import eu.europa.ec.eudi.walletprovider.domain.platformkeyattestation.PlatformAttestedKey
@@ -28,14 +26,8 @@ import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.Platf
 import eu.europa.ec.eudi.walletprovider.port.output.platformkeyattestation.ValidatePlatformKeyAttestation
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
-class MakotoValidatePlatformKeyAttestation(
-    private val makotoAttestationService: MakotoAttestationService,
-) : ValidatePlatformKeyAttestation {
-    context(_: Raise<PlatformKeyAttestationValidationFailure>)
-    override suspend fun invoke(
-        unvalidatedKeyAttestation: Attestation,
-        challenge: ByteArray,
-    ): PlatformAttestedKey {
+fun ValidatePlatformKeyAttestation(makotoAttestationService: MakotoAttestationService): ValidatePlatformKeyAttestation =
+    ValidatePlatformKeyAttestation { unvalidatedKeyAttestation, challenge ->
         val verificationResult = makotoAttestationService.verifyKeyAttestation(unvalidatedKeyAttestation, challenge)
 
         if (!verificationResult.isSuccess) {
@@ -69,6 +61,5 @@ class MakotoValidatePlatformKeyAttestation(
             )
         }
 
-        return PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
+        PlatformAttestedKey(cryptoPublicKey, verificationResult.details)
     }
-}

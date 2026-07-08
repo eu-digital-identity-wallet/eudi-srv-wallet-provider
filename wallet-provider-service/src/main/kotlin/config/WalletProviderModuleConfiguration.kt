@@ -25,7 +25,7 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
 import eu.europa.ec.eudi.walletprovider.adapter.jose.SignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransactionLive
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepositoryLive
-import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.MakotoValidatePlatformKeyAttestation
+import eu.europa.ec.eudi.walletprovider.adapter.platformkeyattestation.ValidatePlatformKeyAttestation
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.AllocateStatusListToken
 import eu.europa.ec.eudi.walletprovider.adapter.tokenstatuslist.ApiKey
 import eu.europa.ec.eudi.walletprovider.config.IosKeyAttestationConfiguration.ApplicationConfiguration.IosEnvironment
@@ -95,7 +95,7 @@ fun Application.configureWalletProviderModule(
         }
 
     val makotoAttestationService = createMakotoAttestationService(config, clock)
-    val validatePlatformKeyAttestation = MakotoValidatePlatformKeyAttestation(makotoAttestationService)
+    val validatePlatformKeyAttestation = ValidatePlatformKeyAttestation(makotoAttestationService)
 
     val allocateStatusListToken =
         AllocateStatusListToken(
