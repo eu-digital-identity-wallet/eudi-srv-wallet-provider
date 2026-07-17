@@ -39,7 +39,7 @@ jobs:
           cache-provider: 'basic'
       - run: ./gradlew test koverXmlReport
       - name: Analysis on push or workflow dispatch
-        uses: sonarsource/sonarqube-scan-action@v8.2.0
+        uses: sonarsource/sonarqube-scan-action@v8.2.1
         if: (github.event_name == 'push'|| github.event_name == 'workflow_dispatch')
         with:
           projectBaseDir: ${{ github.workspace }}
@@ -55,7 +55,7 @@ jobs:
             -Dsonar.java.binaries=wallet-provider-service/build/classes/kotlin/
             -Dsonar.kotlin.binaries=wallet-provider-service/build/classes/kotlin/
       - name: Analysis on pull request
-        uses: sonarsource/sonarqube-scan-action@v8.2.0
+        uses: sonarsource/sonarqube-scan-action@v8.2.1
         if: (github.event_name == 'pull_request_target')
         with:
           projectBaseDir: ${{ github.workspace }}
@@ -73,7 +73,7 @@ jobs:
             -Dsonar.tests=wallet-provider-service/src/test
             -Dsonar.java.binaries=wallet-provider-service/build/classes/kotlin/
             -Dsonar.kotlin.binaries=wallet-provider-service/build/classes/kotlin/
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         if: (github.repository_owner == 'eu-digital-identity-wallet' && github.ref_name == 'main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch'))
         with:
           node-version: 18
