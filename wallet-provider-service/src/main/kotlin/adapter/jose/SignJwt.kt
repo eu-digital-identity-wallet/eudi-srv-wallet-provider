@@ -24,8 +24,10 @@ import at.asitplus.signum.supreme.signature
 import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
+import kotlin.time.Instant
 
-inline fun <reified T : Any> SignJwt(
+@Suppress("FunctionName")
+internal inline fun <reified T : Any> JoseSignJwt(
     signer: JwsSigner,
     certificateChain: NonEmptyList<X509Certificate>,
     type: JwtType,
@@ -34,7 +36,10 @@ inline fun <reified T : Any> SignJwt(
         override val signingAlgorithm: JwsAlgorithm
             get() = signer.signingAlgorithm
 
-        override suspend fun invoke(claims: T): JwsCompactTyped<T> {
+        override suspend fun invoke(
+            at: Instant,
+            claims: T,
+        ): JwsCompactTyped<T> {
             val header =
                 JwsHeader(
                     algorithm = signingAlgorithm,

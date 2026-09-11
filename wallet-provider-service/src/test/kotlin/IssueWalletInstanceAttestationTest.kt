@@ -19,6 +19,7 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.supreme.sign.EphemeralKey
+import eu.europa.ec.eudi.walletprovider.config.SignerType
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
 import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
 import eu.europa.ec.eudi.walletprovider.domain.time.Clock
@@ -38,7 +39,13 @@ import kotlin.test.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
-class IssueWalletInstanceAttestationTest : WalletProviderTest() {
+abstract class IssueWalletInstanceAttestationTest(
+    signerType: SignerType,
+) : WalletProviderTest(signerType) {
+    class JOSE : IssueWalletInstanceAttestationTest(SignerType.JOSE)
+
+    class JAdES : IssueWalletInstanceAttestationTest(SignerType.JAdES)
+
     @Test
     fun `wallet instance attestation includes wallet metadata when provided as object`(httpClient: HttpClient) {
         val walletMetadata =

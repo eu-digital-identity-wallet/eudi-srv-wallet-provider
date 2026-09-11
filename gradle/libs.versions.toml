@@ -29,6 +29,7 @@ testcontainers = "2.0.5"
 jdbc-mysql = "26.7.0"
 reactor = "2025.0.7"
 uri-kmp = "0.0.21"
+dss = "6.5"
 
 [libraries]
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -85,6 +86,9 @@ testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }
 jdbc-mysql = { module = "com.mysql:mysql-connector-j", version.ref = "jdbc-mysql" }
 reactor-bom = { module = "io.projectreactor:reactor-bom", version.ref = "reactor" }
 uri-kmp = { module = "com.eygraber:uri-kmp", version.ref = "uri-kmp" }
+dss-bom = { module = "eu.europa.ec.joinup.sd-dss:dss-bom", version.ref = "dss" }
+dss-utils-apache-commons = { module = "eu.europa.ec.joinup.sd-dss:dss-utils-apache-commons" }
+dss-jades = { module = "eu.europa.ec.joinup.sd-dss:dss-jades" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
