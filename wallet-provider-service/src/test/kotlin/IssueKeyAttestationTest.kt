@@ -20,6 +20,7 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.supreme.sign.EphemeralKey
+import eu.europa.ec.eudi.walletprovider.config.SignerType
 import eu.europa.ec.eudi.walletprovider.config.WalletProviderConfiguration
 import eu.europa.ec.eudi.walletprovider.domain.JsonWebKeySet
 import eu.europa.ec.eudi.walletprovider.domain.SecondsDuration
@@ -42,7 +43,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.uuid.Uuid
 
-class IssueKeyAttestationTest : WalletProviderTest() {
+abstract class IssueKeyAttestationTest(
+    signerType: SignerType,
+) : WalletProviderTest(signerType) {
+    class JOSE : IssueKeyAttestationTest(SignerType.JOSE)
+
+    class JAdES : IssueKeyAttestationTest(SignerType.JAdES)
+
     @Test
     fun `key attestation contains nonce when provided`(httpClient: HttpClient) {
         httpClient.runKeyAttestationTestCase {

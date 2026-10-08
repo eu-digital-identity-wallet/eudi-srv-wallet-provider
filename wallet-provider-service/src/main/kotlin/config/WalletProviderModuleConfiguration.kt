@@ -22,8 +22,11 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.NoopAttestationService
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import eu.europa.ec.eudi.walletprovider.adapter.jose.SignJwt
+import at.asitplus.signum.supreme.sign.Signer
+import eu.europa.ec.eudi.walletprovider.adapter.jades.JadesSignJwt
+import eu.europa.ec.eudi.walletprovider.adapter.jose.JoseSignJwt
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.RunInTransaction
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.challenge.ChallengeRepository
 import eu.europa.ec.eudi.walletprovider.adapter.persistence.forUpdateOption
@@ -41,9 +44,8 @@ import eu.europa.ec.eudi.walletprovider.port.input.challenge.GenerateChallengeLi
 import eu.europa.ec.eudi.walletprovider.port.input.keyattestation.IssueKeyAttestation
 import eu.europa.ec.eudi.walletprovider.port.input.walletinstanceattestation.IssueWalletInstanceAttestation
 import eu.europa.ec.eudi.walletprovider.port.output.challenge.ValidateChallenge
+import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.http.*
 import io.ktor.http.CacheControl.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
@@ -55,7 +57,6 @@ import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.v1.core.vendors.*
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.slf4j.LoggerFactory
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
@@ -123,7 +124,7 @@ fun Application.configureWalletProviderModule(
             config.walletInstanceAttestation.walletSolutionCertificationInformation,
             config.walletInstanceAttestation.clientStatusValidity,
             allocateStatusListToken,
-            SignJwt(
+            config.signerType.signJwt(
                 signer,
                 certificateChain,
                 JwtType(AttestationBasedClientAuthentication.CLIENT_ATTESTATION_JWT_TYPE),
@@ -138,7 +139,7 @@ fun Application.configureWalletProviderModule(
             config.keyAttestation.validity,
             allocateStatusListToken,
             config.keyAttestation.certification,
-            SignJwt(
+            config.signerType.signJwt(
                 signer,
                 certificateChain,
                 JwtType(OpenId4VCI.KEY_ATTESTATION_JWT_TYPE),
@@ -176,6 +177,23 @@ private fun Application.configureServerPlugins(
         }
     }
 }
+
+private inline fun <reified T : Any> SignerType.signJwt(
+    signer: JwsSigner,
+    certificateChain: NonEmptyList<X509Certificate>,
+    type: JwtType,
+): SignJwt<T> =
+    when (this) {
+        SignerType.JOSE -> {
+            logger.info("Will use JOSE signer for ${T::class.simpleName}")
+            JoseSignJwt(signer, certificateChain, type)
+        }
+
+        SignerType.JAdES -> {
+            logger.info("Will use JAdES signer for ${T::class.simpleName}")
+            JadesSignJwt(signer, certificateChain, type)
+        }
+    }
 
 private fun createMakotoAttestationService(
     config: WalletProviderConfiguration,

@@ -245,6 +245,6 @@ fun IssueWalletInstanceAttestation(
                 request.walletMetadata,
             )
 
-        signJwt(walletInstanceAttestation)
+        signJwt(issuedAt, walletInstanceAttestation)
     }
 }

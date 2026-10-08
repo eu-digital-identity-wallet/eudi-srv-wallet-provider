@@ -257,6 +257,15 @@ Variable: `DATABASE_PASSWORD`
 Description: Password of the database user.  
 Default value: N/A
 
+#### Attestation Signer Configuration
+
+Variable: `SIGNERTYPE`  
+Description: Type of signer to use for signing Attestations.  
+Default value: `JOSE`    
+Supported values:
+* `JOSE` - JSON Web Signature
+* `JAdES` - Baseline B JSON Advanced Electronic Signature
+
 #### Attestation Signing Key Configuration
 
 To load a signing key and certificate from a Keystore, use the following environment variables:

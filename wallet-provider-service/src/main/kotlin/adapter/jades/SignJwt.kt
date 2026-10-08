@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.adapter.jose
+package eu.europa.ec.eudi.walletprovider.adapter.jades
 
 import arrow.core.NonEmptyList
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
@@ -21,13 +21,14 @@ import at.asitplus.signum.indispensable.josef.JwsCompactTyped
 import at.asitplus.signum.indispensable.josef.JwsHeader
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.signature
+import eu.europa.ec.eudi.walletprovider.adapter.pki.sha256Thumbprint
 import eu.europa.ec.eudi.walletprovider.domain.JwsSigner
 import eu.europa.ec.eudi.walletprovider.domain.JwtType
 import eu.europa.ec.eudi.walletprovider.port.output.jose.SignJwt
 import kotlin.time.Instant
 
 @Suppress("FunctionName")
-internal inline fun <reified T : Any> JoseSignJwt(
+internal inline fun <reified T : Any> JadesSignJwt(
     signer: JwsSigner,
     certificateChain: NonEmptyList<X509Certificate>,
     type: JwtType,
@@ -40,10 +41,13 @@ internal inline fun <reified T : Any> JoseSignJwt(
             at: Instant,
             claims: T,
         ): JwsCompactTyped<T> {
+            val signingCertificate = certificateChain.head
             val header =
                 JwsHeader(
                     algorithm = signingAlgorithm,
                     certificateChain = certificateChain,
+                    certificateSha256Thumbprint = signingCertificate.sha256Thumbprint,
+                    issuedAt = at,
                     type = type.value,
                 )
 

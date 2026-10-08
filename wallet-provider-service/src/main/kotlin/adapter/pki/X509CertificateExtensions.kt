@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.europa.ec.eudi.walletprovider.port.output.jose
+package eu.europa.ec.eudi.walletprovider.adapter.pki
 
-import at.asitplus.signum.indispensable.josef.JwsAlgorithm
-import at.asitplus.signum.indispensable.josef.JwsCompactTyped
-import kotlin.time.Instant
+import at.asitplus.signum.indispensable.pki.X509Certificate
+import java.security.MessageDigest
 
-interface SignJwt<T : Any> {
-    val signingAlgorithm: JwsAlgorithm
-
-    suspend operator fun invoke(
-        at: Instant,
-        claims: T,
-    ): JwsCompactTyped<T>
-}
+internal val X509Certificate.sha256Thumbprint: ByteArray
+    get() = MessageDigest.getInstance("SHA-256").digest(encodeToDer())

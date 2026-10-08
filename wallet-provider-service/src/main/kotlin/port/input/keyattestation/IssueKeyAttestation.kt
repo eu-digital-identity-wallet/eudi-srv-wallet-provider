@@ -249,6 +249,6 @@ fun IssueKeyAttestation(
                 keyStorageStatus = keyStorageStatus,
             )
 
-        signJwt(keyAttestation)
+        signJwt(issuedAt, keyAttestation)
     }
 }
