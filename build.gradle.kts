@@ -4,5 +4,4 @@ plugins {
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.jib) apply false
     alias(libs.plugins.kover) apply false
-    alias(libs.plugins.dependency.check) apply false
 }

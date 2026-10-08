@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.jib)
     alias(libs.plugins.kover)
-    alias(libs.plugins.dependency.check)
 }
 
 repositories {
@@ -186,17 +185,6 @@ jib {
                 includes = listOf("openapi.json")
             }
         }
-    }
-}
-
-dependencyCheck {
-    formats = listOf("XML", "HTML")
-
-    nvd {
-        apiKey = System.getenv("NVD_API_KEY") ?: findProperty("nvdApiKey")?.toString()
-
-        delay = 10000
-        maxRetryCount = 2
     }
 }
 

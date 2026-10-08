@@ -16,7 +16,6 @@ indispensable = "3.26.0"
 supreme = "0.16.0"
 jib = "3.5.4"
 kover = "0.9.9"
-dependency-check = "13.0.0"
 exposed = "1.5.0"
 r2dbc-h2 = "1.1.0.RELEASE"
 r2dbc-mariadb = "1.4.2"
@@ -92,4 +91,3 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
-dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency-check" }
