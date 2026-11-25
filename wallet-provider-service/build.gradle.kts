@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.caching.headers)
     implementation(libs.ktor.server.forwarded.header)
+    implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
