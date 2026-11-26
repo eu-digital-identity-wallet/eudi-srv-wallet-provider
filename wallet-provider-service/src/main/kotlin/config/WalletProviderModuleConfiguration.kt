@@ -50,6 +50,8 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.maxAgeDuration
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
@@ -58,6 +60,8 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.vendors.*
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.slf4j.LoggerFactory
+import kotlin.math.max
+import kotlin.time.Duration.Companion.days
 import at.asitplus.attestation.AttestationService as MakotoAttestationService
 
 private val logger = LoggerFactory.getLogger("WalletProviderModule")
@@ -168,6 +172,50 @@ private fun Application.configureServerPlugins(
 
     install(XForwardedHeaders)
     install(ForwardedHeaders)
+
+    install(CORS) {
+        allowOrigins { true }
+        allowHeaders { true }
+        anyMethod()
+        exposedHeaders.addAll(
+            setOf(
+                HttpHeaders.Age,
+                HttpHeaders.CacheControl,
+                HttpHeaders.Connection,
+                HttpHeaders.ContentDisposition,
+                HttpHeaders.ContentEncoding,
+                HttpHeaders.ContentLanguage,
+                HttpHeaders.ContentLength,
+                HttpHeaders.ContentLocation,
+                HttpHeaders.ContentRange,
+                HttpHeaders.ContentType,
+                HttpHeaders.Date,
+                HttpHeaders.ETag,
+                HttpHeaders.Expires,
+                HttpHeaders.LastModified,
+                HttpHeaders.Location,
+                HttpHeaders.Link,
+                HttpHeaders.Pragma,
+                HttpHeaders.RetryAfter,
+                HttpHeaders.Server,
+                HttpHeaders.Upgrade,
+                HttpHeaders.Warning,
+                HttpHeaders.WWWAuthenticate,
+                HttpHeaders.AccessControlAllowOrigin,
+                HttpHeaders.AccessControlAllowMethods,
+                HttpHeaders.AccessControlAllowCredentials,
+                HttpHeaders.AccessControlAllowHeaders,
+                HttpHeaders.AccessControlRequestMethod,
+                HttpHeaders.AccessControlRequestHeaders,
+                HttpHeaders.AccessControlExposeHeaders,
+                HttpHeaders.AccessControlMaxAge,
+            ),
+        )
+        allowCredentials = false
+        maxAgeDuration = 1.days
+        allowSameOrigin = true
+        allowNonSimpleContentTypes = true
+    }
 
     routing {
         swaggerUI(path = swaggerUiConfiguration.path.value, swaggerFile = "openapi/openapi.json")
