@@ -175,45 +175,6 @@ private fun Application.configureServerPlugins(
 
     install(CORS) {
         allowOrigins { true }
-        allowHeaders { true }
-        anyMethod()
-        exposedHeaders.addAll(
-            setOf(
-                HttpHeaders.Age,
-                HttpHeaders.CacheControl,
-                HttpHeaders.Connection,
-                HttpHeaders.ContentDisposition,
-                HttpHeaders.ContentEncoding,
-                HttpHeaders.ContentLanguage,
-                HttpHeaders.ContentLength,
-                HttpHeaders.ContentLocation,
-                HttpHeaders.ContentRange,
-                HttpHeaders.ContentType,
-                HttpHeaders.Date,
-                HttpHeaders.ETag,
-                HttpHeaders.Expires,
-                HttpHeaders.LastModified,
-                HttpHeaders.Location,
-                HttpHeaders.Link,
-                HttpHeaders.Pragma,
-                HttpHeaders.RetryAfter,
-                HttpHeaders.Server,
-                HttpHeaders.Upgrade,
-                HttpHeaders.Warning,
-                HttpHeaders.WWWAuthenticate,
-                HttpHeaders.AccessControlAllowOrigin,
-                HttpHeaders.AccessControlAllowMethods,
-                HttpHeaders.AccessControlAllowCredentials,
-                HttpHeaders.AccessControlAllowHeaders,
-                HttpHeaders.AccessControlRequestMethod,
-                HttpHeaders.AccessControlRequestHeaders,
-                HttpHeaders.AccessControlExposeHeaders,
-                HttpHeaders.AccessControlMaxAge,
-            ),
-        )
-        allowCredentials = false
-        maxAgeDuration = 1.days
-        allowSameOrigin = true
         allowNonSimpleContentTypes = true
     }
 
